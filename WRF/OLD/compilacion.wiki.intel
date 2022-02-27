@@ -1,0 +1,34 @@
+#COMPILACION CON INTEL USANDO EL MODULO DE WRF4.0 INSTALADO EN NEURUS
+
+
+module load /wrf/4.0 
+
+# EL WRF YA ESTÁ COMPILADO, Y TODAS SUS LIBS
+
+# FALTA EL WPS
+tar -xvf WRF...
+
+cd WPS/
+
+./clean
+
+#Revisar que:
+	#  JASPERINC=/share/apps/wrf-4.0/intel2015/haswell/include
+	#  JASPERLIB=/share/apps/wrf-4.0/intel2015/haswell/include
+	#  NETCDF=/share/apps/wrf-4.0/intel2015/haswell
+	#  HDF5=/share/apps/wrf-4.0/intel2015/haswell
+	  
+
+./configure
+
+# Modificar configure.wps
+#	ifneq ($(wildcard $(DEV_TOP)/../WRF), )
+#        	WRF_DIR         =       ../WRF
+#	else
+#        	WRF_DIR         =       ../WRFV3
+#	endif
+#	WRF_DIR         = /share/apps/wrf-4.0/intel2015/haswell/WRF
+
+./compile
+
+#LISTO!

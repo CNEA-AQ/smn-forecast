@@ -1,0 +1,38 @@
+#############
+## WPS:
+	*Antes necesito:
+		- Datos estáticos
+	
+		- Datos dinámicos
+	
+	*Correr:
+		- Modificar namelist.wps
+		- Correr geogrid
+			./geogrid.exe
+			(Deberían crearse una serie de archivos geo_em* para cada dominio)
+		- linkear inputs de GFS (LOS ARCHIVOS! NO LA CARPETA):
+	   		./link_grib.csh path_a_los_archivos
+		- luego linkear a la Vtable correspondienente (GFS, for this case):
+			 ln -sf ungrib/Variable_Tables/Vtable.GFS Vtable
+		- correr ungrib
+			./ungrib.exe
+			(Deberian crearse arhcivos con el prefijo definido en namelist "FILE")
+		- correr metgrid:
+			./metgrid.exe >& log.metgrid
+			(Deberian crearse archivos con prefijo met_em* para cada periodo de corrida)
+	
+##############
+## WRF
+
+	- Ir a directorio de corrida:
+		cd WRF/RUNS/
+	- Hacer los cambios necesarios en namelist.input
+
+	- Copiar o linkear el met_em* (creado con wps) en el directorio de trabajo
+		ln -sf ../../../WPS/met_em*
+	- Correr el programa "real.exe"
+		mpirun -np 2 ./real.exe
+
+	- Chequiar el fin de los archivos "rls" para verificar que la corrida haya sido satisfactoria
+
+		Si veo "SUCCESS"  y esta el archivo wrfbdy_d01 file,y wrfinput_d0* para cada dominio entonces fue satisfactoria

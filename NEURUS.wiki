@@ -1,0 +1,71 @@
+#------------------#
+# wiki de          #
+# N E U R U S.     #
+
+#(1)  Migrar archivos desde otros servidores.
+
+        En el servidor de origen hay que tener dentro de .ssh/ la
+        clave publica y privada de esta cuenta.
+        Para copiar los archivos hacia acá se pone:
+
+        scp -i <ruta_a_clave_privada> <ruta_a_archivo_de__origen> crossler@link-0-0.neurus.dcap.cnea.gov.ar:/home/crossler/<ruta_a_destino>
+
+#(2)  Algunos comandos útiles:
+        sinfo   -> mostrar la información del cluster global
+        sview   -> mostrar la información del cluster global
+        scontrol mostrar trabajo nnnn -> examinar el trabajo con jobid nnnn
+        scontrol show node nodename -> examinar el nodo con nombre nodename
+        sbatch   -> envía un script ejecutable al sistema de colas
+        sintr    -> envía un trabajo interactivo al sistema de colas
+        srun     -> ejecuta un comando como nuevo trabajo o dentro de un trabajo existente
+        scancel  -> eliminar un trabajo
+        mybalance-> mostrar el saldo actual de los créditos de la hora central
+        squeue   -> estado del trabajo en la cola
+
+#(3)  Script de corrida para SLURM
+        #! ¿Que proyecto se debe cargar?
+        #SBATCH -A CAMBIEME
+        #! ¿Cuantos nodos desea?
+        #SBATCH --nodes=2
+        #! ¿Cuantas tareas (MPI) en total? (<= nodes*16)
+        #SBATCH --ntasks=32
+        #! ¿por cuanto tiempo maximo ejecutará (wallclock)?
+        #SBATCH --time=02:00:00
+
+        #abajo en:
+         bin=nombre_ejecutable.exe
+  
+        # para correrlo:
+
+
+#(4)  Como Correr:
+        #a) el DCAP recomienda usar los scripts de: 
+        /share/apps/slurm_test/script/sbatch_openmpi 
+
+        #b) trabajos seriales
+        srun ./programa &> salida &
+
+        #c) Via script:
+        sbatch ./script.sh
+
+        #d) con GPU:
+        srun -gres=gpu:N  <exe>
+
+#(5)  Uso de MODULOS
+
+        a) Poner en el .bashrc (no recomiendan):
+                PATH  <modulo>/bin $PATH
+                LD_LIBRARY_PATH <modulo>/lib $LD_LIBRARY_PATH
+                MANPATH <modulo> $MANPATH
+        b)
+                module avail
+                module whatis
+                module list
+                module load <modulo>
+                module unload <modulo>
+                module purge
+
+        c) Crear módulos privados.
+
+                Guardar en $HOME/privatemodules
+	

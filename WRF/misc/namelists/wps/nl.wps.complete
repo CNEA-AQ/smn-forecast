@@ -1,0 +1,59 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 2,
+ start_date = '2018-10-10_00:00:00', '2018-10-10_00:00:00',
+ end_date   = '2018-10-10_00:00:00', '2018-10-11_00:00:00',
+ interval_seconds = 10800
+
+ active_grid = .true., .false.
+
+ io_form_geogrid = 2,  !1:bin;2:nc;3:grb1
+ io_form_metgrid = 2, 
+ 
+ opt_output_from_geogrid_path = './',
+ opt_output_from_metgrid_path = './',
+
+ opt_metgrid_tbl_path = './',
+ opt_geogrid_tbl_path = './',
+
+ debug_level = 0
+/
+
+&geogrid
+ parent_id         =   1,2,  
+ parent_grid_ratio =   1,3,
+ i_parent_start    =   1,5, 
+ j_parent_start    =   1,5,
+ s_we              =   1,1,
+ e_we              = 100,4,
+ s_sn              =   1,1,
+ e_sn              =  50,4,
+
+ dx        = 30000,10000,
+ dy        = 30000,10000,
+ 
+map_proj  = 'lambert',
+ ref_lat   = -38.73,
+ ref_lon   = -62.23,
+ truelat1  = -45.0,
+ truelat2  = -33.0,
+ stand_lon = -62.0,
+
+ geog_data_path = '/home/ramiroespada/stage/data/WPS_GEOG/',
+ geog_data_res = 'default','default',
+/
+
+&ungrib
+ out_format = 'WPS',
+ prefix     = 'UNGRIB_FILE',
+ add_lvls=.false.,.false.,
+ interp_tpype=0,0,
+ new_plvl=0,
+ pmin = 100.,100.,
+/
+
+&metgrid
+ fg_name         = 'UNGRIB_FILE',
+ constants_name  = 'geogrid_file',
+ process_only_bdy = 5,6,
+/
