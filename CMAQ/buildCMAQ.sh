@@ -4,10 +4,10 @@
 #Dependencias:
 #   * C y Fortran Compilers
 module load intel/intel_2015.3.187
-#   * MPI Library (MPICH)
+#   * MPI Library (MPICH >3.3.1 | OpenMPI > 2.1.0)
 #module load mpich3.1.4_intel_2015.3.187  #no la cargo pero si le tengo que pasar los paths a CMAQ para que lo use
 module load ompi3.1.4_intel_2015.3.187    #la nacesito por que NetCDF y IOAPI fueron compiladas con ompi
-#   * NetCDF Library
+#   * NetCDF Library: NetCDF-C y NetCDF-Fortran ( (!) sin HDF4, HDF5,DAP, PnetCDF ni Zlib ) 
 module load netcdf4.4_intel_2015.3.187_parallel
 #   * I/O API Library
 module load ioapi-3.2_intel_2015.3.197
