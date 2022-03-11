@@ -52,10 +52,52 @@ cd BLD_CCTM_v533_gcc
 #Resulta que STATE3.EXT (y otros archivos) estan en ../ioapi-3.2/ioapi/fixed_src  
 #Hay que copiarlos dentro de ioapi-3.2/Linux2_x86_64gfort  para que funcione
 #------------------------------------------------
+#(4) Compilar preprocesadores
+
+# (a) Compilar ICON (initial conditions)
+#Ir a PREP/mcip/src
+cd ~/CMAQ/PREP/icon/scripts
+csh bldit_icon.csh
+
+# (b) Compilar BCON (boundary conditions)
+#Ir a PREP/mcip/src
+cd ~/CMAQ/PREP/bcon/scripts
+csh bldit_icon.csh
+
+# (c) Compilar MCIP (preprocesador de met)
+#Ir a PREP/mcip/src
+cd ~/CMAQ/PREP/mcip/src
+
+#Editar Makefile:
+```
+#...gfortran
+FC  = gfortran
+NETCDF=/home/ramiroespada/libs_gcc_6.3.0/netcdf
+IOAPI_ROOT=/home/ramiroespada/libs_gcc_6.3.0/ioapi-3.2
+FFLAGS  = -O3 -I$(NETCDF)/include -I$(IOAPI_ROOT)/Linux2_x86_64gfort
+##FFLAGS  = -g -O0  \
+##          -ffpe-trap='invalid','zero','overflow','underflow'  \
+##          -I$(NETCDF)/include -I$(IOAPI_ROOT)/Linux2_x86_64
+LIBS    = -L$(IOAPI_ROOT)/Linux2_x86_64gfort -lioapi  \
+          -L$(NETCDF)/lib -lnetcdff -lnetcdf
+```
+source ~/CMAQ/config_cmaq.csh
+make
+
+
+### Corrida de Benchmark:
+#Descargar datos de prueba: CMAQv5.3.2_Benchmark_2Day_Input.tar.gz
+#Ir a ~/CMAQ/CCTM/scripts
+#copiar sbatch.cmaq editar (sobre todo la variable CMAQ_DATA que es donde se van a guardar los outs y se van a leer los inps)
+#
+module purge
+module load cmaq5.3.3_gcc_6.3.0
+sbatch sbatch.cmaq
+#------------------------------------------------
 #(4) RUN
 
-### Requerimientos:
-#- Output de modelo meteorol√gico regional, ej: WRF
+### Datos requeridos:
+#- Output de modelo meteorologico regional, ej: WRF  (si es wrf4.x Û wrfchem hay que editarle el TITLE en el header de los wrfout)
 #- Meteorology-Chemistry Interface Processor (MCIP)
 #- Emisiones, procesados con el soft: Sparse Matrix Operator Kernel for Emissions (SMOKE)
 #- Init cond (ICON)
@@ -65,5 +107,13 @@ cd BLD_CCTM_v533_gcc
 #El CMAQ (CCTM). MCIP, ICON and BCON estan incluidos en el repo de CMAQ.
 #Mientras que SMOKE y FEST-C y "Spatial allocator tools" son softs externos.
 
-### Inputs:
+## Pasos:
+
+#(1) correr WRF con la meteo.
+#(2) procesar los wrfout y (opcional) geo_em.d01.nc con el MCIP. La salida sirve para el CMAQ y el SMOKE.
+#(3) crear archivos de emisiones con SMOKE.
+#(4) crear archivo de condicion de borde con BCON. Vamos a necesitar un modelo global.
+#(5) crear archivo de condiciones iniciales ICON. Vamos a necesitar un modelo global.
+
+
 
