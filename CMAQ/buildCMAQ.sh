@@ -110,10 +110,29 @@ sbatch sbatch.cmaq
 ## Pasos:
 
 #(1) correr WRF con la meteo.
-#(2) procesar los wrfout y (opcional) geo_em.d01.nc con el MCIP. La salida sirve para el CMAQ y el SMOKE.
-#(3) crear archivos de emisiones con SMOKE.
-#(4) crear archivo de condicion de borde con BCON. Vamos a necesitar un modelo global.
-#(5) crear archivo de condiciones iniciales ICON. Vamos a necesitar un modelo global.
 
+
+#(2) procesar los wrfout y geo_em.d01.nc con el MCIP. La salida sirve para el CMAQ y el SMOKE.
+
+cd PREP/mcip/scripts
+
+#Edito archivo run_mcip.csh para incluir paths, y fecha de corrida.
+
+tcsh run_mcip.csh gcc
+
+
+#(3) crear archivos de emisiones con SMOKE.
+# Hice un script con python: prepEmis.py para este fin.
+# (Hay que trabajarlo).
+
+#(4) crear archivo de condicion de borde con BCON. Vamos a necesitar un modelo global.
+cd PREP/bcon/scripts
+#Editar archivo run_icon.csh para incluir paths, fecha de corrida, compilador, nombre de grilla y ubicacion de GRIDDESC. Por el momento IBTYPE=profile.
+tcsh run_bcon.csh gcc
+
+#(5) crear archivo de condiciones iniciales ICON. Vamos a necesitar un modelo global.
+cd PREP/icon/scripts
+#Editar archivo run_icon.csh para incluir paths, fecha de corrida, compilador, nombre de grilla y ubicacion de GRIDDESC. Por el momento ICTYPE=profile.
+tcsh run_icon.csh gcc
 
 
