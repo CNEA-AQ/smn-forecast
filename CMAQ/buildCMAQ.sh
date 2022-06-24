@@ -115,11 +115,7 @@ sbatch sbatch.cmaq
 #(2) procesar los wrfout y geo_em.d01.nc con el MCIP. La salida sirve para el CMAQ y el SMOKE.
 
 cd PREP/mcip/scripts
-
-#Edito archivo run_mcip.csh para incluir paths, y fecha de corrida.
-
-tcsh run_mcip.csh gcc
-
+tcsh run_mcip.csh gcc   #Edito archivo run_mcip.csh para incluir paths, y fecha de corrida.
 
 #(3) crear archivos de emisiones con SMOKE.
 # Hice un script con python: prepEmis.py para este fin.
@@ -134,5 +130,11 @@ tcsh run_bcon.csh gcc
 cd PREP/icon/scripts
 #Editar archivo run_icon.csh para incluir paths, fecha de corrida, compilador, nombre de grilla y ubicacion de GRIDDESC. Por el momento ICTYPE=profile.
 tcsh run_icon.csh gcc
+
+
+#(6) Correr CMAQ:
+cd CCTM/scripts
+
+tcsh run_cctm.sh  #Hay varios scripts que preparan la corrida. editar las variables y correr.
 
 
