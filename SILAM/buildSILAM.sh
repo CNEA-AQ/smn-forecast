@@ -25,7 +25,7 @@ make
 #Deberia crearse un binario en:
 #$ ../bin/silam_v5_7pub.gnu
 
-#Si hay problemas con alguna librera cambiar flags en ../build/options.gnu y volver a intentar.
+#Si hay problemas con alguna libreria cambiar flags en ../build/options.gnu y volver a intentar.
 
 #------------------------------------------------
 #(3) RUN

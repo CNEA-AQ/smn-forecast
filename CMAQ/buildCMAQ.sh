@@ -1,5 +1,5 @@
 #================================================
-# CMAQ: Build & Run
+# CMAQ v5.4: Build & Run
 #================================================
 #Dependencias de CMAQ:
 #   * C y Fortran Compilers  (GNU> 6.1 | Intel > 17.0)
@@ -24,9 +24,10 @@ csh bldit_project.csh
 #------------------------------------------------
 #(2) Setiar variables en scripts config_cmaq.csh
 ```
-setenv NCDIR  /home/ramiroespada/libs_gcc_6.3.0/netcdf
-setenv NFDIR  /home/ramiroespada/libs_gcc_6.3.0/netcdf
-setenv NETCDF netcdf_combined_directory_path 
+# viejo (cmaq 5.3.3): setenv NCDIR  /home/ramiroespada/libs_gcc_6.3.0/netcdf
+# viejo (cmaq 5.3.3): setenv NFDIR  /home/ramiroespada/libs_gcc_6.3.0/netcdf
+# viejo (cmaq 5.3.3): setenv NETCDF netcdf_combined_directory_path 
+setenv NETCDF  /home/ramiroespada/libs_gcc_6.3.0/netcdf
 setenv IOAPI  /home/ramiroespada/libs_gcc_6.3.0/ioapi-3.2/Linux2_x86_64gfort
 setenv WRF_ARCH 34                              # [1-75] Optional, ONLY for WRF-CMAQ  
 #> I/O API, netCDF, and MPI library locations
@@ -36,7 +37,7 @@ setenv IOAPI_LIB_DIR  ${IOAPI}  #> I/O API libraries
 setenv MPI_INCL_DIR /home/ramiroespada/libs_gcc_6.3.0/mpich/include #> MPI Include directory path
 setenv MPI_LIB_DIR  /home/ramiroespada/libs_gcc_6.3.0/mpich/lib     #> MPI Lib directory patha
 ```
-#(!) revisar que todo estébien setiado
+#(!) revisar que todo esta bien setiado
 # Ejecutar script:
 csh config_cmaq.csh gcc
 
@@ -93,7 +94,8 @@ make
 module purge
 module load cmaq5.3.3_gcc_6.3.0
 sbatch sbatch.cmaq
-#------------------------------------------------
+
+#================================================
 #(4) RUN
 
 ### Datos requeridos:
