@@ -53,10 +53,11 @@ Buscar:
 - Variance of Subgrid Scale Orography (VAR-SSO), para drag orográfico.
 - Topography(DEM)
 - Solpe Index (Islope)
+
+- Crop (growing season, harvest date, planting date, crop type:(soy,wheat,cotton,corn,crop) )
 - Erodability (para dust emiss)
 - ClayFraction (para dust emiss)
 - Albedo
-- Crop
 - Snow Albedo (MODIS)
 - greenfrac fpar (MODIS)
 - LAI
