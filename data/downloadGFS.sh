@@ -68,7 +68,7 @@ wget $cert_opt -O auth_status.rda.ucar.edu --save-cookies auth.rda.ucar.edu.$$ -
 		
 #set fechas = ('2009-03-16' '2009-03-28')
 #set horas = (00 06 12 18)
-set fechas = ('2020-06-25')
+set fechas = ('2022-10-21')
 set horas = (00)
 set dias_buffer=1	#dias antes y despues
 foreach fecha ($fechas) 
@@ -90,3 +90,6 @@ end
 
 #Clean:
 rm auth.rda.ucar.edu.$$ auth_status.rda.ucar.edu
+
+#Si se los quiere transformar a netcdf: cdo -f nc copy fnl_*.grib2 filetry.nc
+
