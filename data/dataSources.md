@@ -14,30 +14,39 @@ Buscar:
 ### Meteorología:
 
 - NCAR UCAR
-	+ Global Forecast System [GFS](https://www.nco.ncep.noaa.gov/pmb/products/gfs/)
+	+ Global Forecast System [GFS](https://www.nco.ncep.noaa.gov/pmb/products/gfs/):
+		- [1°   4/day: 00, 06, 12, 18UTC  +00, (+03, +06 precipitation fields)](https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-003-1.0-degree/analysis/)
+		- [0.5° 4/day: 00, 06, 12, 18UTC  +00, (+03, +06 precipitation fields)](https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-004-0.5-degree/analysis/)
+
 	+ Final Analysis (FNL) / Global Data Assimilation System (GDAS): Incorpora datos observacionales, pero está listo 1 hora más tarde que GFS.
 - ECMWF:
 	+ Integrated Forecast System (IFS)
 
 ---
-### Emisiones:
+### Emisiones:	
+> Muchos inventarios se pueden obtener en: [ECCAD]( https://eccad3.sedoo.fr/ )
 
 - ECCAD: (Emissions of atmospheric Compound and Compilation of Ancillary Data)[https://eccad3.sedoo.fr/]
 
 - EDGAR: (Emissions Database for Global Atmospheric Research)[https://edgar.jrc.ec.europa.eu/]
 
-  biogenic_emissions
+- FINN: Se procesan con fire_emis para wrf.
+	- https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/	(near real time)
+	- https://www.acom.ucar.edu/Data/fire/				(hasta 2021)
+
   MEGAN
   EDGAR-HTAP  
   EDGAR 
   EDGARV4 
   RETRO
-  fires_data
   GFEDv2-8days  
   VOLC_SO2
   SEAC4RS  
   GOCART
   OLSON2 
+
+
+
 
 ---
 ### Global CTMS (para ICON & BCON)
