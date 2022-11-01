@@ -6,8 +6,13 @@
 #   * MPI Library (IntelMPI>2017.0 | MPICH>3.3.1 | MVAPICH2>2.3.1 | OpenMPI>2.1.0)
 #   * NetCDF-C y NetCDF-Fortran (NetCDF-C>4.2 | NetCDF-Fortran>4.4.2) (!) sin HDF4, HDF5,DAP, PnetCDF ni Zlib 
 #   * I/O API Library
+module purge
+module load gcc/6.3.0
+module load ompi3.1.4_gcc_6.3.0    
+module load netcdf4.4_gcc_6.3.0
 #------------------------------------------------
 #(0) Traer Repositorio:
+module load http_proxy
 git clone https://github.com/USEPA/CMAQ
 cd CMAQ
 #------------------------------------------------
@@ -15,6 +20,7 @@ cd CMAQ
 ``` set CMAQ_HOME = /home/ramiroespada/CMAQ ```
 #Ejecutar:
 csh bldit_project.csh
+
 #------------------------------------------------
 #(2) Setiar variables en scripts config_cmaq.csh
 ```
