@@ -36,6 +36,7 @@ setenv MPI_LIB_DIR       /home/ramiroespada/libs_gcc_6.3.0/mpich/lib     #> MPI 
 #(!) revisar que todo esta bien setiado
 # Ejecutar script con csh ó tcsh:
 csh config_cmaq.csh gcc
+#(!) Asegurarse de setiar el compilador correspondiente al que se quiere usar (por ejemplo: setenv myFC mpifort.mpich)
 
 #------------------------------------------------
 #(3) Ir a CCTM/scripts y ejecutar bldit_cctm.csh gcc con csh ó tcsh
