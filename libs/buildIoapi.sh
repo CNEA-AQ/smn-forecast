@@ -35,8 +35,8 @@ OMPFLAGS = # -fopenmp
 OMPLIBS = # -fopenmp
 ```
 
-make configure BIN=Linux2_x86_64gfort CPLMODE=nocpl BASEDIR=/home/usuario/m/ioapi-3.2 
-make BIN=Linux2_x86_64gfort CPLMODE=nocpl BASEDIR=/home/usuario/m/ioapi-3.2 
+make configure BIN=Linux2_x86_64gfort CPLMODE=nocpl BASEDIR=/home/usuario/m/libs/ioapi-3.2 
+make BIN=Linux2_x86_64gfort CPLMODE=nocpl BASEDIR=/home/usuario/m/libs/ioapi-3.2 
 
 #Al finalizar el make, en la carpeta $BIN se va a crear libioapi.a
 #Tuve problemas con gfortran-11 (gfortran-9 si funciona)

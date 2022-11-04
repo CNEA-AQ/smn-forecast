@@ -1,3 +1,24 @@
+#!/bin/csh -f
+#SBATCH -J CMAQ-5.3.3        # Job NAME (human input)
+#SBATCH -n 8                     # number of cpu cores (human input)
+#SBATCH --mem-per-cpu=4G         # Minimum memory required per allocated CPU (human input)
+#SBATCH --wait-all-nodes=1       # Do not begin execution until all nodes are ready for use
+#SBATCH -o %j.slurm.out          # STDOUT file
+#SBATCH -e %j.slurm.err          # STDERR file
+#SBATCH --cpu-freq high          # Set the highest available cpu frequency
+#SBATCH --verbose                # Be verbose
+#
+##More options: https://slurm.schedmd.com/sbatch.html
+############################## MAIN ################################
+ 
+#
+module purge
+#Suma la posibilidad de cargar modulos propios del usuario
+module load use.own
+#Modulos
+module load cmaq5.3.3_gcc_6.3.0
+
+source /home/ramiroespada/CMAQ/config_cmaq.csh gcc
 # ===================== CCTMv5.3.X Run Script ========================= 
 # Usage: run.cctm >&! cctm_Bench_2016_12SE1.log &                                
 #
@@ -5,7 +26,7 @@
 #             http://www.epa.gov/cmaq    (EPA CMAQ Website)
 #             http://www.cmascenter.org  (CMAS Website)
 # ===================================================================  
-source /home/ramiroespada/CMAQ/config_cmaq.csh gcc
+
 # ===================================================================
 #> Runtime Environment Options
 # ===================================================================

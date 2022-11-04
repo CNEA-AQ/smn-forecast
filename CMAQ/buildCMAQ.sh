@@ -12,30 +12,31 @@ git clone https://github.com/USEPA/CMAQ
 cd CMAQ
 #------------------------------------------------
 #(1) Setiar variables en script bldit_project.csh
-``` set CMAQ_HOME = /home/ramiroespada/CMAQ ```
+``` set CMAQ_HOME = /home/usuario/m/CMAQ ```
 #Ejecutar:
-csh bldit_project.csh
+tcsh bldit_project.csh
 #------------------------------------------------
 #(2) Setiar variables en scripts config_cmaq.csh
 ```
-setenv NETCDF            /home/ramiroespada/libs_gcc_6.3.0/netcdf
-setenv IOAPI             /home/ramiroespada/libs_gcc_6.3.0/ioapi-3.2/Linux2_x86_64gfort
-setenv WRF_ARCH          34    # [1-75] Optional, ONLY for WRF-CMAQ  
+        setenv NETCDF     /usr #netcdf_root_gcc # Note please combine netCDF-C & Fortran Libraries
+        setenv IOAPI      /home/usuario/m/libs/ioapi-3.2/Linux2_x86_64gfort #ioapi_root_gcc
+        setenv WRF_ARCH   34 # [1-75]
 
-setenv IOAPI_INCL_DIR    ${IOAPI}  #> I/O API include header files
-setenv IOAPI_LIB_DIR     ${IOAPI}  #> I/O API libraries
-
-setenv NETCDF_LIB_DIR    ${NETCDF}/lib
-setenv NETCDF_INCL_DIR   ${NETCDF}/include
-setenv NETCDFF_LIB_DIR   ${NETCDF}/lib
-setenv NETCDFF_INCL_DIR  ${NETCDF}/include
-
-setenv MPI_INCL_DIR      /home/ramiroespada/libs_gcc_6.3.0/mpich/include #> MPI Include directory path
-setenv MPI_LIB_DIR       /home/ramiroespada/libs_gcc_6.3.0/mpich/lib     #> MPI Lib directory patha
+        #> I/O API, netCDF, and MPI Library Locations -- used in CMAQ
+        setenv IOAPI_INCL_DIR   ${IOAPI}             #> I/O API include header files
+        setenv IOAPI_LIB_DIR    ${IOAPI}             #> I/O API libraries
+        setenv NETCDF_LIB_DIR   /usr/lib/x86_64-linux-gnu                 #> netCDF C directory path
+        setenv NETCDF_INCL_DIR  /usr/include         #> netCDF C directory path
+        setenv NETCDFF_LIB_DIR  /usr/lib/x86_64-linux-gnu          #> netCDF Fortran directory path
+        setenv NETCDFF_INCL_DIR /usr/include         #> netCDF Fortran directory path
+        setenv MPI_LIB_DIR      /lib/x86_64-linux-gnu    			#> MPI Lib directory path
+        setenv MPI_INCL_DIR     /lib/x86_64-linux-gnu/mpich/include             #> MPI Include directory path
+        #setenv MPI_INCL_DIR     /lib/x86_64-linux-gnu/openmpi/include          #> MPI Include directory path
 ```
 #(!) revisar que todo esta bien setiado
+#(!) si ioapi está compilado con mpich, usar ese.
 # Ejecutar script con csh ó tcsh:
-csh config_cmaq.csh gcc
+tcsh config_cmaq.csh gcc
 #(!) Asegurarse de setiar el compilador correspondiente al que se quiere usar (por ejemplo: setenv myFC mpifort.mpich)
 
 #------------------------------------------------
@@ -43,8 +44,7 @@ csh config_cmaq.csh gcc
 cd CCTM/scripts
 tcsh bldit_cctm.csh gcc
 
-# Si todo anda bien: se crea una carpeta "BLD_CCTM_v533_gcc" adentro está el ejecutable
-cd BLD_CCTM_v533_gcc
+# Si todo anda bien: se crea una carpeta "BLD_CCTM_v533_gcc" que contiene el ejecutable
 
 #(!)ERROR, no puede abrir STATE3.EXT
 #Resulta que STATE3.EXT (y otros archivos) estan en ../ioapi-3.2/ioapi/fixed_src  
@@ -55,12 +55,12 @@ cd BLD_CCTM_v533_gcc
 # (a) Compilar ICON (initial conditions)
 #Ir a PREP/mcip/src
 cd ~/CMAQ/PREP/icon/scripts
-csh bldit_icon.csh
+tcsh bldit_icon.csh gcc
 
 # (b) Compilar BCON (boundary conditions)
 #Ir a PREP/mcip/src
 cd ~/CMAQ/PREP/bcon/scripts
-csh bldit_icon.csh
+tcsh bldit_icon.csh gcc
 
 # (c) Compilar MCIP (preprocesador de met)
 #Ir a PREP/mcip/src
@@ -70,12 +70,13 @@ cd ~/CMAQ/PREP/mcip/src
 ```
 #...gfortran
 FC  = gfortran
-NETCDF=/home/ramiroespada/libs_gcc_6.3.0/netcdf
-IOAPI_ROOT=/home/ramiroespada/libs_gcc_6.3.0/ioapi-3.2
+NETCDF=/usr
+IOAPI_ROOT=/home/usuario/m/libs/ioapi-3.2
 FFLAGS  = -O3 -I$(NETCDF)/include -I$(IOAPI_ROOT)/Linux2_x86_64gfort
 LIBS    = -L$(IOAPI_ROOT)/Linux2_x86_64gfort -lioapi  \
-          -L$(NETCDF)/lib -lnetcdff -lnetcdf
+          -L$(NETCDF)/x86_64-linux-gnu -lnetcdff -lnetcdf
 ```
+tcsh #activo tcsh
 source ~/CMAQ/config_cmaq.csh
 make
 
