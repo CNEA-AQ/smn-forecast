@@ -56,8 +56,9 @@ Buscar:
 ---
 ### Global CTMS (para ICON & BCON)
 
-- CAMS
-- GEOS-5
+- CAMS: https://ads.atmosphere.copernicus.eu/cdsapp
+	+ Tiene forecast, se baja grib que se puede convertir a netcdf con `cdo -f nc copy <file>.grib file.nc`
+- GEOS-5: https://www.nccs.nasa.gov/services/data-collections/coupled-products/geos5-forecast
 - SILAM
 
 ---
