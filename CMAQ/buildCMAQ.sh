@@ -95,8 +95,10 @@ sbatch sbatch.cmaq
 
 ### Datos requeridos:
 #- Output de modelo meteorologico regional, ej: WRF  (si es wrf4.x ó wrfchem hay que editarle el TITLE en el header de los wrfout)
-#- Meteorology-Chemistry Interface Processor (MCIP)
 #- Emisiones, procesados con el soft: Sparse Matrix Operator Kernel for Emissions (SMOKE)
+
+# Preprocesadores:
+#- Meteorology-Chemistry Interface Processor (MCIP)
 #- Initial conditions (ICON)
 #- Boundary conditions (BCON)
 
@@ -112,9 +114,10 @@ sbatch sbatch.cmaq
 cd PREP/mcip/scripts
 tcsh run_mcip.csh gcc   #Edito archivo run_mcip.csh para incluir paths, y fecha de corrida.
 
+#(!) al correr, quiza no le gusta el TITLE del wrfout. Se puede cambiar usando: ncatted -O -h -a TITLE,global,m,c," OUTPUT FROM WRF V4    MODEL" wrfout wrfout_modif
+
 #(3) crear archivos de emisiones con SMOKE.
-# Hice un script con python: prepEmis.py para este fin.
-# (Hay que trabajarlo).
+# Hice un script con python: prepEmis.py para este fin (Hay que trabajarlo).
 
 #(4) crear archivo de condicion de borde con BCON. Vamos a necesitar un modelo global.
 cd PREP/bcon/scripts
