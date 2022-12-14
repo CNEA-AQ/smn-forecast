@@ -44,7 +44,7 @@ y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicia
 - FINN: Se procesan con fire_emis para wrf.
 	- https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/	(near real time)
 	- https://www.acom.ucar.edu/Data/fire/				(hasta 2021)
-
+- GFAS (buscar como alternativa para fuegos)!
   MEGAN
   EDGAR-HTAP  
   EDGAR 
