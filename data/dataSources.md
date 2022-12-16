@@ -17,7 +17,7 @@ Buscar:
 		- [1°   4/day: 00, 06, 12, 18UTC  +00, (+03, +06 precipitation fields)](https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-003-1.0-degree/analysis/)
 		- [0.5° 4/day: 00, 06, 12, 18UTC  +00, (+03, +06 precipitation fields)](https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-004-0.5-degree/analysis/)
 		- NCEP server forecast data for HYSPLIT:: ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/hysplit/prod/
-		- NCEP NOMADS (Hyplit): https://nomads.ncep.noaa.gov/pub/data/nccf/com/hysplit/prod/hysplit.20221028/
+		- NCEP NOMADS (Hyplit):                   https://nomads.ncep.noaa.gov/pub/data/nccf/com/hysplit/prod/hysplit.20221028/
 		- NOAA Operational Model Archive and Distribution System (NOMADS): https://nomads.ncep.noaa.gov/
 	+ Final Analysis (FNL) / Global Data Assimilation System (GDAS): Incorpora datos observacionales, pero está listo 1 hora más tarde que GFS.
 - ECMWF:
@@ -26,6 +26,12 @@ Buscar:
 - ARL: Air Resources Laboratory
 	+ forecast data: ftp.arl.noaa.gov/pub/forecast/
 	+ archive data: ftp.arl.noaa.gov:/pub/archives/ 
+
+Los archivos están en
+y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicial del forecast (e.g. 00,06,12,18), y "name":
+	gfsf     :: 1-deg 3P +240h (814 Mb) global forecast at one-degree resolution at 3 hour intervals at pressure levels out to +240 hours.
+	gfslrf   :: 1-deg 6P +384h (251 Mb) long-range global forecast at one-degree resolution at 6 hour intervals at pressure levels and from forecast hours +240 to +384.
+	gfs0p25f :: 0.25-deg 3S +189h (2500 Mb) global forecast at quarter-degree resolution at 3 hour intervals at hybrid levels out to +189 hours. The complete forecast is split over multiple files. The forecast start time must be 	selected. There are only 21 hours per file. Files with forecast hours beyond +84 are not available on NOMADS.	
 
 ---
 
@@ -65,6 +71,7 @@ Buscar:
 
 - CAMS: https://ads.atmosphere.copernicus.eu/cdsapp
 	+ Tiene forecast, se baja grib que se puede convertir a netcdf con `cdo -f nc copy <file>.grib file.nc`
+
 - GEOS-5: https://www.nccs.nasa.gov/services/data-collections/coupled-products/geos5-forecast
 - SILAM
 - Testiar si para CMAQ pueden usarse corridas anteriores como ICON y BCON!
