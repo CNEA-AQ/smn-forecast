@@ -1,0 +1,33 @@
+
+"TO-DO" list:
+
+[x] Compilar modelos 
+	[x] WRF-CHEM
+	[x] CMAQ
+	[x] CHIMERE
+	[x] EMEP
+	[x] SILAM
+	[x] MUSICA
+[ ] Probar funcionamiento de modelos
+	[x] WRF-CHEM
+	[x] CMAQ
+	[ ] CHIMERE
+	[ ] EMEP
+	[ ] SILAM
+	[ ] MUSICA
+[ ] Conseguir condiciones Iniciales (ICON)
+[ ] Conseguir condiciones de borde (BCON)
+[ ] Conseguir inventarios
+	[ ] Antropogénicas
+	[ ] Fuegos
+	[ ] Polvo
+	[ ] Sea-salt
+	[ ] Biogénicas
+[ ] Adaptar inventarios
+	[ ] Antropogénicas
+	[ ] Fuegos
+	[ ] Polvo
+	[ ] Sea-salt
+	[ ] Biogénicas
+[ ] Investigar que mecanísmo químico conviene usar ó generar uno propio.
+

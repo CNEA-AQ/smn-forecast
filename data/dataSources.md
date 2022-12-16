@@ -34,28 +34,34 @@ y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicia
 	gfs0p25f :: 0.25-deg 3S +189h (2500 Mb) global forecast at quarter-degree resolution at 3 hour intervals at hybrid levels out to +189 hours. The complete forecast is split over multiple files. The forecast start time must be 	selected. There are only 21 hours per file. Files with forecast hours beyond +84 are not available on NOMADS.	
 
 ---
+
 ### Emisiones:	
-> Muchos inventarios se pueden obtener en: [ECCAD]( https://eccad3.sedoo.fr/ )
+> Muchos inventarios se pueden obtener en: [ECCAD]( https://eccad3.sedoo.fr/ ) (Emissions of atmospheric Compound and Compilation of Ancillary Data)
 
-- ECCAD: (Emissions of atmospheric Compound and Compilation of Ancillary Data)[https://eccad3.sedoo.fr/]
 
+#### Antropogénicas
 - EDGAR: (Emissions Database for Global Atmospheric Research)[https://edgar.jrc.ec.europa.eu/]
+- EDGAR-HTAP  
+- RETRO
 
-- FINN: Se procesan con fire_emis para wrf.
+#### Fuegos:
+- FINN (Fire INventory from NCAR) Se procesan con fire_emis para wrf.
 	- https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/	(near real time)
 	- https://www.acom.ucar.edu/Data/fire/				(hasta 2021)
-- GFAS (buscar como alternativa para fuegos)!
-  MEGAN
-  EDGAR-HTAP  
-  EDGAR 
-  EDGARV4 
-  RETRO
-  GFEDv2-8days  
-  VOLC_SO2
-  SEAC4RS  
-  GOCART
-  OLSON2 
 
+- GFED (Global Fire Emissions Database)
+
+- GFAS (Global Fire Assimilation System)
+
+#### Biogénicas
+-  MEGAN
+-  BEIS (Biogenic Emission Inventory System)
+
+#### Cenizas
+- VOLC_SO2
+
+#### Sea-salt
+  SEAC4RS  
 
 ---
 ### Global CTMS (para ICON & BCON)
@@ -65,13 +71,14 @@ y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicia
 
 - GEOS-5: https://www.nccs.nasa.gov/services/data-collections/coupled-products/geos5-forecast
 - SILAM
+- Testiar si para CMAQ pueden usarse corridas anteriores como ICON y BCON!
 
 ---
 ### Otras variables:
 
 - Subgrid Orography information for Gravity Wave Drag (OROGWD)
 - Variance of Subgrid Scale Orography (VAR-SSO), para drag orográfico.
-- Topography(DEM)
+- Topography (DEM)
 - Solpe Index (Islope)
 
 - Crop (growing season, harvest date, planting date, crop type:(soy,wheat,cotton,corn,crop) )
