@@ -26,7 +26,7 @@ make
 #$ ../bin/silam_v5_7pub.gnu
 
 #Si hay problemas con alguna libreria cambiar flags en ../build/options.gnu y volver a intentar.
-
+#En ubuntu hay un error: "grib_api.mod not found" que en el readme.md del repo explican como resolver.
 #------------------------------------------------
 #(3) RUN
 

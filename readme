@@ -11,23 +11,38 @@
 [ ] Probar funcionamiento de modelos
 	[x] WRF-CHEM
 	[x] CMAQ
+	[ ] SILAM
 	[ ] CHIMERE
 	[ ] EMEP
-	[ ] SILAM
 	[ ] MUSICA
-[ ] Conseguir condiciones Iniciales (ICON)
-[ ] Conseguir condiciones de borde (BCON)
+[ ] Conseguir condiciones Iniciales (ICON) => empieza con 0 ò Global CTM, y luego usa la simulacion anterior.
+[ ] Conseguir condiciones de borde (BCON)  => empieza con 0 ò Global CTM, y luego usa la simulacion anterior.
 [ ] Conseguir inventarios
 	[ ] Antropogénicas
-	[ ] Fuegos
-	[ ] Polvo
-	[ ] Sea-salt
-	[ ] Biogénicas
+	[ ] Fuegos         => land-cover/use
+	[ ] Polvo	   => erodability, landuse, lai, greenfrac
+	[ ] Sea-salt	   => surface temp, salinty
+	[ ] Biogénicas	   => land-cover/use
 [ ] Adaptar inventarios
-	[ ] Antropogénicas
-	[ ] Fuegos
-	[ ] Polvo
-	[ ] Sea-salt
-	[ ] Biogénicas
+	[ ] Antropogénicas => Ver si se puede hacer algo parecido a NEI.
+	[ ] Fuegos	   => Caracterizar coberturas y combustibilidad.
+	[ ] Polvo	   => Caracterizar erodabilidad
+	[ ] Sea-salt	   => Sea surface temperature & Salinidad
+	[ ] Biogénicas	   => Caracterizar coberturas vegetales
 [ ] Investigar que mecanísmo químico conviene usar ó generar uno propio.
-
+	-Fase Gaseosa:
+	[ ] CBM (CB4, CB5)
+	[ ] RADM
+	[ ] RACM
+	[ ] MOZART
+	- Aerosoles:
+	[ ] GOCART
+	[ ] MOCART
+	[ ] MOSAIC
+	[ ] DMAT/VBS
+	[ ] LMDz/MACC
+	[ ] OPIA/SORGAM
+	[ ] Aero5 (CMAQ)
+[ ] Investigar que parametrizaciónes de PBL se usan y cual conviene:
+	[ ] Bulk-Richardson
+	[ ] Yonsei University (YSU) 
