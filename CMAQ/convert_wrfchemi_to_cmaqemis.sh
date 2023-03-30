@@ -15,41 +15,47 @@ for inFile in "${files[@]}"; do
 	
 	#saco variables innecesarias
 	ncks -O -x -v XLAT $file $file       	#saco la variable para que no me traiga conflicto
-	ncks -O -x -v XLON $file $file       	#saco la variable para que no me traiga conflicto
+	ncks -O -x -v XLONG $file $file       	#saco la variable para que no me traiga conflicto
 	
 	#Lista de variables y asignación:
-	declare -A emis2cmaq=(["BCI"]="" ["BCJ"]="" ["E_BENZENE"]="BENZ" ["E_BIGALK"]="" ["E_BIGENE"]="" ["E_C10H16"]="" ["E_C2H2"]="" ["E_C2H4"]="" ["E_C2H5OH"]="" ["E_C2H6"]="" ["E_C3H6"]="" ["E_C3H8"]="" ["E_CH2O"]="" ["E_CH3CHO"]="" ["E_CH3COCH3"]="" ["E_CH3COOH"]="" ["E_CH3OH"]="" ["E_CO"]="CO" ["E_HCOOH"]="" ["E_ISOP"]="ISOP" ["E_MEK"]="" ["E_NH3"]="NH3" ["E_NO"]="NO" ["E_NO2"]="NO2" ["E_OCI"]="" ["E_OCJ"]="" ["E_SO2"]="SO2" ["E_SULF"]="SULF" ["E_TOLUENE"]="TOL" ["E_XYLENES"]="") 
-	
+	declare -A emis2cmaq=(["ACET"]="" ["ACROLEIN"]="" ["ALD2"]="" ["ALD2_PRIMARY"]="" ["ALDX"]="" ["BENZ"]="E_BENZENE" ["BUTADIENE13"]="" ["CH4"]="" ["CH4_INV"]="" ["CL2"]="" ["CO"]="E_CO" ["CO2_INV"]="" ["ETH"]="" ["ETHA"]="" ["ETHY"]="" ["ETOH"]="" ["FORM"]="" ["FORM_PRIMARY"]="" ["HCL"]="" ["HONO"]="" ["IOLE"]="" ["ISOP"]="E_ISOP" ["KET"]="" ["MEOH"]="" ["N2O_INV"]="" ["NAPH"]="" ["NH3"]="E_NH3" ["NH3_FERT"]="" ["NO"]="E_NO" ["NO2"]="E_NO2" ["NVOL"]="" ["OLE"]="" ["PAL"]="" ["PAR"]="" ["PCA"]="" ["PCL"]="" ["PEC"]="" ["PFE"]="" ["PH2O"]="" ["PK"]="" ["PMC"]="" ["PMG"]="" ["PMN"]="" ["PMOTHR"]="" ["PNA"]="" ["PNCOM"]="" ["PNH4"]="" ["PNO3"]="" ["POC"]="" ["PRPA"]="" ["PSI"]="" ["PSO4"]="" ["PTI"]="" ["SO2"]="E_SO2" ["SOAALK"]="" ["SULF"]="E_SULF" ["TERP"]="" ["TOL"]="E_TOLUENE" ["UNK"]="" ["UNR"]="" ["VOC_INV"]="" ["XYLMN"]="")
+
 	polluts=(${!emis2cmaq[@]})
-	pollutsOK=(${emis2cmaq[@]})
-	npolluts=${#pollutsOK[@]}
+	npolluts=${#emis2cmaq[@]}
 	
 	for pollut in "${polluts[@]}";
 	do
+		echo $pollut
 		if [[ ${emis2cmaq[$pollut]} == "" ]]
 	       	then 
-			ncks -O -x -v $pollut $file $file       	#saco la variable times para que no me traiga conflicto
+			#ncks -O -x -v $pollut $file $file       	#saco la variable times para que no me traiga conflicto
+			#ncap2 -A -s 'swap = array(0,0,/$Time,$emissions_zdim_stag,$south_north,$west_east/);' $file
+			#ncrename -v swap,$pollut $file			#Cambiar nombre de pollut:
+			#falta unidades, long_name y var desc
 			continue; 
 		else
-			echo $pollut
-			pollutNameCmaq=${emis2cmaq[$pollut]}	
+			ncrename -v ${emis2cmaq[$pollut]},$pollut $file		#Cambiar nombre de pollut:
 			#Cambiar unidad:	
 			unit=$(ncdump -h $file | grep "${pollut}:" | grep "units" | sed 's/^.* = //;s/;//;s/\"//')
 	
 	  		if [[ $unit == *mol\ km* ]]; then
-				ncap2 -O -s "$pollut=$pollut*$dx*$dy*1e6" $file $file			#mol/km2.h -> moles/s
-				ncatted -O -a units,$pollut,o,c,"moles/s         " $file
+				ncap2 -O -s "$pollut=float($pollut*$dx*$dy*1e6)" $file $file	#mol/km2.h -> moles/s
+				unit="moles/s"
 	
 			elif [[ $unit == *ug\ m* ]]; then
-				ncap2 -O -s "$pollut=$pollut*$dx*$dy*1e6" $file $file			#ug/m2.s   -> g/s
-				ncatted -O -a units,$pollut,o,c,"g/s             " $file
+				ncap2 -O -s "$pollut=float($pollut*$dx*$dy*1e6)" $file $file	#ug/m2.s   -> g/s
+				unit="g/s"
 			fi;
 
-			ncatted -O -a var_desc,$pollut,o,c,"$pollutNameCmaq[1]   " $file	#agregar descripcion de variable
-			long_name=$(printf "%-16s" $pollutNameCmaq )
-			ncatted -O -a long_name,$pollut,o,c,"$long_name" $file	#agregar descripcion de variable
+			ncatted -O -h -a ".,$pollut,d,,;" $file $file
+
+			units=$(printf "%-16s" $unit )
+			var_desc=$(printf "%-80s" $pollut[1] )
+			long_name=$(printf "%-16s" $pollut )
+			ncatted -O -a long_name,$pollut,o,c,"$long_name" $file	#agregar atributo de variable
+			ncatted -O -a var_desc,$pollut,o,c,"$var_desc" $file	#agregar atributo de variable
+			ncatted -O -a units,$pollut,o,c,"$units" $file		#agregar atributo de variable
 			
-			ncrename -v $pollut,$pollutNameCmaq $file		#Cambiar nombre de pollut:
 		fi;
 	done
 	
@@ -97,7 +103,7 @@ for inFile in "${files[@]}"; do
 	ncks -O -x -v Times $file $file       	#saco la variable times para que no me traiga conflicto
 
 	#METADATA:
-	 #Primero borro toda la metadata
+	#Primero borro toda la metadata
 	 ncatted -O -h -a ".,global,d,,;" $file $file
 	 
 	 ncatted -O -h -a TITLE,global,m,c,"EMISSION FILE               " ${file} ${file}
@@ -106,20 +112,20 @@ for inFile in "${files[@]}"; do
          ncatted -O -h -a EXEC_ID,global,c,c,"????????????????                                                                " $file $file
 
  	#Agrego a metadata info sacada del METCRO*:
-	 ncatted -O -h -a FTYPE,global,c,f,1 $file $file
-	 ncatted -O -h -a CDATE,global,c,f,2023079 $file $file
-	 ncatted -O -h -a CTIME,global,c,f,141036 $file $file
-	 ncatted -O -h -a WDATE,global,c,f,2023079 $file $file
-	 ncatted -O -h -a WTIME,global,c,f,141036 $file $file
-	 ncatted -O -h -a SDATE,global,c,f,2019001 $file $file
-	 ncatted -O -h -a STIME,global,c,f,00000 $file $file
-	 ncatted -O -h -a TSTEP,global,c,f,10000 $file $file
-	 ncatted -O -h -a NTHIK,global,c,f,1 $file $file
-	 ncatted -O -h -a NCOLS,global,c,f,260 $file $file
-	 ncatted -O -h -a NROWS,global,c,f,337 $file $file
-	 ncatted -O -h -a NLAYS,global,c,f,32 $file $file
-	 ncatted -O -h -a NVARS,global,c,f,$npolluts $file $file
-	 ncatted -O -h -a GDTYP,global,c,f,7 $file $file
+	 ncatted -O -h -a FTYPE,global,c,i,1 $file $file
+	 ncatted -O -h -a CDATE,global,c,i,2023079 $file $file
+	 ncatted -O -h -a CTIME,global,c,i,141036 $file $file
+	 ncatted -O -h -a WDATE,global,c,i,2023079 $file $file
+	 ncatted -O -h -a WTIME,global,c,i,141036 $file $file
+	 ncatted -O -h -a SDATE,global,c,i,2019001 $file $file
+	 ncatted -O -h -a STIME,global,c,i,010000 $file $file
+	 ncatted -O -h -a TSTEP,global,c,i,10000 $file $file
+	 ncatted -O -h -a NTHIK,global,c,i,1 $file $file
+	 ncatted -O -h -a NCOLS,global,c,i,260 $file $file
+	 ncatted -O -h -a NROWS,global,c,i,337 $file $file
+	 ncatted -O -h -a NLAYS,global,c,i,1 $file $file
+	 ncatted -O -h -a NVARS,global,c,i,$npolluts $file $file
+	 ncatted -O -h -a GDTYP,global,c,i,7 $file $file
 	 ncatted -O -h -a P_ALP,global,c,f,0. $file $file
 	 ncatted -O -h -a P_BET,global,c,f,0. $file $file
 	 ncatted -O -h -a P_GAM,global,c,f,-61. $file $file
@@ -135,7 +141,8 @@ for inFile in "${files[@]}"; do
 	 ncatted -O -h -a GDNAM,global,c,c,"PAPILAGRID" $file $file
 	 ncatted -O -h -a UPNAM,global,c,c,"OUTGM3IO      " $file $file
         
-	 var_list=$(printf "%-16s" ${emis2cmaq[@]})
+	 IFS=$'\n' sorted_vars=($(sort <<<"${polluts[*]}")); unset IFS;
+	 var_list=$(printf "%-16s" ${sorted_vars[@]})
 	 ncatted -O -h -a VAR-LIST,global,c,c,"$var_list" $file $file
 	 
 	 ncatted -O -h -a FILEDESC,global,c,c,"Merged emissions output file from Mrggrid                                       " $file $file  
@@ -144,4 +151,23 @@ for inFile in "${files[@]}"; do
 done
 
 #Merge todos en un solo archivo.
-ncrcat emis_mole* out_emis_mole_d01.nc
+rm out_emis_mole_d01.nc
+
+#Merge todos los archivos en uno
+ncrcat -4 emis_mole* out_emis_mole_d01.nc
+
+#Elimino archivos individuales
+rm emis_mole*
+
+#Filtro fechas
+ncks -h -O -d TSTEP,1,23 out_emis_mole_d01.nc out_emis_mole_d01.nc
+ncks -h -O -d COL,1,-2 out_emis_mole_d01.nc out_emis_mole_d01.nc
+ncks -h -O -d ROW,1,-2 out_emis_mole_d01.nc out_emis_mole_d01.nc
+
+
+
+
+
+#declare -A emis2cmaq=(["BCI"]="" ["BCJ"]="" ["E_BENZENE"]="" ["E_BIGALK"]="" ["E_BIGENE"]="" ["E_C10H16"]="" ["E_C2H2"]="" ["E_C2H4"]="" ["E_C2H5OH"]="" ["E_C2H6"]="" ["E_C3H6"]="" ["E_C3H8"]="" ["E_CH2O"]="" ["E_CH3CHO"]="" ["E_CH3COCH3"]="" ["E_CH3COOH"]="" ["E_CH3OH"]="" ["E_CO"]="CO" ["E_HCOOH"]="" ["E_ISOP"]="ISOP" ["E_MEK"]="" ["E_NH3"]="NH3" ["E_NO"]="NO" ["E_NO2"]="NO2" ["E_OCI"]="" ["E_OCJ"]="" ["E_SO2"]="SO2" ["E_SULF"]="SULF" ["E_TOLUENE"]="TOL" ["E_XYLENES"]="") 
+
+
