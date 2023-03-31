@@ -21,7 +21,7 @@ for inFile in "${files[@]}"; do
 	declare -A emis2cmaq=(["ACET"]="" ["ACROLEIN"]="" ["ALD2"]="" ["ALD2_PRIMARY"]="" ["ALDX"]="" ["BENZ"]="E_BENZENE" ["BUTADIENE13"]="" ["CH4"]="" ["CH4_INV"]="" ["CL2"]="" ["CO"]="E_CO" ["CO2_INV"]="" ["ETH"]="" ["ETHA"]="" ["ETHY"]="" ["ETOH"]="" ["FORM"]="" ["FORM_PRIMARY"]="" ["HCL"]="" ["HONO"]="" ["IOLE"]="" ["ISOP"]="E_ISOP" ["KET"]="" ["MEOH"]="" ["N2O_INV"]="" ["NAPH"]="" ["NH3"]="E_NH3" ["NH3_FERT"]="" ["NO"]="E_NO" ["NO2"]="E_NO2" ["NVOL"]="" ["OLE"]="" ["PAL"]="" ["PAR"]="" ["PCA"]="" ["PCL"]="" ["PEC"]="" ["PFE"]="" ["PH2O"]="" ["PK"]="" ["PMC"]="" ["PMG"]="" ["PMN"]="" ["PMOTHR"]="" ["PNA"]="" ["PNCOM"]="" ["PNH4"]="" ["PNO3"]="" ["POC"]="" ["PRPA"]="" ["PSI"]="" ["PSO4"]="" ["PTI"]="" ["SO2"]="E_SO2" ["SOAALK"]="" ["SULF"]="E_SULF" ["TERP"]="" ["TOL"]="E_TOLUENE" ["UNK"]="" ["UNR"]="" ["VOC_INV"]="" ["XYLMN"]="")
 
 	polluts=(${!emis2cmaq[@]})
-	npolluts=${#emis2cmaq[@]}
+	npolluts=0 #${#emis2cmaq[@]}
 	
 	for pollut in "${polluts[@]}";
 	do
@@ -29,11 +29,13 @@ for inFile in "${files[@]}"; do
 		if [[ ${emis2cmaq[$pollut]} == "" ]]
 	       	then 
 			#ncks -O -x -v $pollut $file $file       	#saco la variable times para que no me traiga conflicto
-			#ncap2 -A -s 'swap = array(0,0,/$Time,$emissions_zdim_stag,$south_north,$west_east/);' $file
+			#ncap2 -A -s 'swap = array(0.0,0,/$Time,$emissions_zdim_stag,$south_north,$west_east/);' $file
 			#ncrename -v swap,$pollut $file			#Cambiar nombre de pollut:
 			#falta unidades, long_name y var desc
+			#unit="moles/s"
 			continue; 
 		else
+			npolluts=$(($npolluts + 1 ))
 			ncrename -v ${emis2cmaq[$pollut]},$pollut $file		#Cambiar nombre de pollut:
 			#Cambiar unidad:	
 			unit=$(ncdump -h $file | grep "${pollut}:" | grep "units" | sed 's/^.* = //;s/;//;s/\"//')
@@ -47,19 +49,20 @@ for inFile in "${files[@]}"; do
 				unit="g/s"
 			fi;
 
-			ncatted -O -h -a ".,$pollut,d,,;" $file $file
+			ncatted -O -h -a ".,$pollut,d,,;" $file $file	#borro atributos preexistentes
 
 			units=$(printf "%-16s" $unit )
 			var_desc=$(printf "%-80s" $pollut[1] )
 			long_name=$(printf "%-16s" $pollut )
 			ncatted -O -a long_name,$pollut,o,c,"$long_name" $file	#agregar atributo de variable
-			ncatted -O -a var_desc,$pollut,o,c,"$var_desc" $file	#agregar atributo de variable
 			ncatted -O -a units,$pollut,o,c,"$units" $file		#agregar atributo de variable
-			
+			ncatted -O -a var_desc,$pollut,o,c,"$var_desc" $file	#agregar atributo de variable
 		fi;
 	done
-	
-	#nombres de dimensiones:                    #netcdf wrfchemi_test2022-10-19_18\:00\:00 {        netcdf emis_mole_test.nc20221019 {
+	#Elimino variables del wrfchemi que no tienen asignación                                                                   	
+	ncks -O -x -v E_. $file $file 	#saco la variable times para que no me traiga conflicto	#nombres de dimensiones:                   
+
+       						    #netcdf wrfchemi_test2022-10-19_18\:00\:00 {        netcdf emis_mole_test.nc20221019 {
 	                                            #dimensions:                                        dimensions:
 	ncrename -d Time,TSTEP $file                #	Time = 24 ;                                     TSTEP = UNLIMITED ; // (24 currently)
 	#ncrename -d DateStrLen,DATE-TIME $file      #	DateStrLen = UNLIMITED ; // (19 currently)      DATE-TIME = 2 ;
@@ -138,10 +141,11 @@ for inFile in "${files[@]}"; do
 	 ncatted -O -h -a VGTYP,global,c,f,-9999 $file $file
 	 ncatted -O -h -a VGTOP,global,c,f,5000. $file $file
 	 ncatted -O -h -a VGLVLS,global,c,f,1.,0.9938147  $file $file
-	 ncatted -O -h -a GDNAM,global,c,c,"PAPILAGRID" $file $file
+	 ncatted -O -h -a GDNAM,global,c,c,"PAPILAGRID_CROSS" $file $file
 	 ncatted -O -h -a UPNAM,global,c,c,"OUTGM3IO      " $file $file
         
-	 IFS=$'\n' sorted_vars=($(sort <<<"${polluts[*]}")); unset IFS;
+	 variables=($(ncdump -h $file | grep "float" | sed 's/^.*float \(.*\)(.*/\1 /' | tr '\n' ' '))
+	 IFS=$'\n' sorted_vars=($(sort <<<"${variables[*]}")); unset IFS;
 	 var_list=$(printf "%-16s" ${sorted_vars[@]})
 	 ncatted -O -h -a VAR-LIST,global,c,c,"$var_list" $file $file
 	 
@@ -163,9 +167,6 @@ rm emis_mole*
 ncks -h -O -d TSTEP,1,23 out_emis_mole_d01.nc out_emis_mole_d01.nc
 ncks -h -O -d COL,1,-2 out_emis_mole_d01.nc out_emis_mole_d01.nc
 ncks -h -O -d ROW,1,-2 out_emis_mole_d01.nc out_emis_mole_d01.nc
-
-
-
 
 
 #declare -A emis2cmaq=(["BCI"]="" ["BCJ"]="" ["E_BENZENE"]="" ["E_BIGALK"]="" ["E_BIGENE"]="" ["E_C10H16"]="" ["E_C2H2"]="" ["E_C2H4"]="" ["E_C2H5OH"]="" ["E_C2H6"]="" ["E_C3H6"]="" ["E_C3H8"]="" ["E_CH2O"]="" ["E_CH3CHO"]="" ["E_CH3COCH3"]="" ["E_CH3COOH"]="" ["E_CH3OH"]="" ["E_CO"]="CO" ["E_HCOOH"]="" ["E_ISOP"]="ISOP" ["E_MEK"]="" ["E_NH3"]="NH3" ["E_NO"]="NO" ["E_NO2"]="NO2" ["E_OCI"]="" ["E_OCJ"]="" ["E_SO2"]="SO2" ["E_SULF"]="SULF" ["E_TOLUENE"]="TOL" ["E_XYLENES"]="") 
