@@ -48,14 +48,15 @@ y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicia
 - FINN (Fire INventory from NCAR) Se procesan con fire_emis para wrf.
 	- https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/	(near real time)
 	- https://www.acom.ucar.edu/Data/fire/				(hasta 2021)
-
+	- https://rda.ucar.edu/datasets/ds312.9/ (rda, es con usuario)
 - GFED (Global Fire Emissions Database)
 
 - GFAS (Global Fire Assimilation System)
 
 #### Biogénicas
--  MEGAN
--  BEIS (Biogenic Emission Inventory System)
+-  MEGAN: 
+	- https://bai.ess.uci.edu/megan/data-and-code/megan21 
+-  BEIS (Biogenic Emission Inventory System). Solo funciona para US.
 
 #### Cenizas
 - VOLC_SO2
@@ -68,9 +69,8 @@ y su nombre es "hysplit.t{cycle}z.{name}" donde "cycle" representa la UTC inicia
 
 - CAMS: https://ads.atmosphere.copernicus.eu/cdsapp
 	+ Tiene forecast, se baja grib que se puede convertir a netcdf con `cdo -f nc copy <file>.grib file.nc`
-
 - GEOS-5: https://www.nccs.nasa.gov/services/data-collections/coupled-products/geos5-forecast
-- SILAM
+- SILAM:
 - Testiar si para CMAQ pueden usarse corridas anteriores como ICON y BCON!
 
 ---
