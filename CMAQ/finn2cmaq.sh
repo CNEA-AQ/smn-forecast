@@ -13,13 +13,18 @@ truelat1=-50;truelat2=-20;stand_lon=-65;ref_lon=-65;ref_lat=-35;
 srsOut="+proj=lcc +lat_1=${truelat1} +lat_2=${truelat2} +lon_0=${stand_lon} +lat_0=${ref_lat} +a=6370000.0 +b=6370000.0 +units=m" #datum=WGS84 +units=m +x_0=0.0 +y_0=0.0 +no_defs"
 read xc yc ellipsoidh <<<$( gdaltransform -s_srs "epsg:4326" -t_srs "${srsOut}" <<< $( echo "${ref_lon} ${ref_lat}" ) )
 
-#Grilla:
+#Grilla (sale de GRIDDESC)
 nx=197;ny=237;nz=1;dx=20000;dy=20000;                #ncols,nrows,xcel, ycell
 xorig=-1970000; yorig=-2370000 ;
+
 xmin=$(bc -l <<<" $xc - ($xorig)*-1 ")
 xmax=$(bc -l <<<" $xc + ($xorig)*-1 ")
 ymin=$(bc -l <<<" $yc - ($yorig)*-1 ")
 ymax=$(bc -l <<<" $yc + ($yorig)*-1 ")
+
+#bbox latlon: para hacer clippear el archivo de fuegos al dominio:
+read lonmin latmin ellipsoidh <<<$( gdaltransform -t_srs "epsg:4326" -s_srs "${srsOut}" <<< $( echo "${xmin} ${ymin}" ) )
+read lonmax latmax ellipsoidh <<<$( gdaltransform -t_srs "epsg:4326" -s_srs "${srsOut}" <<< $( echo "${xmax} ${ymax}" ) )
 
 #Creo carpetas:
 mkdir finn_data		#carpeta de datos descargados de FINN.
@@ -53,20 +58,19 @@ do
 	finnFile=finn_data/GLOB_${chemistry}_$YYYY$DDD.txt
 	
 	#Del archivo descargado obtengo lista de polluts a inventariar
-	polluts=($(head -n1 $finnFile | sed 's/,/ /g;s/^.*AREA //g' ))
-        swap_list=$(printf "%-16s" ${polluts[@]})
-        var_list="$swap_list"
+	polluts=($(head -n1 $finnFile | sed 's/,/ /g;s/^.*AREA //g' )); var_list=$(printf "%-16s" ${polluts[@]})
 
 	#Transformo coordenadas + me quedo con los puntos dentro del dominio.
 	cat $finnFile | sed 's/D\([-+]\)/e\1/g;s/,/;/g' | awk -F";" 'NR==1{print $0";wkt"} NR>=2{print $0"POINT("$5*1.0,$4*1.0")"}' > tmp.csv
-	ogr2ogr -f CSV tmp_xy.csv tmp.csv -s_srs "$srsInp" -t_srs "$srsOut" -clipsrc $xmin $ymin $xmax $ymax -lco GEOMETRY="AS_WKT" -lco SEPARATOR="SEMICOLON"
+	ogr2ogr -f CSV tmp_ll_clipped.csv tmp.csv -clipsrc $lonmin $latmin $lonmax $latmax -lco GEOMETRY="AS_WKT" -lco SEPARATOR="SEMICOLON"
+	ogr2ogr -f CSV tmp_xy.csv tmp_ll_clipped.csv -s_srs "$srsInp" -t_srs "$srsOut" -lco GEOMETRY="AS_WKT" -lco SEPARATOR="SEMICOLON"
 	sed -i 's/"//g;s/  */ /g;' tmp_xy.csv
 
 	#Crear template de NetCDF 
 	cat  > netcdf_emission_template.cdl <<EOF
 netcdf emissionInventory {
 dimensions:
-    TSTEP = 24;
+    TSTEP = 1; // 24;
     DATE_TIME = 2 ;
     COL = $nx ;
     ROW = $ny ;
@@ -93,20 +97,21 @@ cat >> netcdf_emission_template.cdl << EOF
 }
 EOF
 
-file_out=fire_emis_${YYYY}${DDD}_d01.nc
-ncgen -o $file_out netcdf_emission_template.cdl
-
-hours=(00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
-for HH in ${hours[@]}
+#Un archivo por hora:
+for HH in $(seq --format="%02.0f" 0 23) #${hours[@]}
 do
 	echo "   HORA: $HH"
 	i=$(echo $HH | awk '{print $0*1}');
+	
+	file_out=fire_emis_${YYYY}${DDD}_${HH}:00:00_d01.nc
+	ncgen -o $file_out netcdf_emission_template.cdl
 
+	#---------------------------------------
+	#Filtro por hora:
 	awk -F";" -v hour="${HH}00" '
 	NR==1{OFS=";"; print$0; for(i=1;i<=NF;i++){if($i=="TIME"){time=i};}; h_ini=hour; h_fin=hour+60;} 
-	NR >1{ if( $time >= h_ini                  ){print $0};  }' tmp_xy.csv > tmp_HH.csv
+	NR >1{ if( $time < h_fin                   ){print $0};  }' tmp_xy.csv > tmp_HH.csv
 	#NR>1{ if( $time >= h_ini && $time < h_fin ){print $0};  }' tmp_xy.csv > tmp_HH.csv
-	
 	
 	for j in ${!polluts[@]}
 	do
@@ -128,18 +133,17 @@ do
 	
 	#---------------------------------------
 	##ASCII to netcdf
-	#gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" -ot Float32 tmp_xy.csv swap.nc -co WRITE_LONLAT="YES"  -co WRITE_BOTTOMUP="NO"
+	#gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" -ot Float32 tmp_HH_pollut.csv swap.nc #-co WRITE_LONLAT="YES"  -co WRITE_BOTTOMUP="NO"
 	gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of GTiff tmp_HH_pollut.csv tmp.tif
-	##Transformar a NetCDF
+	#Transformar a NetCDF
 	gdal_translate -q -a_srs "$srsOut" -ot Float32 -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" tmp.tif swap.nc #-co "WRITE_LONLAT=YES" -co "WRITE_BOTTOMUP=NO"
-	# (estos son los que hacen que tarde mucho):
-	ncbo -p 3 ncks  -A -V -v Band1 swap.nc -o $file_out
-	ncbo -p 3 ncap2 -A -s "${pollut}($i,0,:,:) = Band1(:,:); TFLAG($i,$j,0) = ${YYYY}${DDD}; TFLAG($i,$j,1) =  ${HH}0000;" $file_out 
-	
+
+	ncks  -h -A -V -v Band1 swap.nc -o $file_out
+	#ncap2 -h -A -s "${pollut}($i,0,:,:) = Band1(:,:); TFLAG($i,$j,0) = ${YYYY}${DDD}; TFLAG($i,$j,1) =  ${HH}0000;" $file_out 
+	ncap2 -h -A -s "${pollut}(0,0,:,:) = Band1(:,:); TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
 	done;
 	
 done;
-
 
 	day=$(($day + 86400 )) # Incrementar day un dia
 done;
