@@ -3,7 +3,7 @@ export LC_NUMERIC="en_US.UTF-8"
 #------------------------------------------------
 #Input-Data:
 start_date="2019-01-01"	#"%Y-%m-%d %H"
-  end_date="2019-01-01"	#"%Y-%m-%d %H"
+  end_date="2019-01-02"	#"%Y-%m-%d %H"
 
 chemistry="GEOSchem" #GEOSchem # MOZ4 # SAPRC99
    srsInp="epsg:4326"	#Los archivos FINN vienen en latlon.
@@ -109,49 +109,49 @@ do
 	sed -i 's/"//g;s/  */ /g;' tmp_xy.csv
 	#=================
 	#Un archivo por hora:
+		
+	#Ciclo Diurno:
+	#fire_emis (hora local) usa:#ciclo_diurno=(0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 3.0 60. 10.0 14.0 17.0 14.0 12.0 9.0 6.0 3.0 0.43 0.43 0.43 0.43 0.43) # (en porcentaje)
+	ciclo_diurno=(0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0300 0.0600 0.1000 0.1400 0.1700 0.1400 0.1200 0.0900 0.0600 0.0300 0.0043 0.0043 0.0043 0.0043 0.0043)
 	for HH in $(seq --format="%02.0f" 0 23) 
 	do
 		echo "   HORA: $HH"
 		i="$(printf "%d" ${HH})";
 	
+		#Peso horario:
+		wgt_hh=${ciclo_diurno[i]}
+
 		#Creo NetCDF destino:
 		file_out=fire_emis_${YYYY}${DDD}_${HH}:00:00_d01.nc
 		ncgen -o $file_out netcdf_emission_template.cdl
 	
 		#---------------------------------------
-		#Filtro por hora: Por ahora nada que filtrar por que los datos son promedios diarios.
-		#awk -F";" -v hour="${HH}00" '
-		#NR==1{OFS=";"; print$0; for(i=1;i<=NF;i++){if($i=="TIME"){time=i};}; h_ini=hour; h_fin=hour+60;} 
-		#NR >1{ if( $time < h_fin                   ){print $0};  }' tmp_xy.csv > tmp_HH.csv
-		#NR>1{ if( $time >= h_ini && $time < h_fin ){print $0};  }' tmp_xy.csv > tmp_HH.csv
-		cat tmp_xy.csv > tmp_HH.csv	#Sin filtrar nada.
-	
 		for j in ${!polluts[@]}
 		do
 			pollut=${polluts[$j]}
 			echo "      pollut: $pollut"
-		#---------------------------------------
-		#Filtro columnas wkt y pollut, tambien convierto emis a mole/s ó g/s.
-		awk -F";" -v pollut=${pollut} '
-		NR==1{
-		for(i=1;i<=NF;i++){if($i==pollut){pol=i};};
-			print "wkt;emis";
-			if ( pollut == "OC" || pollut =="BC" || pollut=="PM25" || pollut == "PM10" ){
-				k=1/86400000.0;		#kg/day -> g/s	
-			}else {
-				k=1/86400.0;		#mole/day -> mole/s
-			};
-		} 
-		NR>1{ printf("%s;%.5e\n", $1, $pol*k); }' tmp_HH.csv > tmp_HH_pollut.csv
-		#---------------------------------------
-		##ASCII to netcdf
-		#gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" -ot Float32 tmp_HH_pollut.csv tmp.nc #-co WRITE_LONLAT="YES"  -co WRITE_BOTTOMUP="NO"
-		gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of GTiff tmp_HH_pollut.csv tmp.tif
-		gdal_translate -q -a_srs "$srsOut" -ot Float32 -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" tmp.tif tmp.nc #-co "WRITE_LONLAT=YES" -co "WRITE_BOTTOMUP=NO"
+			#---------------------------------------
+			#Filtro columnas wkt y pollut, tambien convierto emis a mole/s ó g/s.
+			awk -F";" -v pollut=${pollut} '
+			NR==1{
+			for(i=1;i<=NF;i++){if($i==pollut){pol=i};};
+				print "wkt;emis";
+				if ( pollut == "OC" || pollut =="BC" || pollut=="PM25" || pollut == "PM10" ){
+					k=1/86400000.0;		#kg/day -> g/s	
+				}else {
+					k=1/86400.0;		#mole/day -> mole/s
+				};
+			} 
+			NR>1{ printf("%s;%.5e\n", $1, $pol*k); }' tmp_xy.csv > tmp_pollut.csv
+			#---------------------------------------
+			##ASCII to netcdf
+			#gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" -ot Float32 tmp_pollut.csv tmp.nc
+			gdal_rasterize -q -a emis -add -a_srs "${srsOut}" -tr $dx $dy -te $xmin $ymin $xmax $ymax -of GTiff tmp_pollut.csv tmp.tif
+			gdal_translate -q -a_srs "$srsOut" -ot Float32 -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" tmp.tif tmp.nc #-co "WRITE_LONLAT=YES" -co "WRITE_BOTTOMUP=NO"
 	
-		ncks  -h -A -V -v Band1 tmp.nc -o $file_out
+			ncks  -h -A -V -v Band1 tmp.nc -o $file_out
 
-		ncap2 -h -A -C -s "${pollut}(0,0,:,:) = Band1(:,:); TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
+			ncap2 -h -A -C -s "${pollut}(0,0,:,:) = Band1(:,:)*${wgt_hh}; TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
 
 		done;
 		
