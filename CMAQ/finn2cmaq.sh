@@ -3,7 +3,7 @@ export LC_NUMERIC="en_US.UTF-8"
 #------------------------------------------------
 #Input-Data:
 start_date="2019-01-01"	#"%Y-%m-%d %H"
-  end_date="2019-01-02"	#"%Y-%m-%d %H"
+  end_date="2019-01-01"	#"%Y-%m-%d %H"
 
 chemistry="GEOSchem" #GEOSchem # MOZ4 # SAPRC99
    srsInp="epsg:4326"	#Los archivos FINN vienen en latlon.
@@ -16,6 +16,14 @@ read xc yc ellipsoidh <<<$( gdaltransform -s_srs "epsg:4326" -t_srs "${srsOut}" 
 #Grilla (sale de GRIDDESC)
 nx=197;ny=237;nz=1;dx=20000;dy=20000;     #ncols,nrows,xcel, ycell
 xorig=-1970000;yorig=-2370000;
+
+#Ciclo Diurno:
+#fire_emis (hora local) usa:#ciclo_diurno=(0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 3.0 60. 10.0 14.0 17.0 14.0 12.0 9.0 6.0 3.0 0.43 0.43 0.43 0.43 0.43) # (en porcentaje)
+ciclo_diurno=(0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0300 0.0600 0.1000 0.1400 0.1700 0.1400 0.1200 0.0900 0.0600 0.0300 0.0043 0.0043 0.0043 0.0043 0.0043)
+
+#Perfil vertical (Plume Rise)  (!) To-Do.
+
+
 #------------------------------------------------
 #Parametros intermedios:
 xmin=$(bc -l <<<" $xc - ($xorig)*-1 ")
@@ -110,9 +118,9 @@ do
 	#=================
 	#Un archivo por hora:
 		
-	#Ciclo Diurno:
-	#fire_emis (hora local) usa:#ciclo_diurno=(0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 0.43 3.0 60. 10.0 14.0 17.0 14.0 12.0 9.0 6.0 3.0 0.43 0.43 0.43 0.43 0.43) # (en porcentaje)
-	ciclo_diurno=(0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0043 0.0300 0.0600 0.1000 0.1400 0.1700 0.1400 0.1200 0.0900 0.0600 0.0300 0.0043 0.0043 0.0043 0.0043 0.0043)
+	
+	
+	
 	for HH in $(seq --format="%02.0f" 0 23) 
 	do
 		echo "   HORA: $HH"
@@ -131,15 +139,15 @@ do
 			pollut=${polluts[$j]}
 			echo "      pollut: $pollut"
 			#---------------------------------------
-			#Filtro columnas wkt y pollut, tambien convierto emis a mole/s ó g/s.
-			awk -F";" -v pollut=${pollut} '
+			#Filtro columnas wkt y pollut, tambien convierto emis a mole/s ó g/s (aplicando ciclo diurno).
+			awk -F";" -v pollut=${pollut} -v wgt_hh=${wgt_hh} '
 			NR==1{
 			for(i=1;i<=NF;i++){if($i==pollut){pol=i};};
 				print "wkt;emis";
 				if ( pollut == "OC" || pollut =="BC" || pollut=="PM25" || pollut == "PM10" ){
-					k=1/86400000.0;		#kg/day -> g/s	
+					k=1/3600000*wgt_hh;	#kg/day -> g/s	
 				}else {
-					k=1/86400.0;		#mole/day -> mole/s
+					k=1/3600.0 *wgt_hh;	#mole/day -> mole/s
 				};
 			} 
 			NR>1{ printf("%s;%.5e\n", $1, $pol*k); }' tmp_xy.csv > tmp_pollut.csv
@@ -151,7 +159,7 @@ do
 	
 			ncks  -h -A -V -v Band1 tmp.nc -o $file_out
 
-			ncap2 -h -A -C -s "${pollut}(0,0,:,:) = Band1(:,:)*${wgt_hh}; TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
+			ncap2 -h -A -C -s "${pollut}(0,0,:,:) = Band1(:,:); TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
 
 		done;
 		
