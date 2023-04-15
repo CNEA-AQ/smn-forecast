@@ -117,9 +117,6 @@ do
 	sed -i 's/"//g;s/  */ /g;' tmp_xy.csv
 	#=================
 	#Un archivo por hora:
-		
-	
-	
 	
 	for HH in $(seq --format="%02.0f" 0 23) 
 	do
@@ -158,7 +155,6 @@ do
 			gdal_translate -q -a_srs "$srsOut" -ot Float32 -of netCDF -co "FORMAT=NC4" -co "COMPRESS=DEFLATE" -co "ZLEVEL=9" tmp.tif tmp.nc #-co "WRITE_LONLAT=YES" -co "WRITE_BOTTOMUP=NO"
 	
 			ncks  -h -A -V -v Band1 tmp.nc -o $file_out
-
 			ncap2 -h -A -C -s "${pollut}(0,0,:,:) = Band1(:,:); TFLAG(0,$j,0) = ${YYYY}${DDD}; TFLAG(0,$j,1) =  ${HH}0000;" $file_out 
 
 		done;
