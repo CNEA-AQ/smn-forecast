@@ -2,6 +2,9 @@ program netcdf_copy
   use netcdf
   implicit none
 
+  INTEGER, PARAMETER :: ascii = selected_char_KIND ("ascii")
+  INTEGER, PARAMETER :: ucs4  = selected_char_KIND ('ISO_10646') 
+
   integer :: i,j,k
   integer :: status,ncid,ncid_out,varid
   logical :: file_exists
@@ -18,8 +21,11 @@ program netcdf_copy
   integer:: nx,ny,nz,nt,nvars,ncol,nrow
   real :: xorig,yorig,dx,dy
 
-  character(len=19) :: start_date_str, end_date_str, current_date_str
-  integer :: YYYY, MM, DD, HH, DDD, start_date_s, end_date_s, current_date_s
+  character(len=17) :: start_date_str, end_date_str, current_date_str
+  integer ::start_date_s, end_date_s, current_date_s
+  character(4) :: YYYY
+  character(3) :: DDD
+  character(2) :: MM, DD, HH
   !character(len=10) :: sDate,eDate,sTime,eTime
   integer ::todays_date(8) !start_date(8), end_date(8), current_date(8), 
   !character(4) :: year
@@ -30,7 +36,7 @@ program netcdf_copy
   !Global parameters:
   !Namelist:
   namelist /input_parameters/ chemistry,start_date_str,end_date_str,griddescFile,diurnal_cycle,finn_files_dir
-  open(7, file='input_parameters'); read(7, nml=input_parameters); close(7) !leo namelist
+  open(7, file='input_parameters'); read(7,input_parameters); close(7) !leo namelist
 
   !GRIDDESC parameters: nx, ny, nz, dx, dy, xorig, yorig
   !call get_grid_params_from_griddesc(gridescFile,nx,ny,nz,dx,dy,xorig,yorig)
@@ -85,26 +91,28 @@ program netcdf_copy
 
   do while (current_date_s <= end_date_s)
  
-    read(seconds_to_YYYYMMDDD(current_date_s), *),YYYY, MM, DDD  !aca falla
+    command=seconds_to_YYYYMMDDD(current_date_s)
+    read(command, '(A4, 1X, A2, 1X, A3)') YYYY,MM,DDD !aca falla
+    !read('2019 02 123', '(A4, 1X, A2, 1X, A3)') YYYY,MM,DDD  !aca falla
 
-    print*,current_date_s, YYYY,MM,DD
+    print*, current_date_s!, YYYY, MM, DD
   
     !!Descargo finn file:
     !!get_finn_data(YYYY,DDD,chemistry,todaysYear,finnFile)
-    status=system('mkdir finn_data/')
-    inquire(file="finn_data/GLOB_"//chemistry//"_"//char(YYYY)//char(DDD)//".txt", exist=file_exists)
-                                                                                                                                                                                      
-    if ( .not. file_exists) then
-              if ( YYYY < todays_date(1)-2 ) then
-                        command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/"//CHAR(YYYY)//"/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz -P finn_data/"
-                        status=system(command)
-               else
-                       command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz -P finn_data/"
-                        status=system(command)
-               end if
-               status=system ("gzip -d finn_data/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz")
-    end if
-    finnFile="finn_data/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt"
+    !!status=system('mkdir finn_data/')
+    !!inquire(file="finn_data/GLOB_"//chemistry//"_"//char(YYYY)//char(DDD)//".txt", exist=file_exists)
+    !!                                                                                                                                                                                  
+    !!if ( .not. file_exists) then
+    !!          if ( YYYY < todays_date(1)-2 ) then
+    !!                    command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/"//CHAR(YYYY)//"/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz -P finn_data/"
+    !!                    status=system(command)
+    !!           else
+    !!                   command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz -P finn_data/"
+    !!                    status=system(command)
+    !!           end if
+    !!           status=system ("gzip -d finn_data/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt.gz")
+    !!end if
+    !!finnFile="finn_data/GLOB_"//chemistry//"_"//CHAR(YYYY)//CHAR(DDD)//".txt"
 
 
     !!Leo finn file:
@@ -193,33 +201,38 @@ contains
  !Funciones para trabajar con DATES
  function sys(cmd) result(output)
           implicit none
-          character(200), intent(in) :: cmd
-          character(205)             :: command, output
-          command=trim(cmd) // " >tmp.txt"
-          call system(trim(command))
+          character(*), intent(in) :: cmd
+          character(200)             :: command
+          character(20)              :: output
+          command=trim(cmd)//" > tmp.txt"
+          call system( trim(command) )
           open(9, file='tmp.txt', status='old',action='read'); read(9, '(A)', iostat=status) output;  close(9)
   end function
 
-  function julian_day(day) result(out)
+  function julian_day(day) result(output)
           implicit none
-          character(15) :: day
-          character(3) :: out
-          out=trim(sys("date -d "//trim(day)//" +%j"))
+          character(17) :: day
+          character(3) :: output
+          output=trim(sys("date -d "//trim(day)//" +%j"))
   end function
  
-  function date_to_seconds(day) result(out)
+  function date_to_seconds(day) result(output)
           implicit none
-          character(15) :: day
-          integer :: out
-          out=ichar(trim(sys("date -d "//trim(day)//" +%s")) )
+          character(17) :: day
+          character(50) :: out_str
+          integer :: output
+          out_str=trim(sys("date -d "//trim(day)//" '+%s' "))
+          read(out_str,'(I50)') output
+          !output=ichar(sys("date -d "//trim(day)//" '+%s' "))
   end function
 
-  function seconds_to_YYYYMMDDD(day) result(YYYYMMDDD)
+  function seconds_to_YYYYMMDDD(day_sec) result(YYYYMMDDD)
           implicit none
-          integer :: day
-          character(12) :: YYYYMMDDD
-          YYYYMMDDD=trim(sys("date -d @"//trim(char(day))//" '+%Y %m %j'"))
-          !print*,YYYYMMDDD
+          integer :: day_sec
+          character(11) :: YYYYMMDDD
+          print*,"date -d @"//char(day_sec)//" '+%Y %m %j'"
+          YYYYMMDDD=trim(sys("date -d @"//char(day_sec)//" '+%Y %m %j'"))
+          !print*, YYYYMMDDD
   end function                                                             
 
 
@@ -254,8 +267,8 @@ end program netcdf_copy
 
 !>Namelist
 !&input_parameters
-!start_date="2019-01-01"	!"%Y-%m-%d %H"
-!  end_date="2019-01-01"	!"%Y-%m-%d %H"
+!start_date_str="2019-01-01"	!"%Y-%m-%d
+!  end_date_str="2019-01-01"	!"%Y-%m-%d
 !chemistry="GEOSchem"
 !griddescFile=""                    !path al GRIDDESC
 !diurnal_cycle=0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0300,0.0600,0.1000,0.1400,0.1700,0.1400,0.1200,0.0900,0.0600,0.0300,0.0043,0.0043,0.0043,0.0043,0.0043
