@@ -9,7 +9,7 @@ program finn2cmaq
 
   type proj_type
      character(16)    :: pName     ! nombre de la proyeccion
-     character(7)     :: typ_str   ! Integer code for projection TYPE
+     character(7)     :: typ_str   ! String  code for projection TYPE
      integer          :: typ       ! Integer code for projection TYPE
      integer          :: zone      ! For UTM grids.
      real             :: ref_lat,ref_lon,truelat1,truelat2,stand_lon,pole_lat,pole_lon
@@ -20,7 +20,6 @@ program finn2cmaq
       character(12)    :: gName        !grid-name
       integer          :: nx,ny,nz     !number of cells in x-y direction (ncols, nrows, nlevs)
       real             :: dx,dy        !x-y cell dimension (x_cell, y_cell)
-      real             :: xorig,yorig  !lower-left x-y coordinates (in the projected system and units)
       real             :: xmin,ymin,xmax,ymax,xc,yc
       real             :: lonmin,latmin,lonmax,latmax
    end type grid_type
@@ -32,21 +31,30 @@ program finn2cmaq
   integer :: status,ncid,ncid_out,varid
   logical :: file_exists
   
-  character(len=256) :: outfile,inpfile,griddescFile,finnFile,finn_files_dir
-  character(len=256) :: command
-  character(len=10)  :: chemistry, pollut
-  character(len=17), allocatable :: var_list(:)              !lista de polluts
+  character(256) :: command
+  character(256) :: outfile,inpfile,griddescFile,finnFile,finn_files_dir
+  character(16)  :: chemistry, pollut
+  character(17), allocatable :: var_list(:) !lista de polluts
   integer :: nvars
+ 
+  !finnFile:
+  character(len=512) :: header, line
+  character(10) :: hvars(6) !day,time,genveg,lati,longi,area
+  integer            :: day,time,genveg
+  real               :: lati,longi,area
+  real, allocatable  :: emis(:)               !valores de emision de cada fila de finnFile.
+
+  real, allocatable  :: data(:,:,:)             !buffer donde meter la grilla con valores de emision [nx,ny,nvars]
 
   real, dimension(:,:,:,:), allocatable :: output
   real, dimension(:,:), allocatable :: input
   real, dimension(24) :: diurnal_cycle
 
-  character(len=17) :: start_date_str, end_date_str, current_date_str
-  integer ::start_date_s, end_date_s, current_date_s
+  character(len=17) :: start_date_str, end_date_str !, current_date_str
+  integer :: end_date_s, current_date_s ! start_date_s, 
   character(4) :: YYYY
   character(3) :: DDD
-  character(2) :: MM, DD, HH
+  character(2) :: MM!, DD, HH
   integer :: todays_date(8)
   
   !Global parameters:
@@ -56,30 +64,6 @@ program finn2cmaq
 
   !GRIDDESC parameters:
   call read_GRIDDESC(griddescFile, proj, grid)
-
-  !Inicializo var_list (polluts) de acuerdo a la quimica seleccionada en namelist
-  if ( trim(chemistry) == "GEOSchem"   ) then
-    var_list=(/'CO2             ','CO              ','NO              ','NO2             ','SO2             ','NH3             ','CH4             ',&
-               'ACET            ','ALD2            ','ALK4            ','BENZ            ','C2H2            ','C2H4            ','C2H6            ',&
-               'C3H8            ','CH2O            ','GLYC            ','GLYX            ','HAC             ','MEK             ','MGLY            ',&
-               'PRPE            ','TOLU            ','XYLE            ','OC              ','BC              ','PM25            ' /)
-  else if ( trim(chemistry) == "MOZ4"   ) then
-    var_list=(/'CO2             ','CO              ','NO              ','NO2             ','SO2             ','NH3             ','CH4             ',&
-               'VOC             ','ACET            ','ALK1            ','ALK2            ','ALK3            ','ALK4            ','ALK5            ',&
-               'ARO1            ','ARO2            ','BALD            ','CCHO            ','CCO_OH          ','ETHENE          ','HCHO            ',&
-               'HCN             ','HCOOH           ','HONO            ','ISOPRENE        ','MEK             ','MEOH            ','METHACRO        ',&
-               'MGLY            ','MVK             ','OLE1            ','OLE2            ','PHEN            ','PROD2           ','RCHO            ',&
-               'TRP1            ','OC              ','BC              ','PM10            ','PM25            '/)
-  else if ( trim(chemistry) == "SAPRC99") then
-    var_list=(/'CO2             ','CO              ','H2              ','NO              ','NO2             ','SO2             ','NH3             ','CH4             ',&
-               'NMOC            ','BIGALD          ','BIGALK          ','BIGENE          ','C10H16          ','C2H4            ','C2H5OH          ','C2H6            ',&
-               'C3H6            ','C3H8            ','CH2O            ','CH3CHO          ','CH3CN           ','CH3COCH3        ','CH3COCHO        ','CH3COOH         ',& 
-               'CH3OH           ','CRESOL          ','GLYALD          ','HCN             ','HYAC            ','ISOP            ','MACR            ','MEK             ',&
-               'MVK             ','TOLUENE         ','HCOOH           ','C2H2            ','OC              ','BC              ','PM10            ','PM25            '/)
-   else
-        print*, "No existe la química seleccionada: chemistry="//trim(chemistry)//". (Opciones validas: GEOSchem, MOZ4, SAPRC99)"; stop;
-   end if
-   nvars=size(var_list)
 
   !Cuestiones de fecha:
   call date_and_time(values=todays_date)       !fecha de hoy.
@@ -98,149 +82,164 @@ program finn2cmaq
     WRITE(*,'(A,A4,A,A3,A,A2,A)') "Dia: ",YYYY,"-",DDD," (mes: ", MM,")"
 
     !Descargo finn file:
-    !status=system('mkdir finn_data/')
+    !call system('mkdir finn_data/')
     inquire(file="finn_data/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt", exist=file_exists)
-                                                                                                                                                                                      
     if ( .not. file_exists) then
               if ( atoi(YYYY) < todays_date(1)-2 ) then
                         command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/"//YYYY//"/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt.gz -P finn_data/"
-                        status=system(command)
+                       call system(command)
                else
                        command="wget https://www.acom.ucar.edu/acresp/MODELING/finn_emis_txt/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt.gz -P finn_data/"
-                        status=system(command)
+                       call system(command)
                end if
-               status=system ("gzip -d finn_data/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt.gz")
+               call system ("gzip -d finn_data/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt.gz")
     end if
     finnFile="finn_data/GLOB_"//trim(chemistry)//"_"//YYYY//DDD//".txt"
-     
     
-    ! Create the NetCDF file                                                        
-    call check(nf90_create(outFile, NF90_CLOBBER, ncid))
-        ! Define the dimensions
-        call check(nf90_def_dim(ncid, "TSTEP"    , 24    , tstep_dimid    )) 
-        call check(nf90_def_dim(ncid, "DATE_TIME",  2    , date_time_dimid)) 
-        call check(nf90_def_dim(ncid, "COL"      ,grid%nx, col_dimid      )) 
-        call check(nf90_def_dim(ncid, "ROW"      ,grid%ny, row_dimid      )) 
-        call check(nf90_def_dim(ncid, "LAY"      ,  1    , lay_dimid      )) 
-        call check(nf90_def_dim(ncid, "VAR"      ,nvar   , var_dimid      )) 
-        ! Define the variables
-        do k = 1, nvars             
-          pollut=var_list(k) 
-          call check(nf90_def_var(ncid, pollut      ,NF90_FLOAT  , [col_dimid, row_dimid], pollut_varid))
-          call check(nf90_put_att(ncid, pollut_varid, "long_name", "x-coordinate"))
-          call check(nf90_put_att(ncid, pollut_varid, "units"    , "x-coordinate"))
-        end do
-                                                                                                  
-        ! Define the attributes
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "IOAPI_VERSION", "ioapi-3.2: \$Id: init3" ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "EXEC_ID"      , "???????????????? "      ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "FTYPE"        , 1                        ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "SDATE"        , YYYY//DDD                ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "STIME"        , 000000                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "WDATE"        , 2023001                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "WTIME"        , 000000                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "CDATE"        , 2023001                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "CTIME"        , 000000                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "TSTEP"        , 10000                    ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "NTHIK"        , 1                        ))   
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "NCOLS"        , grid%nx                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "NROWS"        , grid%ny                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "NLAYS"        , grid%nz                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "NVARS"        , nvars                    ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "GDTYP"        , grid%typ                 ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "P_ALP"        , "-50."                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "P_BET"        , "-20."                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "P_GAM"        , "-65."                   ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "XCENT"        , proj%ref_lon             ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "YCENT"        , proj%ref_lat             ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "XORIG"        , grid%xorig               ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "YORIG"        , grid%yorig               ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "XCELL"        , grid%dx                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "YCELL"        , grid%dy                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "VGTYP"        , "-9999"                  ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "VGTOP"        , "5000.f"                 ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "VGLVLS"       , "1.f, 0.9938147f"        ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "GDNAM"        , grid%gName               ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "UPNAM"        , "OUTCM3IO"               ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "VAR-LIST"     , var_list                 ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "FILEDESC"     , "Merged emissions output file from Mrggrid" ))
-        call check(nf90_put_att(ncid, "NF_GLOBAL", "HISTORY"      , ""                       ))
+    !! Create the NetCDF file                                                        
+    !call check(nf90_create(outFile, NF90_CLOBBER, ncid))
+    !    ! Define the dimensions
+    !    call check(nf90_def_dim(ncid, "TSTEP"    , 24    , tstep_dimid    )) 
+    !    call check(nf90_def_dim(ncid, "DATE_TIME",  2    , date_time_dimid)) 
+    !    call check(nf90_def_dim(ncid, "COL"      ,grid%nx, col_dimid      )) 
+    !    call check(nf90_def_dim(ncid, "ROW"      ,grid%ny, row_dimid      )) 
+    !    call check(nf90_def_dim(ncid, "LAY"      ,  1    , lay_dimid      )) 
+    !    call check(nf90_def_dim(ncid, "VAR"      ,nvar   , var_dimid      )) 
+    !    ! Define the variables
+    !    do k = 1, nvars             
+    !      pollut=var_list(k) 
+    !      call check(nf90_def_var(ncid, pollut      ,NF90_FLOAT  , [col_dimid, row_dimid], pollut_varid))
+    !      call check(nf90_put_att(ncid, pollut_varid, "long_name", "x-coordinate"))
+    !      call check(nf90_put_att(ncid, pollut_varid, "units"    , "x-coordinate"))
+    !    end do
+    !                                                                                              
+    !    ! Define the attributes
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "IOAPI_VERSION", "ioapi-3.2: \$Id: init3" ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "EXEC_ID"      , "???????????????? "      ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "FTYPE"        , 1                        ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "SDATE"        , YYYY//DDD                ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "STIME"        , 000000                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "WDATE"        , 2023001                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "WTIME"        , 000000                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "CDATE"        , 2023001                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "CTIME"        , 000000                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "TSTEP"        , 10000                    ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "NTHIK"        , 1                        ))   
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "NCOLS"        , grid%nx                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "NROWS"        , grid%ny                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "NLAYS"        , grid%nz                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "NVARS"        , nvars                    ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "GDTYP"        , grid%typ                 ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "P_ALP"        , "-50."                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "P_BET"        , "-20."                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "P_GAM"        , "-65."                   ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "XCENT"        , proj%ref_lon             ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "YCENT"        , proj%ref_lat             ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "XORIG"        , grid%xmin                ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "YORIG"        , grid%ymin                ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "XCELL"        , grid%dx                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "YCELL"        , grid%dy                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "VGTYP"        , "-9999"                  ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "VGTOP"        , "5000.f"                 ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "VGLVLS"       , "1.f, 0.9938147f"        ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "GDNAM"        , grid%gName               ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "UPNAM"        , "OUTCM3IO"               ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "VAR-LIST"     , var_list                 ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "FILEDESC"     , "Merged emissions output file from Mrggrid" ))
+    !    call check(nf90_put_att(ncid, "NF_GLOBAL", "HISTORY"      , ""                       ))
+    !                                                                                                               
+    !! End the NetCDF define mode
+    !call check(nf90_enddef(ncid))
+  
+    !================================================================
+    !Abro finnFile:
+    open(1,file=finnFile, status='old', action='read')
+                                                                                                                             
+    !leo header:                                                          !FinnFile header:
+    read(1,'(A)') header                                                  !DAY,TIME,GENVEG,LATI,LONGI,AREA,CO2,CO,...,PM25
+    nvars = COUNT((/ (header(i:i) == ',', i=1,len(header)) /)) - 6 + 1
+    allocate(var_list(nvars))
+    read(header,*) hvars,var_list
+    
+    !Allocato e inicializo grilla con emisiones
+    allocate(data(grid%nx,grid%ny,nvars))
+    data=0.0
 
+    !loop por cada fila de finnFile:
+    do
+        read(1,*) day,time,genveg,lati,longi,area,emis
 
-    ! End the NetCDF define mode
-    call check(nf90_enddef(ncid))
+        if ( (lati > grid%latmax .or. lati < grid%latmin) .or. (longi > grid%lonmax .or. longi < grid%lonmin)  ) then
+                !nothin'
+        else
+                !lo uso:
+                print*,lati,longi
+                !(1) pasar lati y longi a proyectada
+                call gdalTransform(lati,longi,xi,yi,'epsg:4326',p%proj4)
+                !(2) calcular los indices en la grilla de cada una.
+                !cuentita: ii=
+                !cuentita: ij=
 
-    !=================
-    !Transformo coordenadas + me quedo con los puntos dentro del dominio.
-    !command="cat $finnFile | sed 's/D\([-+]\)/e\1/g;s/,/;/g' | awk -F';' 'NR==1{print $0";wkt"} NR>=2{print $0"POINT("$5*1.0,$4*1.0")"}' > tmp.csv  "
-    !call system(command)
-    !command="ogr2ogr -f CSV tmp_ll_clipped.csv tmp.csv -clipsrc $lonmin $latmin $lonmax $latmax -lco GEOMETRY='AS_WKT' -lco SEPARATOR='SEMICOLON' "
-    !call system(command)
-    !command="ogr2ogr -f CSV tmp_xy.csv tmp_ll_clipped.csv -s_srs '$srsInp' -t_srs '$srsOut' -lco GEOMETRY='AS_WKT' -lco SEPARATOR='SEMICOLON' "
-    !call system(command)
-    !command="sed -i 's///g;s/  */ /g;' tmp_xy.csv "
-    !call system(command)
-    !=================
+                !(3) agrego a "data" array con cambio de unidades a emis
+                do k,1,nvars
+                        pollut=var_list(k)
+                        if ( trim(pollut) == "OC" .or. trim(pollut)  =="BC" .or.  trim(pollut)=="PM25" .or. trim(pollut) == "PM10") then
+                                emis(k)=emis(k)/3600000.0       !  kg/day -> g/s
+                        else
+                                emis(k)=emis(k)/3600.0          !mole/day -> mole/s
+                        endif
+                        
+                        data(ii,ij,k) = data(ii,ij,k) + emis(k)
+                enddo
+        endif
+    enddo
+    !Abro NetCDF
+    call check(nf90_open(outFile, nf90_write, ncid_out))
+    do hh,1,24
+    
+          do k,1,nvars
+              pollut=var_list(k)
 
+              call check(nf90_inq_varid(ncid_out, trim(pollut), varid))                  ! Get output data variable id
+              call check(nf90_put_var(ncid_out, varid, data(:,:,k)*diurnal_cicle(hh) ))  ! Write output to file
 
-    !!Loop over hours of the day
-    !do HH = 0, 23
-
-    !   !Memory allocation:
-    !   allocate(output(nt,nz,ncol,nrow))  ! Allocate memory for output array
-    !   allocate(input(ncol,nrow))         ! Allocate memory for input arrays
-
-    !   ! Open output file for writing
-    !   call check(nf90_open(outFile, nf90_write, ncid_out))
-
-    !   ! Loop over input files and copy data
-    !   do k = 1, nvars
-    !     pollut=trim(var_list(k))
-    !     inpfile = 'tmp_' // trim(pollut) // '.nc'
-    !     print*, inpfile
-    !     !call check(nf90_open( inpfile, nf90_noclobber, ncid))   ! Open input file
-    !     !call check(nf90_inq_varid(ncid, "Band1", varid))            ! Get input data variable id
-    !     !call check(nf90_get_var(ncid, varid, input))                ! Read input data
-    !     output(1,1,:,:) = input                                     ! Copy input data to output array
-    !     !call check(nf90_close(ncid))                                ! Close input file
-
-    !     call check(nf90_inq_varid(ncid_out, pollut, varid))         ! Get output data variable id
-    !     call check(nf90_put_var(ncid_out, varid, output(1,1,:,:)))  ! Write output to file
-    !   end do
- 
-    !   !Close output file
-    !   call check(nf90_close(ncid_out))     ! Close output file
-    !end do
-
-    !!Memory deallocation
-    !deallocate(input)    ! Free memory
-    !deallocate(output)   ! Free memory
+           enddo
+                                             
+    end do
+    call check(nf90_close(ncid_out))     !Cierro NetCDF
+    
+    deallocate(data)                    !Libero memoria
+    deallocate(var_list)                !Libero memoria
+   
+    close(1) !Cierro finnFile
+    !================================================================
+    
 
     current_date_s=current_date_s + 86400 
   end do
 
 contains
 
-  subroutine check(status)
-    integer, intent(in) :: status
-    if (status /= nf90_noerr) then
-      write(*,*) nf90_strerror(status)
-      stop 'netcdf error'
-    end if
-  end subroutine check
+ subroutine check(status)
+   integer, intent(in) :: status
+   if (status /= nf90_noerr) then
+     write(*,*) nf90_strerror(status)
+     stop 'netcdf error'
+   end if
+ end subroutine check
 
- !Funciones para trabajar con DATES
+ !Interfaz a "date"
  function date(date_str, fmt_str) result(output)
    implicit none
    character(*), intent(in) :: date_str, fmt_str
-   character(50)            :: command
+   character(256)           :: command
    character(20)            :: output
    command="date -d "//trim(date_str)//" '+"//trim(fmt_str)//"'  > tmp_date.txt"
    call system( trim(command) )
+   !print*,trim(command)
    open(9, file='tmp_date.txt', status='old',action='read'); read(9, '(A)', iostat=status) output;  close(9)
  end function
 
- !Funciones generales:
  function atoi(str)     !string -> int
    implicit none
    character(len=*), intent(in) :: str
@@ -257,33 +256,31 @@ contains
  function rtoa(r)       !real -> string
     implicit none
     real, intent(in) :: r
-    character(len=15) :: rtoa
-    write(rtoa, '(F15.3)') r
+    character(len=16) :: rtoa
+    write(rtoa, '(F16.3)') r
     rtoa = adjustl(rtoa)
  end function
 
  subroutine read_GRIDDESC(griddescFile, p, g)                                             
         implicit none                                                                          
-        character(254),intent(in) :: griddescFile                                                 
+        character(256),intent(in) :: griddescFile                                                 
         type(proj_type) ,intent(inout) :: p                                                      
         type(grid_type) ,intent(inout) :: g
-        character(50)  :: dummyvar
-        character(254) :: command        
-        
-        open(2,file=griddescFile, status='old', action='read')                                     !GRIDDESC:
-           read(2,*, iostat=status) dummyvar;                                                      !' '
-           read(2,*, iostat=status) p%pName;                                                       !projName
-           read(2,*, iostat=status) p%typ,p%truelat1,p%truelat2,p%stand_lon,p%ref_lon,p%ref_lat    !map_proj truelat1 truelat2 stand_lon ref_lon ref_lat
-           read(2,*, iostat=status) dummyvar;                                                      !' '
-           read(2,*, iostat=status) g%gName;                                                       !gridName
-           read(2,*, iostat=status) p%pName,g%xorig,g%yorig,g%dx,g%dy,g%ny,g%nx                    !projName xorig yorig xcell ycell nrows ncols
+        character(10) :: dummyvar
+        open(2,file=griddescFile, status='old', action='read')                                  !GRIDDESC:
+           read(2,*) dummyvar;                                                   !' '
+           read(2,*) p%pName;                                                    !projName
+           read(2,*) p%typ,p%truelat1,p%truelat2,p%stand_lon,p%ref_lon,p%ref_lat !map_proj truelat1 truelat2 stand_lon ref_lon ref_lat
+           read(2,*) dummyvar;                                                   !' '
+           read(2,*) g%gName;                                                    !gridName
+           read(2,*) p%pName,g%xmin,g%ymin,g%dx,g%dy,g%ny,g%nx                   !projName xorig yorig xcell ycell nrows ncols
         close(2)
-
+        
         !Calcular otros parametros:
         if (p%typ == 1 ) then           !Geographic:
                 p%typ_str='ll';   p%proj4="+proj=latlong +a=6370000.0 +b=6370000.0"  
         else if ( p%typ == 2 ) then     !Lambert Conformal Conic:
-                p%typ_str='lcc';  p%proj4="+proj=lcc +lat_1="//rtoa(p%truelat1)//" +lat_2="//rtoa(p%truelat2)//" +lon_0="//rtoa(p%stand_lon)//" +lat_0="//rtoa(p%ref_lat)//" +a=6370000.0 +b=6370000.0 +units=m"
+                p%typ_str='lcc';  p%proj4="+proj=lcc +lat_1="//trim(rtoa(p%truelat1))//" +lat_2="//trim(rtoa(p%truelat2))//" +lon_0="//trim(rtoa(p%stand_lon))//" +lat_0="//trim(rtoa(p%ref_lat))//" +a=6370000.0 +b=6370000.0 +units=m"
         else if ( p%typ == 3 ) then     !General Mercator
                 p%typ_str="merc"; p%proj4="+proj=merc +lat_ts=${truelat1} +a=6370000.0 +b=6370000.0"
         else if ( p%typ == 4 ) then     !General tangent Stereografic
@@ -301,22 +298,27 @@ contains
         else
                 print*, "codigo de proyección invalido.", p%typ; stop
         end if
-        !Obtener coordenadas del centro de la grilla:
-        command="gdaltransform -s_srs 'epsg:4326' -t_srs '"//p%proj4//"' <<< $(echo "//rtoa(p%ref_lon)//" "//rtoa(p%ref_lat)//")  > tmp.txt";
-        call system(command)
-        open(9, file='tmp_date.txt', status='old',action='read'); read(9, *, iostat=status) g%xc, g%yc, dummyvar;  close(9)
-
-        g%xmin=g%xc - (g%xorig)*(-1);  g%xmax=g%xc + (g%xorig)*(-1)
-        g%ymin=g%yc - (g%yorig)*(-1);  g%ymax=g%yc + (g%yorig)*(-1)
-
-        command="gdaltransform -t_srs 'epsg:4326' -s_srs '"//p%proj4//"' <<< $(echo "//rtoa(g%xmin)//" "//rtoa(g%ymin)//") > tmp.txt";
-        call system(command)
-        open(9, file='tmp_date.txt', status='old',action='read'); read(9, *, iostat=status) g%lonmin, g%latmin, dummyvar;  close(9)
         
-        command="gdaltransform -t_srs 'epsg:4326' -s_srs '"//p%proj4//"' <<< $(echo "//rtoa(g%xmax)//" "//rtoa(g%ymax)//") > tmp.txt";
-        call system(command)
-        open(9, file='tmp_date.txt', status='old',action='read'); read(9, *, iostat=status) g%lonmax, g%latmax, dummyvar;  close(9)
+        !Obtener coordenadas del centro de la grilla, min y max:
+        g%xc=0.0;g%yc=0.0; g%xmax=(g%xmin)*(-1); g%ymax=(g%ymin)*(-1)
 
+        !transformo boundaries a latlon
+        call gdalTransform(g%xmin,g%ymin,g%lonmin,g%latmin,p%proj4,'epsg:4326')
+        call gdalTransform(g%xmax,g%ymax,g%lonmax,g%latmax,p%proj4,'epsg:4326')
+
+ end subroutine
+
+ subroutine gdalTransform(x1,y1,x2,y2,srs1,srs2)
+        implicit none
+        real, intent(in)   :: x1,y1
+        real, intent(inout):: x2,y2
+        character(*)   :: srs1,srs2
+        character(10)  :: ellipsoidh
+        character(256) :: command
+        command="echo "//rtoa(x1)//" "//rtoa(y1)//" | gdaltransform -s_srs '"//trim(srs1)//"' -t_srs '"//trim(srs2)//"'  > tmp_gdal.txt";
+        call system(trim(command))
+        !print*,trim(command)
+        open(9, file='tmp_gdal.txt', status='old',action='read'); read(9,*, iostat=status) x2, y2, ellipsoidh;  close(9)
  end subroutine
 
 end program finn2cmaq
@@ -327,6 +329,7 @@ end program finn2cmaq
 !  end_date_str="2019-01-01",	!"%Y-%m-%d
 !chemistry="GEOSchem",
 !griddescFile="/home/usuario/runs/papila2019/cmaq/mcip/GRIDDESC",               !path al GRIDDESC
+!GRIDNAME=
 !diurnal_cycle=0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0043,0.0300,0.0600,0.1000,0.1400,0.1700,0.1400,0.1200,0.0900,0.0600,0.0300,0.0043,0.0043,0.0043,0.0043,0.0043
 !/
 
@@ -336,7 +339,7 @@ end program finn2cmaq
 !FC   = gfortran
 !LIBS = -L/usr/lib/x86_64-linux-gnu -lnetcdf -lnetcdff -lm 
 !INC  = -I/usr/include
-!FFLAGS = -O2 -ffree-line-length-none
+!FFLAGS = -O2 -ffree-line-length-none -Wunused
 !OBJS = finn2cmaq.o
 !
 !.f90.o:
@@ -346,3 +349,44 @@ end program finn2cmaq
 !clean:
 !		rm -f *.o *.mod
 
+!Dependencias: 
+!       - NetCDF, 
+!       - GDAL/OGR
+!       - Shell-tools: date (para descarga: wget, gzip)
+
+
+
+
+!Codigo para reciclar:
+!!Loop over hours of the day
+!do HH = 0, 23
+                                                                                                    
+!   !Memory allocation:
+!   allocate(output(nt,nz,ncol,nrow))  ! Allocate memory for output array
+!   allocate(input(ncol,nrow))         ! Allocate memory for input arrays
+                                                                                                    
+!   ! Open output file for writing
+!   call check(nf90_open(outFile, nf90_write, ncid_out))
+                                                                                                    
+!   ! Loop over input files and copy data
+!   do k = 1, nvars
+!     pollut=trim(var_list(k))
+!     inpfile = 'tmp_' // trim(pollut) // '.nc'
+!     print*, inpfile
+!     !call check(nf90_open( inpfile, nf90_noclobber, ncid))   ! Open input file
+!     !call check(nf90_inq_varid(ncid, "Band1", varid))            ! Get input data variable id
+!     !call check(nf90_get_var(ncid, varid, input))                ! Read input data
+!     output(1,1,:,:) = input                                     ! Copy input data to output array
+!     !call check(nf90_close(ncid))                                ! Close input file
+                                                                                                    
+!     call check(nf90_inq_varid(ncid_out, pollut, varid))         ! Get output data variable id
+!     call check(nf90_put_var(ncid_out, varid, output(1,1,:,:)))  ! Write output to file
+!   end do
+                                                                                                    
+!   !Close output file
+!   call check(nf90_close(ncid_out))     ! Close output file
+!end do
+                                                                                                    
+!!Memory deallocation
+!deallocate(input)    ! Free memory
+!deallocate(output)   ! Free memory

@@ -3,7 +3,7 @@
 FC   = gfortran
 LIBS = -L/usr/lib/x86_64-linux-gnu -lnetcdf -lnetcdff -lm 
 INC  = -I/usr/include
-FFLAGS = -O2 -ffree-line-length-none
+FFLAGS = -O2 -ffree-line-length-none #-Wunused 
 OBJS = finn2cmaq.o
 
 .f90.o:
