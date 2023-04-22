@@ -10,22 +10,23 @@
 ## Get MEGAN input data:
 
 Data required:
-	+ Leaf Area Index (LAI)
-	+ Growth Form (fraction)				WRF classes:
-		+ crops		crop30s_reorder.nc			herbs
-		+ grass		gras30s_reorder.nca		
-		+ shurbs	shrb30s_reorder.nc			shurbs
-		+ tree	        tree30s_reorder.nc			trees:	broad and needle leaf
-			+ tropical
-			+ boradleaf
-			+ needleleaf
-	+ Ecotype
++ Leaf Area Index / Vegetation Cover Fraction (LAIv)
++ Growth Form (fraction)			WRF classes:
+   - crops	crop30s_reorder.nc		  - herbs
+   - grass	gras30s_reorder.nca		
+   - shurbs	shrb30s_reorder.nc		  - shurbs
+   - tree	tree30s_reorder.nc		  - trees: broadleaf & needleleaf
+    + tropical
+    + boradleaf
+    + needleleaf
++ Ecotype
 
-	+ \*BDSNP (soil NO algorithm)
-		+ Fertilizer
-		+ Land Fraction
-		+ Climate data	
-		+ Nitrogen deposition data
+
++ BDSNP (*optional*): for soil NO algorithm.
+   - Fertilizer
+   - Land Fraction
+   - Climate data	
+   - Nitrogen deposition data
 
 > \* Optional.
 
