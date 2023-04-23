@@ -1,0 +1,23 @@
+&control
+ start_date='2019-01-01',
+   end_date='2019-01-01',
+ 
+ griddesc_file='./GRIDDESC_example'
+ 
+ !Input files:
+ ! Growth type:
+    crop_frac_file='',
+   grass_frac_file='',
+   shrub_frac_file='',
+    tree_frac_file='',
+ nl_tree_frac_file='',
+ bl_tree_frac_file='',
+ tp_tree_frac_file='',
+ ! Ecotype:
+      ecotype_file='',
+ ! LAIv:
+	  lai_file='',
+      veg_cov_file='',
+ ! Meteo:
+       wrfout_file='',
+/

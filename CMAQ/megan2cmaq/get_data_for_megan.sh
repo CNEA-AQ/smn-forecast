@@ -9,15 +9,16 @@
 
 #Sources of data:
 # Leaf Area Index (LAI)
-#	- MODIS (MCD15A2.005)
+#	- MODIS (MCD15A2.005)    https://e4ftl01.cr.usgs.gov/MOTA/MCD15A2H.006/
 #	- Landsat
 #	- Sentinel
-#	
+#
 # Vegetation cover fraction (VCF)
-#	- MODIS	(MOD44B)
+#	- MODIS	(MOD44B)	https://e4ftl01.cr.usgs.gov/MOLT/MOD44B.006/
 #	- Landsat
 #	- Sentinel 
 #	- AVHRR
+
 
 #They are based on MODIS (MOderate Resolution Imaging Spectroradiometer) satellite data using the LAI estimates of Zhang et al JGR (2004) doi:10.1029/2004JD004720 and the vegetation cover fraction of Hansen et al.  Earth Interactions 7: 1-15 (2003).
 
@@ -33,13 +34,17 @@
 #Grass
 #Tree	(needleleaf, broadleaf, tropical)
 
-
-#Source: Guenther et al. 2012
-
+#Sources:
+# + Guenther et al. 2012 (MEGAN2 viene con sus datasets)
+# + PROBA-V  Copernicus Global Land Covert (tiene frac covers de Forest, Shurblands, Herbacious, Croplands (Hasta 2019)
 
 #=================================
 #Ecotypes
 
-#Source: described by Guenther et al. 2012.
+#Source:
+# + Guenther et al. 2012 (MEGAN2 viene con sus datasets)
+
+#Me gustaria entender un poco mejor esta variable.
+
 
 
