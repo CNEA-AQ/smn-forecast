@@ -4,6 +4,8 @@
  
  griddesc_file='./GRIDDESC_example'
  
+/
+&inp_files
  !Input files:
  ! Growth type:
     crop_frac_file='',
@@ -13,8 +15,10 @@
  nl_tree_frac_file='',
  bl_tree_frac_file='',
  tp_tree_frac_file='',
+
  ! Ecotype:
       ecotype_file='',
+
  ! LAIv:
 	  lai_file='',
       veg_cov_file='',
