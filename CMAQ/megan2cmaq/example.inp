@@ -1,27 +1,28 @@
 &control
- start_date='2019-01-01',
-   end_date='2019-01-01',
- 
- griddesc_file='./GRIDDESC_example'
- 
-/
-&inp_files
- !Input files:
- ! Growth type:
-    crop_frac_file='',
-   grass_frac_file='',
-   shrub_frac_file='',
-    tree_frac_file='',
- nl_tree_frac_file='',
- bl_tree_frac_file='',
- tp_tree_frac_file='',
+start_date='2019-01-01',
+  end_date='2019-01-01',
 
- ! Ecotype:
-      ecotype_file='',
+    griddesc_file='./GRIDDESC_example'
+         gridname='Argentina'
+        
+        laiv_files='./tmp_grids/laiv',				
 
- ! LAIv:
-	  lai_file='',
-      veg_cov_file='',
- ! Meteo:
-       wrfout_file='',
+    crop_frac_file='./tmp_grids/crop.nc', 
+   grass_frac_file='./tmp_grids/grass.nc',
+   shrub_frac_file='./tmp_grids/shrub.nc',
+    tree_frac_file='./tmp_grids/tree.nc', 
+ nl_tree_frac_file='./tmp_grids/nl_tree.nc',		
+ tp_tree_frac_file='./tmp_grids/tp_tree.nc',		
+ bl_tree_frac_file='./tmp_grids/bl_tree.nc',		
+
+      ecotype_file='./tmp_grids/ecotype.nc',				
+
+      GtEcoEF_file='./db/GtEFbyEcotype.csv',
+!BDSNP
+         arid_file='./tmp_grids/arid.nc',     
+        narid_file='./tmp_grids/nonarid.nc',  
+           lt_file='./tmp_grids/landtype',  
+
+       nitro_files='./tmp_grids/nitro',
+       !fert_files='./tmp_grids/fert'
 /
