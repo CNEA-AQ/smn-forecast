@@ -41,29 +41,29 @@
 
 #### "TO-DO" list:
 
-[x] Compilar modelos 
++ [x] Compilar modelos 
    - [x] CMAQ
    - [x] CHIMERE
    - [x] EMEP
    - [x] SILAM
    - [x] ~WRF-CHEM~  (descartado, no se puede correr desacoplado)
    - [x] ~MUSICA~    (descartado, no se puede correr desacoplado)
-[ ] Probar funcionamiento de modelos
++ [ ] Probar funcionamiento de modelos
    - [x] CMAQ
    - [ ] SILAM
    - [ ] CHIMERE
    - [ ] EMEP
    - [x] ~WRF-CHEM~ (descartado, no se correr desacoplado)
    - [x] ~MUSICA~   (descartado, no se correr desacoplado)
-[ ] ICON : empieza con 0 ó Global CTM (silam?), y luego usa la simulacion anterior.
-[ ] BCON : empieza con 0 ó Global CTM (silam?), y luego usa la simulacion anterior.
-[ ] Conseguir inventarios
++ [ ] ICON : empieza con 0 ó Global CTM (silam?), y luego usa la simulacion anterior.
++ [ ] BCON : empieza con 0 ó Global CTM (silam?), y luego usa la simulacion anterior.
++ [ ] Conseguir inventarios
    - [x] Antropogénicas : CAMS+PAPILA
    - [x] Biogénicas     : MEGAN (UCI-BAI)
    - [x] Fuegos         : FINN (NCAR)
    - [x] Polvo	        : (incluido en CTM) erodability, landuse, lai, greenfrac
    - [x] Sea-salt       : (incluido en CTM) surface temp, salinty
-[ ] Mecanísmo químico
++ [ ] Mecanísmo químico
     - Fase Gaseosa
       + [ ] CBM (CB4, CB5)
       + [ ] RADM
@@ -77,10 +77,10 @@
       + [ ] LMDz/MACC
       + [ ] OPIA/SORGAM
       + [ ] Aero5 (CMAQ)
-[ ] Parametrizaciónes de PBL
++ [ ] Parametrizaciónes de PBL
    - [ ] Bulk-Richardson
    - [ ] Yonsei University (YSU) 
-[ ] Meteorología
++ [ ] Meteorología
    - [x]  GFS
    - [ ]  GFS-SMN
    - [ ]  ECMWF
