@@ -1,0 +1,36 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '2022-02-15_12:00:00', '2016-04-07_00:00:00', '2016-04-07_00:00:00',
+ end_date = '2022-02-18_12:00:00', '2016-04-07_12:00:00', '2016-04-07_12:00:00',
+ interval_seconds = 3600,
+ io_form_geogrid = 102,
+/
+&geogrid
+parent_id         =   1,   1,
+parent_grid_ratio =   1,   3,
+i_parent_start    =   1,  55,
+j_parent_start    =   1,  154,
+e_we              =  1000, 250,
+e_sn              =  1250,  271,
+geog_data_res     = '30s','2m',
+dx = 4000,
+dy = 4000,
+map_proj = 'lambert',
+ref_lat   = -35.0,
+ref_lon   = -65,
+truelat1  = -35.0,
+truelat2  = -35.0,
+stand_lon = -65,
+ geog_data_path = '/data/share/usr/prod/wrfutilV3.1/RUNs/deterministico/geog'
+/
+&ungrib
+ out_format = 'WPS',
+ prefix = 'FILE',
+/
+
+&metgrid
+ fg_name = 'FILE'
+ io_form_metgrid = 102,
+ opt_output_from_metgrid_path = '/data/share/usr/prod/wrfutilV3.1/RUNs/deterministico/HIST/WPS/20220215_120000/deterministico/originales/00/',
+/
