@@ -17,6 +17,9 @@ mkdir $LIBSDIR
 cd $LIBSDIR
 # =============================================================================
 # OpenMPI (openmpi-1.10.2)
+# wget https://download.open-mpi.org/release/open-mpi/v1.10/openmpi-1.10.2.tar.gz
+# tar -xzvf openmpi-1.10.2.tar.gz
+# cd openmpi-1.10.2
 CC=icc CXX=icpc FC=ifort F90=ifort F77=ifort ./configure --prefix=${LIBSDIR}/ompi
 #(!) Se puede extender para agregar pmi, mallox, fca, etc.
 make -j 16 all
@@ -39,7 +42,7 @@ make
 make install
 #-----------------------------------------------------------------------------
 # Miscellaneous libs (i will put them into the folder $LIBSDIR/grib2 folder)
-misc_path=$LIBSDIR/grib2  #tiene este nombre por razones históricas,
+misc_path=$LIBSDIR/grib2  #tiene este nombre por razones histÃ³ricas,
                           #la proxima mejor que compile todo mejor llamarle "misc".
 mkdir $LIBSDIR/grib2; mkdir $LIBSDIR/grib2/include;mkdir $LIBSDIR/grib2/lib;
 # Compilar en este orden:
@@ -122,7 +125,7 @@ CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77 MPICC=icc MPICXX=icpc MPIFC=
 make
 make install
 #(!) Dice que no soporta pNetCDF.
-# Cuando mando el configure dice que necesita una versi�n de pnetcdf >1.6 pero estoy usando la 1.10. =/
+# Cuando mando el configure dice que necesita una versiÃn de pnetcdf >1.6 pero estoy usando la 1.10. =/
 #==============================================================================
 # NetCDF-Fortran (netcdf-fortran-4.4.3)
 #Usando mismos flags que en NetCDF-C!!
