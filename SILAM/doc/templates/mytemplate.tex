@@ -1,5 +1,12 @@
 %\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$$if(papersize)$$papersize$,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
 \documentclass[a4paper,$if(fontsize)$$fontsize$$endif$]{$documentclass$}
+%Colors:
+\usepackage{pagecolor}
+\pagecolor{yellow!10}
+\usepackage{xcolor,color}
+\definecolor{defaultcolor}{HTML}{202020}
+\color{defaultcolor}
+
 \setcounter{section}{1}
 $if(fontfamily)$
 \usepackage{$fontfamily$}
@@ -16,9 +23,6 @@ $endif$
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-$if(euro)$
-  \usepackage{eurosym}
-$endif$
 \else % if luatex or xelatex
   \ifxetex
     \usepackage{mathspec}
@@ -27,7 +31,8 @@ $endif$
     \usepackage{fontspec}
   \fi
   \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
-  \newcommand{\euro}{€}
+
+%Fonts:
 $if(mainfont)$
     \setmainfont{$mainfont$}
 $endif$
@@ -40,7 +45,9 @@ $endif$
 $if(mathfont)$
     \setmathfont(Digits,Latin,Greek){$mathfont$}
 $endif$
+
 \fi
+
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 % use microtype if available
@@ -48,6 +55,8 @@ $endif$
 \usepackage{microtype}
 \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+
+
 $if(geometry)$
 \usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
 $endif$
@@ -58,6 +67,8 @@ $endif$
 \else
   \usepackage[unicode=true]{hyperref}
 \fi
+
+
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={$author-meta$},
@@ -67,17 +78,25 @@ $endif$
             urlcolor=$if(urlcolor)$$urlcolor$$else$blue$endif$,
             linkcolor=$if(linkcolor)$$linkcolor$$else$magenta$endif$,
             pdfborder={0 0 0}}
+
 \urlstyle{same}  % don't use monospace font for urls
+
+%Header and Footer
 \usepackage{fancyhdr}
 \pagestyle{fancy}
+
 \usepackage{sectsty}
 \pagenumbering{arabic}
+
 \lhead{\itshape $title$}
 \chead{}
 \rhead{\itshape{\nouppercase{\leftmark}}}
 \lfoot{v $version$}
 \cfoot{}
 \rfoot{\thepage}
+
+
+%Language
 $if(lang)$
 \ifxetex
   \usepackage{polyglossia}
@@ -87,6 +106,8 @@ $if(lang)$
   \usepackage[shorthands=off,$lang$]{babel}
 \fi
 $endif$
+
+%Bibio
 $if(natbib)$
 \usepackage{natbib}
 \bibliographystyle{$if(biblio-style)$$biblio-style$$else$plainnat$endif$}
@@ -113,6 +134,8 @@ $endif$
 $if(tables)$
 \usepackage{longtable,booktabs}
 $endif$
+
+
 $if(graphics)$
 \usepackage{graphicx,grffile}
 \makeatletter
@@ -122,12 +145,17 @@ $if(graphics)$
 % Scale images if necessary, so that they will not overflow the page
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=0.75\maxwidth,height=\maxheight,keepaspectratio}
+\setkeys{Gin}{width=0.6\maxwidth,height=\maxheight,keepaspectratio}
 $endif$
+
+
+
 $if(links-as-notes)$
 % Make links footnotes instead of hotlinks:
-\renewcommand{\href}[2]{#2\footnote{\url{#1}}}
+\renewcommand{\href}[2]{\Huge#2\footnote{\url{ #1}}}
 $endif$
+\renewcommand{\footnotesize}{\large}
+
 $if(strikeout)$
 \usepackage[normalem]{ulem}
 % avoid problems with \sout in headers with hyperref:
@@ -169,11 +197,12 @@ $endfor$
 \fi
 
 \begin{document}
+
 $if(fontsize)$
   \fontsize{$fontsize$}{$fontsize$}\selectfont
-  \sectionfont{\fontsize{$fontsize$}{$fontsize$}\selectfont}
-  \subsectionfont{\fontsize{$fontsize$}{$fontsize$}\selectfont}
-  \subsubsectionfont{\Large\selectfont}
+  \sectionfont{\fontsize{18pt}{18pt}\selectfont}
+  \subsectionfont{\fontsize{16pt}{16pt}\selectfont}
+  \subsubsectionfont{\fontsize{$fontsize$}{$fontsize$}\selectfont}
 $endif$
 $if(title)$
 \maketitle

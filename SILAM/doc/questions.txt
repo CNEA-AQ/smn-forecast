@@ -1,0 +1,79 @@
+# Q4Ro. After reading the user-manual.
+
+- Does silam has a limit of nucleids/species?
+- Does the "landuse data" (refered from the internal setup file) still has to be called?
+- Diference between fixed-structure format and namelist-type format of conf files? (or are now all namelist-type format?)
+- Has the nucleide decay data been integrated in the nucleide data file? (or anywhere else?) is still needed?
+- Ro mentioned that "format" for dates (e.g. %ay4 ) is not updated in the user guide?
+- when specifiing a file the <file type> should be always be defined in the grib/netcdf specification file?
+- does the interal setup file stil a separated file or is a namelist inside the control file?
+
+Regarding "transformations":
+- is PASSIVE equals to "scalar tracer"?
+- what are "POP_GENERAL" transformations?
+- are there other transformations available (for example CB5)?
+- Is there other aerosol_dynamics otherwise of SIMPLE?
+
+Regarding "dispersion parameters":
+- Are mainly grid parameters?
+- what grid_methods are available? (not in user-guide)
+- what vertical_methods are available? (not in user-guide)
+- will computations be carried out on the meteo grid, and then interpolated and reprojected according with outfile params?
+
+Regarding emission sources:
+- what source types are now supported? (EULERIAN|INVENTORY|VOID_SOURCE|SEA_SALT|DESERT_DUST|POLLEN), what is VOID_SOURCE?
+- U-G says that "There are three types of sources supported: bomb source, point source and area source." Is it still true? what about gridded emissions?
+- Files needed:
+	- DUST:     NETCDF:dust_emis_0  ^dust_emis_0_v3.nc4
+	- BIOVOCS:  Megan Global Emis |  OR?  land_use_features_USGS_Eurasia.dat?
+	- FIRES:    Fire_MOD_MYD_coll_6__FRP_fake_from_20160330.fs1 ?
+	- SEASALT:  eco_collection_water_bodies.ctl.super_ctl       ? (water mask)
+        - DMS:      NETCDF:dms_clim dms_lana_2011.nc
+		    NETCDF:dms_clim sslt_emission_global_50km.fld.nc
+- Are AREA_SOURCES still suported? (source_terms_general.silja.mod.f90:1458)
+- Are there specific source_term files with specific item variables for diferent type of emissions (dust, bio_vocs, fires, etc)?
+
+
+
+Regarding "cocktails":
+- how are related/linked with kpp and chemistry modeling?
+
+
+
+
+
+Regarding bcon and icon:
+- initialization_quantity: complete list of initialized quantities?
+- i dont understand par_str in the context of my "toy" run.
+
+
+Regardom internal setup:
+- Is the advection_method_lagrangian defined?
+
+
+
+
+
+
+---------------------------------
+FILES SUPORTED:
+
+NETCDF: 
+- ALARO			            - NorESM		           - IS4FIRES_v3_0
+- STEAM                             - NorESM_fake                  - IS4FIRES_v3_0km
+- EDGAR                             - NorESM_sst
+- IFS_CO2                           - CF
+- INVSAT                            - MACC_BOUNDARIES_451
+- TRANSFORM_BOUNDARIES              - gfas
+- MEGAPOLI_BOUNDARIES               - gfas_fluxes
+- DEHM_BOUNDARIES                   - gfas_hrly
+- WRF_OUTPUT                        - dms
+- WRF_OUTPUT_FINN                   - MEPS_RLL2018
+- MACC_BOUNDARIES54                 - MEPS_RLL
+- MACC_BOUNDARIES60                 - CESM
+- IFS                               - GEIA-Volcanoes_Glb
+- TIMEZONES                         - dust_emis_0
+- PHENOANALYSIS                     - c4_frac
+- LANDUSETYPE                       - irrigated_area
+- REMO                              - pollen_source
+                                
