@@ -20,11 +20,11 @@
 #   ├── meteo_parameters
 #   ├── transphormation_parameters
 #   ├── initial_and_boundary_conditions
+#   │   └── bcon_config_file
 #   ├── optical_density_parameters
 #   └── output_parameters
 #	├── output configuration file
 #       └── output configuration file
-
 
 #A su vez el archivo de control puede llamar a los siguientes archivos:
 #   - *source term file:* describe fuentes de emisiones.
@@ -44,9 +44,12 @@
 #   - chemical properties: describes the chemical properties of the species available in SILAM, invisible for users, referred from the internal setup file;
 
 
-
-
 #DUST:
+#
+# Archivos necesarios:
+#	- dust_emis_0_v3.nc4
+#	- BCON/ICON (Silam global model)
+
 
 # BC & IC
 # Descargar boundary conditions de Silam: OPeNDAP
@@ -58,12 +61,11 @@ ncatted -O -a units,time,o,c,"hours since 2009-03-10 00:00:00.000 UTC" bc.nc bc_
 ncatted -O -a SIMULATION_START_DATE,global,o,c,"2009-03-15T00:00:00"  bc_modif_date.nc bc_modif_date.nc
 
 
-
-
-
 #Comandos utiles (que aprendi en el camino)..
 #  Generar serie temporal de masa total:
 cdo fldsum -selname,cnc_dust_m1_5 -vertsum output/toypoint.nc ts_dust_m1_5.nc
+# Sumar en dimension vertical (para ver masa en columna)
+cdo -selname,cnc_dust_m1_5 -vertsum output/toypoint.nc ts_dust_m1_5.nc
 
 
 
