@@ -2,9 +2,10 @@
 \documentclass[a4paper,$if(fontsize)$$fontsize$$endif$]{$documentclass$}
 %Colors:
 \usepackage{pagecolor}
-\pagecolor{yellow!10}
+\pagecolor{yellow!1}
 \usepackage{xcolor,color}
-\definecolor{defaultcolor}{HTML}{202020}
+\definecolor{defaultcolor}{HTML}{303030}
+\definecolor{bgcodeblock}{HTML}{ffa0a0}
 \color{defaultcolor}
 
 \setcounter{section}{1}
@@ -56,9 +57,8 @@ $endif$
 \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
 
-
 $if(geometry)$
-\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$,top=0.8in,bottom=0.8in]{geometry}
 $endif$
 \ifxetex
   \usepackage[setpagesize=false, % page size defined by xetex
@@ -67,7 +67,6 @@ $endif$
 \else
   \usepackage[unicode=true]{hyperref}
 \fi
-
 
 \hypersetup{breaklinks=true,
             bookmarks=true,
@@ -95,7 +94,6 @@ $endif$
 \cfoot{}
 \rfoot{\thepage}
 
-
 %Language
 $if(lang)$
 \ifxetex
@@ -122,11 +120,13 @@ $if(listings)$
 \usepackage{listings}
 $endif$
 $if(lhs)$
-\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
+\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily,}}{}
 $endif$
+
 $if(highlighting-macros)$
 $highlighting-macros$
 $endif$
+
 $if(verbatim-in-note)$
 \usepackage{fancyvrb}
 \VerbatimFootnotes
@@ -147,7 +147,6 @@ $if(graphics)$
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=0.6\maxwidth,height=\maxheight,keepaspectratio}
 $endif$
-
 
 
 $if(links-as-notes)$
@@ -176,7 +175,7 @@ $if(verbatim-in-note)$
 $endif$
 
 $if(title)$
-\title{\Huge\textbf{$title$} $if(subtitle)$\\\vspace{0.5em}{\large $subtitle$}$endif$}
+\title{\fontsize{36pt}{36pt}\textbf{$title$} $if(subtitle)$\\\vspace{0.5em}{\large $subtitle$}$endif$}
 $endif$
 $if(author)$
 \author{$for(author)$$author$$sep$ \and $endfor$}
