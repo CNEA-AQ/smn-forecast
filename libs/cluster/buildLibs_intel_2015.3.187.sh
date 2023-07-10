@@ -48,6 +48,8 @@ mkdir $LIBSDIR/grib2; mkdir $LIBSDIR/grib2/include;mkdir $LIBSDIR/grib2/lib;
 # Compilar en este orden:
 # ZLIB (zlib-1.2.7), SZIP (szip-2.1.1),  LIBPNG (libpng-1.2.50),  JASPER  (jasper-1.900.1)
 # BYACC (byacc-20120115), FLEX (flex-2.5.3), CURL (curl-7.61.1)
+# wget --no-check-certificate https://sourceforge.net/projects/libpng/files/zlib/1.2.7/zlib-1.2.7.tar.gz/download
+# wget http://prdownloads.sourceforge.net/libpng/libpng-1.6.40.tar.gz?download (no encontre 1.2.50)
 export  LDFLAGS="-L${LIBSDIR}/grib2/lib -I${LIBSDIR}/grib2/include"
 export CPPFLAGS="-fPIC -I${LIBSDIR}/grib2/include" 
 export CFLAGS="-fPIC -I${LIBSDIR}/grib2/include" 
