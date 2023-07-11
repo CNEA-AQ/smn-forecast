@@ -7,8 +7,6 @@
 <!--what SILAM does in one sencentence -->
 SILAM is capable of computation of dispersion of hundreds of different atmospherical chemical species or nuclides together with their properties and transformations as well as inert or chemicaly active size-specific aerosol, biological material (pollen grains), among others. 
 
-Silam model has the following structure:
-
 <!-- Rami: I think this figure could be updated! -->
 ![Figure 1. Structure of SILAM](./imgs/figure-1.png )
 
@@ -28,8 +26,6 @@ Each cocktail has specific species and characteristics regarding its composition
 | `ACID_BASIC`   | inorganic chemistry, transport & deposition.           | CO, NOx, SOx & NH3 |
 | `CB5_SOA`      | inorganic & organic chemistry, transport & deposition. | CO, NMVOC & NOx    |
 | `RADIOACTIVE`  | radioactive, transport & deposition features.          |                    |
-
-**Table 1.** Species transformations supported by SILAM.
 
 <!-- I would include also the aerosol dynamic options supported.. 
 Diferent dynamics for aerosols have been also implemented:
@@ -68,15 +64,15 @@ SILAM may have up to ten input files depending on the complexity of the setup.
        │   
        └── standard_setup
            ├── standard_cocktail_fnm
-           ├── *nuclide_database_fnm
-           ├── *chemical_database_fnm
            ├── grib_code_table_fnm   
            ├── netcdf_name_table_fnm
+           ├── *chemical_database_fnm
+           ├── *nuclide_database_fnm
            ├── *optical_properties_meta_data_file
            ├── *photolysis_data_file
            └── *timezone_list_fnm
 ```
-**Fig. 2.** Structure of SILAM configuration files^[files with `*` are not mandatory for any run.].
+**Fig. 2.** Structure of SILAM configuration files^[files with `*` are not mandatory for every run.].
 
 
 The *mandatory files* for any run configuration are:
@@ -84,57 +80,25 @@ The *mandatory files* for any run configuration are:
 - **control file:** general user-defined parameters of the run.
 - **source term file:** describes the emission sources.
 - **standard cocktails file:** defines the standard cocktails that can be used in the source description^[Users are free to create their own cocktails, adding to the existent file.].
-- **GRIB or NetCDF code table**: definitions for handle files, invisible for users.
+- **GRIB or NetCDF name tables**: definitions for handle files, invisible for users.
 - **output configuration file:** describes the output setup.
 
-Depending of the configuration of the run, there are other files that also should be included in the setup configuration, for example:
+Depending of the configuration of the run, there are other files that also should be included in the *standard setup configuration*, for example:
 
-- **nuclide data file:** for radioactive simulations, invisible for users, referred from the internal setup file.
-- **optical properties:** for chemical and aerosol simulation, describes the optical properties of substances, invisible for users, referred from the internal setup file;
-- **chemical properties:** describes the chemical properties of the species available in SILAM, invisible for users, referred from the internal setup file;
-- **photolysis_data_file:** describes photolysis rates for photochemical reactions.
+- **nuclide data file:** for radioactive simulations.
+- **optical properties:** for chemical and aerosol simulation, describes the optical properties of substances.
+- **chemical properties:** describes the chemical properties of the species available in SILAM.
+- **photolysis data file:** describes photolysis rates for photochemical reactions.
 
-> Files included on the *standard setup* **should NOT be altered**: their modification may lead the model to malfunction (any further modifications by the user is at its own risk). 
+> Files included on the *standard setup* **should NOT be altered**: their modification may lead to model malfunction (any further modifications by the user are at their own risk). 
 
 The structure of the mandatory files will be described in this document. 
-
 
 
 ## 2.1 General rules for the configuration files:
 
 Configuration files are ASCII files, lines are *case-sensitive* and trailing blanks are ignored. Empty lines and commented lines are ignored. All characters after signs `#` or `!` are considered as comments^[Sign `#` always starts comments, while sign `!` starts comments ONLY if it is placed at the beginning of line or preceded by the empty space.].
 
-When paths to files are requested, templates for dates and time are supported. 
-> Example: `/path/to/data/myfile%ay4%am2%ad2%ah2%f2: where `/path/to/data/` is the `path` to the files and `myfile%ay4%am2%ad2%ah2%f2` is file name itself. The name depends on the analysis time and forecast length of the fields stored in it.
-
-Templates pointing to the analysis time (not allowed for the output files):
-
-| syntax  | description | example |
-|---------|-----------------------------------------|---------|
-| `%ay4`  | 4-digit year   of the analysis time     |  *2002* |
-| `%am2`  | 2-digit month  of the analysis time     |  *01*   | 
-| `%ad2%` | 2-digit day    of the analysis time     |  *05*   |
-| `%ah2`  | 2-digit hour   of the analysis time     |  *07*   |
-| `%f2`   | 2-digit number of hours of the forecast |  *015*  |
-
-**More about templates:**
-
-Analysis time, Forecast base time or first guess verification time (all usually at synoptic hours: 00, 06, 12 and 18). Templates pointing to the analysis time:
-
-| syntax  | description | example |
-|------------------------|----------------------------------------------------------------------|---------------------|
-| `%ay2`, `%ay4`         | firmly 2- and 4-digit year of the analysis time                      | *02* or *2002*      |
-| `%am1`, `%am2`, `%amc` | 1 or 2-digit; firmly 2-digit; 3-character month of the analysis time | *1*; *01* or *JAN*  |
-| `%ad1`, `%ad2%`        | 1 or 2-digit; firmly2-digit day of the analysis time                 | *5*; *05*           |
-| `%ah1`, `%ah2`, `%ah3` | 1,2 or 3; 2 or 3; firmly 3-digit hour of the analysis time           | *7*; *07*; *007*    |
-| `%an2`,                | 2-digit minutes of the analysis time                                 | *15*                |
-| `%f2 `, `%f3`          | 2- and 3-digit number of hours of the forecast length                | *15*; *015*         |
-
-Observation time (any combination in hours and minutes is valid, subject to data availability in the archive). Templates pointing to the valid time of the fields are constructed in the same way but without the *a*, e.g. %y2; %y4: firmly 2 and 4-digit year of the analysis time (e.g. *02* or *2002*).
-
-
-
-## 2.2 Rules for the namelist-type format:
 
 A single file can include a group of *namelists*, placed one-by-one in arbitrary order. Each namelist starts from the line `LIST = <namelist_name>` and ends with the line `END_LIST = <namelist_name>`^[the blank spaces around the `=` character are mandatory]. 
 
@@ -155,13 +119,47 @@ The namelist content is placed between the `LIST` and `END_LIST` lines with the 
 The `<item_name>` must be understood by the model as well and the `<item_value>` format and its meaning fully depends on the `<item_name>` itself. The `<item_value>` may vary from a single number to a complicated line with several space-separated fields. **The order of the namelist lines is arbitrary** and unnecessary lines or lines with unknown `<item_name>` will be skipped by the model.
 
 
+
+When paths to files are requested as an `<item_value>`, templates for dates and time has been created to allow the user to specify dynamic (date-time changing) paths to files.
+ 
+> Example: `/path/to/data/myfile%ay4%am2%ad2%ah2%f2: where `/path/to/data/` is the `path` to the files and `myfile%ay4%am2%ad2%ah2%f2` is the file name itself. The name depends on the analysis time and forecast length of the fields stored in it.
+
+Templates pointing to the analysis time (not allowed for the output files):
+
+| syntax  | description | example |
+|---------|-----------------------------------------|---------|
+| `%ay4`  | 4-digit year   of the analysis time     |  *2002* |
+| `%am2`  | 2-digit month  of the analysis time     |  *01*   | 
+| `%ad2%` | 2-digit day    of the analysis time     |  *05*   |
+| `%ah2`  | 2-digit hour   of the analysis time     |  *07*   |
+| `%f2`   | 2-digit number of hours of the forecast |  *015*  |
+
+**More about templates:**
+
+Analysis time, Forecast base time or first guess verification time (all usually at synoptic hours: 00, 06, 12 and 18). Templates pointing to the analysis time:
+
+| syntax  | description | example |
+|------------------------|---------------------------------------------------------------|--------------------|
+| `%ay2`, `%ay4`         | 2 and 4-digit year of the analysis time.                      | *02* or *2002*     |
+| `%am1`, `%am2`, `%amc` | 1 to 2-digit; 2-digit; 3-character month of the analysis time.| *1*; *01* or *JAN* |
+| `%ad1`, `%ad2%`        | 1 to 2-digit; 2-digit day of the analysis time.               | *5*; *05*          |
+| `%ah1`, `%ah2`, `%ah3` | 1, 2 or 3; 2 to 3; 3-digit hour of the analysis time.         | *7*; *07*; *007*   |
+| `%an2`,                | 2-digit minutes of the analysis time.                         | *15*               |
+| `%f2 `, `%f3`          | 2 and 3-digit number of hours of the forecast length.         | *15*; *015*        |
+
+Observation time (any combination in hours and minutes is valid, subject to data availability in the archive). Templates pointing to the valid time of the fields are constructed in the same way but without the *a*, e.g. %y2; %y4: firmly 2 and 4-digit year of the analysis time (e.g. *02* or *2002*).
+
+
+
+
+
 # 3 Configuration files
 
 ## 3.1 Control file
 The control file is the main configuration file, where the model set-up is described. This file
 will also provide the link between the model and other necessary input files. A control file is
 always starting and ending with `CONTROL_V5` and `END_CONTROL_V5`. A control file is a namelist
- group that contains eight namelists:
+ group that contains the following namelists:
 
 - `general_parameters             `
 - `emission_parameters            `
@@ -171,21 +169,18 @@ always starting and ending with `CONTROL_V5` and `END_CONTROL_V5`. A control fil
 - `initial_and_boundary_conditions`
 - `optical_density_parameters     `
 - `output_parameters              `
-
-each section starts and ends respectively by `LIST = <namelist>` and `END_LIST = <namelist>`. 
-The model will only read what is stated between these two command lines.
+- `standard_setup                 `
 
 Below sections describe the `item_names` for each namelist. 
 
-Format specifications in this document follows *the C format sintax*, *strftime standard* (for date/time), and literals are indicated whit `this_font`.
+> **\*Note:** Format specifications in this document follows *the C format specifiers* sintax, *strftime standard* (for date/time), and literals are indicated whit `this_font`.
 
 ### 3.1.1 `GENERAL_PARAMETERS`
 
-Here we set the name of the run, dates, time step, and type of run:
+Here we set the name of the run, period of run, time step and type of run:
 ```
 LIST = general_parameters
    case_name    = prueba
-   system_setup = /home/rama/SILAM/ini/standard_eulerian.setup 
    direction_in_time = FORWARD           !FORWARD/INVERSE
    start_time   = 2009 03 15 19 00 00
    end_time     = 2009 03 16 18 00 00
@@ -198,7 +193,6 @@ END_LIST = general_parameters
 | variable               | format/ value      | description                    |
 |------------------------|---------------------|-------------------------------|
 | `case_name`    	 | *%s*                | name of the run               |
-| `system_setup` 	 | *%s*                | path to standard setup file   |
 | `direction_in_time`    | `FORWARD`/`INVERSE` | direction in time of the run. |
 | `start_time`         	 | *%Y %m %d %H %M %s* | -                             |
 | `end_time`             | *%Y %m %d %H %M %s* | -                             |
@@ -206,10 +200,11 @@ END_LIST = general_parameters
 | `time_step`            | *%d* `min`          | number of minutes (min)       |
 | `computation_accuracy` | *%d*	               | [0..10]                       |
 
+Note that `computed_period` and `end_time` are mutualy exclusive and the latter takes precedence.
 
 ### 3.1.2 `EMISSION_PARAMETERS`
 
-In this section define sources to be considered by the model.
+This section defines the sources to be considered by the model.
 
 ```
 LIST = emission_parameters
@@ -228,7 +223,7 @@ END_LIST = emission_parameters
 
 ### 3.1.3 `DISPERSION_PARAMETERS`
 
-Mainly grid definitions and configuration.
+Mainly grid (horizontal and vertical) definitions and configuration.
 
 ```
 LIST = dispersion_parameters
@@ -249,32 +244,48 @@ END_LIST = dispersion_parameters
 |                      |  `CUSTOM_LEVELS`  | setup customized grid.                 |
 
 
-If `CUSTOM_GRID`  or `CUSTOM_LEVELS` is selected then extra parameters should be defined.
-<!-- EXTRA PARAMETERS COULD BE PLACED IN AN APPENDIX
-All **geographical values are in decimal degrees**.
+**Horizontal grid definitions**^[ All **geographical values are in decimal degrees**.]
 
-- `grid_type` = `lon_lat`        Geographical coordinates grid is so far the only available
-- `grid_title`=*str_name*.       A name for the grid.
-- `lon_start` and `lat_start`    Area source’s longitude and latitude of the first grid cell -ksec2(5), ksec2(4).
-- `dx` and `dy`                  x- and y-direction increment (lon and lat) - ksec2(9), ksec2(10).10
-- `nx` and `ny`                  Number of cells along the parallel ksec2(3), ksec2(2)
-- `lon_end` and`lat_end`         Area source’s longitude and latitude of the last grid cell (ksec2(8), ksec2(7)). Not needed if nx and ny are defined. and meridian (varying lon and lat) - `dx`, `lon_start` are defined
-- `lat_s_pole`                   Latitude of the south pole of rotation (-90. for geo) - ksec2(13)
-- `lon_s_pole`                   Longitude of the south pole of rotation (0. for geo) - ksec2(14)
-- `lat_pole_stretch`             Latitude of pole of stretching (0 so far) - ksec2(15)
-- `lon_pole_stretch`             Longitude of pole of stretching (0 so far) - ksec2(16)
-- `resol_flag`                   Resolution flag. DEFAULT: 128 = regular grid - ksec2(6),
-- `ifReduced`                    Regular/reduced grid flag. DEFAULT: 0=regular - ksec2(17),
-- `earth_flag`                   Earth-flag, 0=sphere, 64=oblate spheroid. DEFAULT: 0 - ksec2(18),
-- `wind_component`               Wind flag, 0=u,v relate to east/north, 8=u,v relate to x/y growing - ksec2(19),
-- `reduced_nbr_str`              Number of elements along the reduced direction, in one line - ksec2(23+)
-- `vertical_method`              `OUPUT_LEVELS`/`METEO_LEVELS`/`CUSTOM_LEVELS`/`EMIS_LEVELS`/`SURFACE_LEVELS`.
-  - If `OUTPUT_LEVELS` it assumes the same vertical levels defined for the output.
-  - If `METEO_LEVELS`  it assumes the same vertical level as the meteorological files
-  - If `CUSTOM_LEVELS` the user has to set the levels by defining the following namelists:
-    - `level_type` = `HEIGHT_FROM_SURFACE` / `ALTITUDE_FROM_SEA` / `PRESSURE` / `HYBRID`. There are 3 types of the output vertical allowed: z-, p- and hybrid systems, with corresponding units as: metres, hectoPascals or hybrid relative numbers. If the hybrid layers are selected, they MUST exist in the meteodata. The difference between the levels and layers is that levels are defined at one altitude, while layers cover the whole range between two levels. Dispersion output must be made into layers, while meteorology makes sense at levels too. Rules: z-, p- systems accept both THICKNESS of the layers and their CENTRAL POINTS; hybrid system accepts the NUMBER of the meteo hybrid and model will get the central point.
-    - `layer_thickness` = Thickness of the output levels in [m]/[pa]/[hybrid_nbr] depending on the level type.
--->
+When `CUSTOM_GRID` is set the user should set the parameters for the horizontal grid:
+
+| variable     | format    | description                               | 
+|--------------|-----------|-------------------------------------------|
+| `grid_type`  | `lon_lat` | `lon_lat` is the only grid available.     |             
+| `grid_title` | *%s*      | A name for the grid.                      |
+| `lon_start`  | *%.5f*    | South-west corner lon value.              | 
+| `lat_start`  | *%.4f*    | South-west corner lat value.              |  
+| `dx`         | *%.9f*    | x-direction increment.                    |  
+| `dy`         | *%.10f*   | y-direction increment.                    |
+| `nx`         | *%d*      | Number of cells along the parallel.       | 
+| `ny`         | *%d*      | Number of cells along the meridian.       | 
+| `lon_end`    | *%.5f*    | North-east corner lon value.              | 
+| `lat_end`    | *%.4f*    | North-east corner lat value.              |  
+
+If `nx` and `dx` are defined then `lon_end` is not needed. Same on `y` dimension.
+
+
+** Vertical levels definitions **
+  
+When `CUSTOM_LEVELS` is set the user should set the levels for the mode by seting two items:
+
+
+| variable          | format                 | description                               	|
+| ------------------|------------------------|--------------------------------------------------|
+| `level_type`      | `HEIGHT_FROM_SURFACE`  | z- vertical coordinate system (*m.a.g.l*).	|
+|                   | `ALTITUDE_FROM_SEA`    | z- vertical coordinate system (*m.a.s.l*).	|
+|                   | `PRESSURE`             | p- vertical coordinate system (*hPa*). 		|
+|                   | `HYBRID`               | hybrid vertical coordinate system.		|
+| `layer_thickness` | *%f %f ... %f*         | Thickness of the output levels 			|
+|                   |                        | in [`m`]/[`pa`]/[`hybrid_nbr`] depending on the level type. |
+
+If the hybrid layers are selected, they MUST exist in the meteodata. The difference between the levels and layers is that levels are defined at one altitude, while layers cover the whole range between two levels. 
+
+Dispersion output must be made into layers, while meteorology makes sense at levels too. Rules: z-, p- systems accept both THICKNESS of the layers and their CENTRAL POINTS; hybrid system accepts the NUMBER of the meteo hybrid and model will get the central point.
+
+
+
+
+
 
 ### 3.1.4 `METEO_PARAMETERS`
 
@@ -283,7 +294,7 @@ Mainly paths to meteorological data.
 ```
 LIST = meteo_parameters
   dynamic_meteo_file = GRIB meteo/F4D%am2%ad2%ah200%m2%d2%h2001
-  static_meteo_file = GRIB  meteo/ecglob100_VEG_%ay4%am2%ad2%ah2+00.sfc
+   static_meteo_file = GRIB  meteo/ecglob100_VEG_%ay4%am2%ad2%ah2+00.sfc
   !static_meteo_file = NETCDF:TZ_index meteo/tz_index_02deg.nc4
   meteo_time_step = 3 hr
   if_wait_for_data = NO
@@ -303,17 +314,18 @@ END_LIST = meteo_parameters
 |`abl_parameterization_method` | `DRY_ABL`/`FULL_PARAM` |  Method for boundary layer height computation     |
 |`number_of_precipitation_fields` | `1`/`2`| number of precip. fields needed (convective and larg-scale)    |
 
-File formats for meteo data should be defined in the NetCDF or GRIB name table files common values are: `GRIB / ASCII / NETCDF`. 
+File formats for meteo data should be defined in the NetCDF or GRIB name table files common values are: `GRIB / NETCDF ASCII /`. 
 
 The methods available for the computation of ABL height are: 
-  - `DRY_ABL` parameterization is computing atmospheric boundary layer without humidity correction 
-  - `FULL_PARAM` includes humidity correction. `DRY_ABL` is the common used method.
+  - `DRY_ABL`: parameterization is computing atmospheric boundary layer without humidity correction. 
+  - `FULL_PARAM`: includes humidity correction. 
 
-If only large-scale rain is required and available the user should use 1; if both convective and large-scale rain required and available the user should use 2. Typically both fields are required.
+If only large-scale rain is required and available the user should use `1`, if both convective and large-scale rain required and available the user should use `2`. Typically both fields are required.
+
 
 ### 3.1.5 `TRANSFORMATION_PARAMETERS`
 
-Sets the chemical and physical processes undergoing during the computation, depending on the emissions available ^[Notice that several can be co-existing except the chemical transformations.].
+This namelist sets the chemical and physical processes undergoing during the computation, depending on the emissions available ^[Notice that several can co-exist except the chemical transformations.].
 
 ```
 LIST = transformation_parameters
@@ -347,22 +359,26 @@ LIST = transformation_parameters
 END_LIST = transformation_parameters
 ```
 
-| variable             | format/ value     | description                                |
-|----------------------|-------------------|--------------------------------------------|
-| `transformation`     |`PASSIVE`          | transformation and dynamic (`EULERIAN`)    |
-|                      |`POLLEN`           |                                            | 
-|                      |`PM_GENERAL`       |                                            |
-|                      |`DMAT_SULPHUR`     |                                            |
-|                      |`ACID_BASIC`       |                                            |
-|                      |`CB5_SOA`          |                                            |
-|                      |`CB5_STRATO_SOA`   |                                            |
-|                      |`RADIOACTIVE`      |                                            |
-| `aerosol_dynamics`   |`NONE`             | Aerosol dynamic scheme.                    |
-|       	       |`SIMPLE`           |                                            |
-|                      |`MID_ATM`          |                                            |
-|                      |`VBS`              |                                            |
-|`dry_depostion_scheme`|`KS2011_TF`        | Dry deposition according to KS2011         |
-|`wet_depostion_scheme`|`STANDARD_3D_SCAVENGING` | The only wet deposition method available. |
+Here only the main items are described:
+
+| variable                   | format/ value            | description                              |
+|----------------------------|--------------------------|------------------------------------------|
+| `transformation`           |`PASSIVE`                 | transformation and dynamic (`EULERIAN`)  |
+|                            |`POLLEN`                  |                                          | 
+|                            |`PM_GENERAL`              |                                          |
+|                            |`DMAT_SULPHUR`            |                                          |
+|                            |`ACID_BASIC`              |                                          |
+|                            |`CB5_SOA`                 |                                          |
+|                            |`CB5_STRATO_SOA`          |                                          |
+|                            |`RADIOACTIVE`             |                                          |
+| `aerosol_dynamics`         |`NONE`                    | Aerosol dynamic scheme.                  |
+|       	             |`SIMPLE`                  |                                          |
+|                            |`MID_ATM`                 |                                          |
+|                            |`VBS`                     |                                          |
+|`dry_depostion_scheme`      |`KS2011_TF`               | Dry deposition according to KS2011.      |
+|`wet_depostion_scheme`      |`STANDARD_3D_SCAVENGING`  | The only wet deposition method available.|
+|`surface_resistance_method` |`WES2013`                 | Using Wesely-type Rs for dry depo.       |
+|`cloud_model_for_photolysis`|`SIMPLE_CLOUD`            |                                          |
 
 Other items to be set are:
 
@@ -390,7 +406,7 @@ If aerosol dynamics is taken into account, some items should be specified:
 ```
 LIST = initial_and_boundary_conditions
   initialize_quantity = concentration
-  initialization_file = GRADS ${OUTPUT_DIR}/%ay4%am2%ad2/%y4%m2%d2%h2_%y4_%m2_%d2_%h2.00.0.0_dump.grads.super_ctl
+  initialization_file = GRADS ${OUTPUT_DIR}/%y4%m2%d2%h2_%y4_%m2_%d2_%h2.00.0.0_dump.grads.super_ctl
 
   boundary_type = DIRICHLET
   if_lateral_boundary = YES
@@ -443,17 +459,17 @@ END_LIST = optical_density_parameters
 - `if_narrow_wave_bands`   (not working yet).
 
 
-
 ### 3.1.8 `OUTPUT_PARAMETERS`
 
+Here the output
 ```
 LIST = output_parameters
    source_id = NO_SOURCE_SPLIT  # SOURCE_NAME  SOURCE_SECTOR  SOURCE_NAME_AND_SECTOR 
 
    output_time_step = 1 hr 
    output_times = REGULAR 
-   output_format = NETCDF3
    time_split = ALL_IN_ONE
+   output_format = NETCDF3
 
    template =  output/%case  !(if time spliting should give names with template format).
    variable_list = output_config.ini
@@ -462,11 +478,6 @@ LIST = output_parameters
    grid_method = CUSTOM_GRID
    grid_type = lon_lat
    grid_title = GEMS output grid
-   resol_flag = 128
-   ifReduced = 0 
-   earth_flag = 0
-   wind_component = 0 
-   reduced_nbr_str = 0 
    nx = 50
    ny = 63
    lon_start = -72.0
@@ -474,10 +485,11 @@ LIST = output_parameters
    dx = 0.4
    dy = 0.4
 
-   lat_s_pole = -90.
-   lon_s_pole = 0.
-   lat_pole_stretch = 0.
-   lon_pole_stretch = 0.
+   resol_flag = 128
+   ifReduced = 0 
+   earth_flag = 0
+   wind_component = 0 
+   reduced_nbr_str = 0 
 
    !vertical layers:
    vertical_method = CUSTOM_LAYERS
@@ -488,38 +500,42 @@ LIST = output_parameters
 END_LIST = output_parameters 
 ```
 
-- `source_id` = ` NO_SOURCE_SPLIT / SOURCE_NAME / SOURCE_SECTOR / SOURCE_NAME_AND_SECTOR`. Controls mixing or splitting of the plumes from individual sources in the output files. In case of MIX_SOURCES, the plumes are mixed, so that all the sources create a single output field or trajectory set. If sources are split – each plume from the corresponding source is put into its own file, thus creating a surrogate for the source-receptor matrix computations. The source may have name and sector – and they both can be used for the creation of the source ID (NO_SOURCE_SPLIT) or according to source name and/or sector.
+- `source_id` = ` NO_SOURCE_SPLIT / SOURCE_NAME / SOURCE_SECTOR / SOURCE_NAME_AND_SECTOR`. Controls mixing or splitting of the plumes from individual sources in the output files. In case of `MIX_SOURCES`, the plumes are mixed, so that all the sources create a single output field or trajectory set. If sources are split each plume from the corresponding source is put into its own file, thus creating a surrogate for the source-receptor matrix computations. The source may have name and sector and they both can be used for the creation of the source ID (`NO_SOURCE_SPLIT`) or according to source name and/or sector.
 
-- `vertical_method` = `OUPUT_LEVELS/METEO_LEVELS/CUSTOM_LEVELS` 
-- `output_time_step`. Output timestep and unit
-- `output_times` = `REGULAR` (standard)
-- `file_type` = `GRIB_YES/NO TRAJECTORY_YES/NO GRADS_YES/NO ENSEMBLE_YES/NO NETCDF_YES/NO`. This namelist defines the type of output file 16required, by setting the type of output to YES or NO. The type of output can be GRIB, GRADS, NETCDF and ensemble for Eulerian setup and trajectories for Lagragian setup. 
-- `time_split` = `ALL_IN_ONE / HOURLY_NEW_FILE / DAILY_NEW_FILE / MONTHLY_NEW_FILE/ YEARLY_NEW_FILE`, depending of how the user wants these files to be stored, bearing in mind that this is just to store since the ouput averaging is set by `output_time_step`.
-- `template`.`<Path for output dumping>\%case\%case_%y4%m2%d2%h2 time template depends on the `time_split` chosen
-- `variable_list`. Path for output_config file.
-- `grid_method` = `EMIS_GRID / METEO_GRID / AREA_BASED / CUSTOM_GRID`. Grid definition for the output files. The same definition as emission or meteorological files (EMIS or METEO_GRID) or according to specific needs. If AREA_BASED, the output area and required resolution have to be defined:
-- `area_borders` =`<south> <north> <west> <east>` North positive, east positive; all real.
-- `area_title`. A name for the area defined
-- `resolution`. Horizontal grid size of output grid, [km]/[m]/[deg], real
+| variable           | format/value                | description                                   |
+|--------------------|-----------------------------|-----------------------------------------------|
+| `grid_method`      |`METEO_GRID / CUSTOM_GRID`.    | (Same as in `dispersion_parameters` namelist).|
+| `vertical_method`  |`METEO_LEVELS / CUSTOM_LEVELS` | (Same as in `dispersion_parameters` namelist).|
+| `output_format`    |*%s*                         | Format of the output file (`NETCDF`, `GRIB`, etc.). |
+| `output_time_step` |*%d %s*                      | Output timestep and unit.                     |
+| `output_times`     |`REGULAR`                    | (standard)                                    | 
+| `time_split`       |*%s*                         | How to split output files.                    |
+| `template`         |*%s*                         | Path to output dumping with template.         |
+| `variable_list`    |*%s*                         | Path for *output_config file* where variables to be written are defined.
+| `area_borders`     |*%f %f %f %f*                | Boundary box of output file (south, north, east, west). |
+| `area_title`       |*%s*                         | A name for the area defined.                            |
+| `resolution`       |*%f %s*                      | Horizontal grid size and unit ([km]/[m]/[deg]).         |
 
-If `grid_method = CUSTOM_GRID` is set a full definition of the grid has to be described.
-If `vertical_method = CUSTOM_LEVELS` is set, then `level_type` and `layer_thickness` should be specified.
+If `grid_method = CUSTOM_GRID` is set a full definition of the grid has to be described (See A.1 section).
+If `vertical_method = CUSTOM_LEVELS` is set, then `level_type` and `layer_thickness` should be specified (See A.1 section).
+
+valid values for `time_split` item are: `ALL_IN_ONE`, `HOURLY_NEW_FILE`, `DAILY_NEW_FILE`, `MONTHLY_NEW_FILE`, `YEARLY_NEW_FILE` depending of how the user wants these files to be stored, bearing in mind that this is just to store since the ouput averaging is set by `output_time_step`.
 
 
 ### 3.1.9 `STANDARD_SETUP`
 
-The internal setup file is the file that provides other configuration files that are needed for running SILAM model. This file is only open for user to write the correct path for the files mentioned in this file, see Figure 15. These files are included in SILAM package and are essential for the model to run.
+The internal setup file is the file that sets methods and scheme for the computations of transport and other proceses, it also provides extra configuration files that are needed for running SILAM model^[Note that the `^` symbol after the file paths definitions indicates relative location from the control file.].
+
 
 ```
  LIST = STANDARD_SETUP
-  advection_method_eulerian = EULERIAN_V5			!EULERIAN_V4/EULERIAN_3D_BULK/EULERIAN_V5
-  advection_method_lagrangian = LAGRANGIAN_WIND_ENDPOINT_3D
-  advection_method_default = EULERIAN
-  continuity_equation = anelastic_v2	 !incompressible|incompressible_v2|anelastic_v2|from_nwp_omega|test_wind 
-  abl_height_method = COMBINATION	 !richardson_method/parcel_method/combination
-  kz_profile_method = SILAM_ABL_EC_FT_KZ !SILAM_RESISTANCE/SILAM_ABL_EC_KZ
-  random_walk_method = FULLY_MIXED	 !NONE/FIXED/FULLY_MIXED/BULK_GAUSSIAN
-  mass_distributor = TRIANGLE_SLAB	 !TRIANGLE_SLAB/RECTANGLE_SLAB/STEP_SLAB
+  advection_method_eulerian = EULERIAN_V5 !EULERIAN_V4/EULERIAN_3D_BULK/EULERIAN_V5
+  advection_method_default = EULERIAN    
+  continuity_equation = anelastic_v2	  !incompressible|incompressible_v2|anelastic_v2|from_nwp_omega|test_wind 
+  abl_height_method = COMBINATION	  !richardson_method/parcel_method/combination
+  kz_profile_method = SILAM_ABL_EC_FT_KZ  !SILAM_RESISTANCE/SILAM_ABL_EC_KZ
+  random_walk_method = FULLY_MIXED	  !NONE/FIXED/FULLY_MIXED/BULK_GAUSSIAN
+  mass_distributor = TRIANGLE_SLAB	  !TRIANGLE_SLAB/RECTANGLE_SLAB/STEP_SLAB
   diffuse_vert_cm = YES
   reference_4_low_mass_threshold = CONST
   
@@ -544,9 +560,9 @@ The internal setup file is the file that provides other configuration files that
   disregard_meteo_data_sources = YES
  END_LIST = STANDARD_SETUP
 ```
+with the exception of the configuration file paths, it is not necessary (nor recommended) to change the value of the parameters in this section.
 
-
-## 3.2 Source term files 
+## 3.2 Source term files  (WARNING: OUTDATED!!)
 
 <!-- OUTDATED The source file for SILAM consists of a list of individual sources, following one-by-one.
 Each source is treated totally independently from the others. The source is always started
@@ -622,6 +638,82 @@ of the standard cocktails.
 - hour_in_day_index. Diurnal relative intensity considering 24 hours in day.
 - day_in_week_index. Week-day relative intensity considering 7 days in a week.
 - month_in_year_index. Monthly relative intensity considering 12 months in a year.
+
+### 3.4.2 Area source v.3
+This form represents a SILAM source term type: a spatially distributed emission source.
+Following the general standards, it is defined in some 3-dimensional grid, while the time
+dimension is represented in a very similar way as `par_str` in the above point sources. 
+Grid and vertical definitions follow the standards of the GRID format. The source file consists of 
+five main parts: general parameters, grid definition, vertical definition, time definitions and
+grid cell values. A template of the file is below and the namelists are described. The source
+file may contain several sources of this type, as well other types, as long as each source is
+defined by starting and ending with: `AREA_SOURCE_3` and `END_AREA_SOURCE_3`
+
+```
+AREA_SOURCE_3
+
+source_name = area2          # source name
+source_sector_name =         # source sector name, e.g. SNAP_10. May be empty
+source_timezone = UTC # Local Solar Europe/Helsinki, etc.
+                      # Default: Solar
+
+grid_type = lon_lat  !So far the only available. ALso covers cylindrical or plate carree grids
+resol_flag = 128    ! ksec2(6), resolution flag. DEFAULT: 128 = regular grid
+ifReduced = 0       ! ksec2(17), regular/reduced grid flag. DEFAULT: 0=regular
+earth_flag = 0      ! ksec2(18), Earth-flag, 0=sphere, 64=oblate spheroid. DEFAULT: 0
+wind_component = 0  ! ksec2(19), wind flag, 0=u,v relate to east/north, 8=u,v relate to x/y growing, DEFAULT:0
+reduced_nbr_str = 0 ! ksec2(23+), all nbrs of elements along the reduced direction, in one line. DEFAULT: 0
+
+nx = 12           !ksec2(2), Nbr of cells along the parallel (varying lon)
+ny = 6            !ksec2(3), Nbr of cells along the meridian (varying lat)
+lat_start = -75.  !R ksec2(4), Lat of the first grid cell
+lon_start = -165. !R ksec2(5), Lon of the first grid cell
+dx = 30.0         !R ksec2(9), x-direction increment (lon)
+dy = 30.0         !R ksec2(10), y-direction increment (lat)
+lat_s_pole = -90.     !R ksec2(13), lat of the south pole of rotation (-90. for geo)
+lon_s_pole = 0.       !R ksec2(14), lon of the south pole of rotation (0. for geo)
+lat_pole_stretch = 0. !R ksec2(15), lat of pole of stretching (0 so far)
+lon_pole_stretch = 0. !R ksec2(16), lon of pole of stretching (0 so far)
+
+release_rate_unit = kg/hr  ! Unit of the release rate: <mass>/<time> 
+                           ! [kg][g][ton][bq][mole][number] - mass(radioactivity); [yr][mon][day][hr][min][sec] - time units
+
+vertical_distribution = MULTI_LEVEL_FIXED  ! SINGLE_LEVEL_DYNAMIC or MULTI_LEVEL_FIXED
+vertical_unit = m  ! [hpa] or [m] - if SINGLE_LEVEL_DYNAMIC 
+vert_level = HEIGHT_FROM_SURF 1. 9000.   1.0
+
+par_str_area = 1999 5 15 0 0 0.    925. 900.  AEROSOL_xx_MODES_COCKTAIL 1.0 # TIME_COCKTAIL 1.0  ###SOX  4. PASSIVE_COCKTAIL 18. 
+par_str_area = 2012 5 15 1 0 0.    925. 900.  AEROSOL_xx_MODES_COCKTAIL 1.0 #  TIME_COCKTAIL 1.0  ###SOX  4. PASSIVE_COCKTAIL 18. 
+
+hour_in_day_index = AEROSOL_xx_MODES_COCKTAIL 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 
+day_in_week_index = AEROSOL_xx_MODES_COCKTAIL 1. 1. 1. 1. 1. 1. 1.
+month_in_year_index = AEROSOL_xx_MODES_COCKTAIL 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
+
+coordinate_of_values = GEOGRAPHICAL
+
+val = -165. -75. 100.
+val = -135. -75. 100.
+val = -105. -75. 100.
+...
+val = 105. 75. 100.
+val = 135. 75. 100.
+val = 165. 75. 100.
+
+END_AREA_SOURCE_3   # MANDATORY 
+```
+
+There are a few critical differences between the above area source definition and the point
+source files. They all originate from one more dimension of parameter variations – spatial –
+that has to be taken into account. 
+In the point source definition, there is only one vertical layer where the emission goes to. All sophisticated considerations are supposed to be solved via a plume rise routine. Such approach does not work with the area sources. 
+
+Therefore, there are two ways allowed for the description of the vertical distribution: time-varying single layer defined in par_str for corresponding times (resembling the approach of point sources), and multi-layer distribution that is fixed in time but allows split of emission between the layers (see vertical_distribution and vertical_layer in the above example).
+
+Another ambiguity is connected with the composition of the release. Species mass fractions in cocktail may vary between the grid cells. To take this into account, another two-option selection is introduced (switcher is the cocktail_composition line). The first option is the same as in point source: the cocktail name is taken from par_str, its composition is taken from the cocktail description file (section 3.8) and assumed the same for all grid cells. Time variation of the composition is then reproduced via cocktail definition – as is done in the point source. The second option is to use fixed-in-time but varying-in-space cocktail composition. In this case, the cocktail name in the par_str lines defines only lists of species and aerosol size classes, while the mass fractions are written in the val lines – specifically for each grid cell. In the latter case, there must be an agreement between the number of mass fractions in the val lines and the number of species in the cocktail descriptors references in the par_str lines.
+
+It is also possible to create sources with dynamical emission rates computed with regard to
+meteorological parameters, which is mandatory for biogenic emission. This is the case of,
+e.g., sea salt, as explained in the following section.
 
 
 <!-- INTERNALY CALCULATED EMISSIONS -->
@@ -749,8 +841,6 @@ END_DMS_SOURCE_V5
 
 
 
-
-
 ## 3.3 Output configuration file
 
 The output post-processor allows the user to select flexible averaging for each dispersion variable and to include any SILAM internal meteorological variable to the output. The output variable categories are:
@@ -765,35 +855,70 @@ This file has a single namelist that should be started and ended by `LIST = OUT_
 The content between the namelist defines the output available.
 -->
 
+```
+OUTPUT_CONFIG_3_7
+LIST = OUTPUT_CONFIG_3_7
+# General characteristics of the output variables
+aerosol_size_modes = SEPARATE    
+#  Emission fields
+out_var = 2 emission_rate [SOURCE_INVENTORY] AVERAGE %INTEGRATE_COLUMN 
+#  Permanent fields (physiography)
+out_var = 0 physiography_field_set  AS_IS
+#  Particle counter and vertically integrated particle counter
+out_var = 0 particle_counter INSTANT
+out_var = 0 areas_of_risk     AS_IS
+#  All species from source inventory AND from transformation chain - conc and dep.
+out_var = 2 concentration [FULL_INVENTORY]      AVERAGE
+out_var = 2 drydep        [TRANSPORT_INVENTORY] AVERAGE
+out_var = 2 wetdep        [TRANSPORT_INVENTORY] AVERAGE
+# Diagnostic optical depth
+out_var = 0 optical_density      [FULL_INVENTORY] AVERAGE %WAVE_LENGTH nm 550.
+out_var = 0 optical_column_depth [FULL_INVENTORY] AVERAGE %WAVE_LENGTH nm 550. 330.
+#  SILAM meteorological variables
+out_var = 0  temperature            AVERAGE
+out_var = 2  temperature_2m         AVERAGE
+out_var = 0  daily_mean_temperature AVERAGE
+
+END_LIST = OUTPUT_CONFIG_3_7
+END_OUTPUT_CONFIG_3_7
+```
+
 The general characteristics of the output variables category basically describes how to report the aerosol sizes: as one size (SUM) or different sizes, as described in the cocktail description (SEPARATE).
 - `aerosol_size_mode` = SEPARATE/SUM
 
 The remaining categories have arbitrary number of lines containing three or four or five fields, depending of the output variable category requested. The general format goes:
 
-- ` out_var = <necessity_index> <variable_name> <substance_name/lists> <averaging>               ` with optical properties:
-- ` out_var = <necessity_index> <variable_name> <substance_name/lists> <averaging> <wave_lenght> ` with meteorological variables:
-- ` out_var = <necessity_index> <variable_name> <averaging>                                      `  
+- `out_var = <necessity_index> <variable_name> <substance_name/lists> <averaging>              ` 
+
+For optical properties^[The wavelength (units: nm) is set by the user. The optical properties of the substance name/list are set for this specific wavelength.]:
+
+- `out_var = <necessity_index> <variable_name> <substance_name/lists> <averaging> <wave_lenght>` 
+
+For meteorological variables:
+
+- `out_var = <necessity_index> <variable_name> <averaging>                                     ` 
 
 To request or not a variable, there is a necessity index that is placed after the `out_var` item list:
 
-- `0` : quantity is not needed 
-- `1` : quantity is desirable, but if is not available the model run will not be discontinued 
-- `2` : mandatory variable for the output, if the variable is not available, the model run will be interrupted.
+- `0`: quantity is not needed 
+- `1`: quantity is desirable, but if is not available the model run will not be discontinued 
+- `2`: mandatory variable for the output, if the variable is not available, the model run will be interrupted.
 
 The variable name is fixed by the model, and the user just has to use the necessity index to switch on or off that variable output request.  
 The substance name/lists is set according to the availability of substances and the user necessity. 
 If the run is not for an individual substance, there can be requested: 
 
-- `SOURCE_INVENTORY`  just the substances emitted.
-- `FULL_INVENTORY`    when requested all the substances present in the dispersion cloud. The averaging type for the particular variable is set by the user according to the user’s needs. The available types of averaging are:
+- `SOURCE_INVENTORY`  just the emitted substances.
+- `TRANSPORT_INVENTORY` all the substances present in the dispersion cloud. 
+- `FULL_INVENTORY`    all the substances present in the dispersion cloud. 
+
+The averaging type for the particular variable is set by the user according to the user’s needs. The available types of averaging are:
+
 - `AS_IS`           – the field comes to the output exactly as it was stored in SILAM internal buffers at the moment of output collection
 - `INSTANT`         – cumulative field is converted to their mean rates between the last two model time steps, while the instant variables go as they are 
 - `CUMULATIVE`      – the variable is accumulated since the beginning of the simulations
 - `AVERAGE`         – the variable is averaged from the previous to the current output time
 - `MEAN_LAST_**_HR` – the field is averaged over the given period preceding the current output. The period must not be longer than the interval between the outputs. 
-
-The wavelength (units: nm) is set by the user. The optical properties of the substance
-name/list are set for this specific wavelength.
 
 
 ## 3.4 Boundary header file
@@ -802,10 +927,10 @@ The boundary header file describes the information about the boundary fields to 
 
 ```
 boundary_file = bnd/out/bcon.nc 
-file_format = NETCDF     ! GRIB/ASCII/GRADS/NETCDF
-boundary_names = NSEWT   ! NSEWTB 
-ifDynamic = YES          ! YES/NO
-ifClimatology = NO       ! YES/NO
+file_format = NETCDF    ! GRIB/ASCII/GRADS/NETCDF
+boundary_names = NSEWT  ! NSEWTB 
+ifDynamic = YES         ! YES/NO
+ifClimatology = NO      ! YES/NO
 
 par_str = dust dust 0.3e-6 0.3e-6 1.0
 par_str = dust dust 1.5e-6 1.5e-6 1.0
@@ -825,32 +950,97 @@ par_str = dust dust 20e-6 20e-6 1.0
 The same substance might have different name in the boundary fields and in the model, therefore it is necessary to define the name of the substances required, as well as their mode. In case of gases the mode is zero. the conversion factor might be necessary if the user finds it more suitable to convert the emissions to a, e.g. SI unit.
 
 
-## 3.5 Standard cocktails
+## 3.5 Cocktails
 
 Cocktail description files contain lists of cocktails. Cocktail description consists of the cocktail name, type, unit of fractions and then a list of species with their fractions (in corresponding unit) in the cocktail.
+
 The description starts from header and ends with end line: `COCKTAIL_DESCRIPTION_V3_2` and `END_COCKTAIL_DESCRIPTION_V3_2`. The cocktail may contain the gas and/or aerosol description. Standard cocktails can be used by their names in the source term files. An example of cocktail description is given in Figure 16. Depending on whether the aerosol size classes are defined, the fractions have somewhat different meaning. A total mass fraction of each substance in the mixture comes as a sum of fractions of the substance in the aerosol classes and/or gas phase.
 
-- `cocktail_name`= random name
-- `mass_unit`    = Bq/number/mass
-- `gas_phase`    = YES/NO
-- `aerosol_mode` =`<min> <max> <average diameter> <diameter_unit> <density> <density_unit>`
-- `aerosol_distribution_shape` = `FIXED_DIAMETER` (so far the only available).
-- `component_fraction` = `<Component name> <mass fraction in the mixture>`, there should be as many `component_fraction` lines as the number of substances that the user is trying to simulate. Only substances available in `silam_chemicals.ini` file should be added to the cocktail. If `gas_phase` = YES and aerosol modes coexist,
-- `component_fraction` = <Component name> `number_of modes`*<mass fraction in the aerosol mixture> <mass fraction in the gas mixture> If gas_phase = NO, 
-- `component_fraction` = <Component name> number_of modes*<mass fraction in the aerosol mixture> If `gas_phase` = YES and no aerosol phase, 
-- `component_fraction` = <Component name> <mass fraction in the gas mixture>
+The simplest case would be a cocktail with only one gaseous component:
+
+```
+COCKTAIL_DESCRIPTION_V3_2
+  cocktail_name = SO2
+  mass_unit     = mole
+  gas_phase = YES
+  component_fraction = SO2   1.0
+END_COCKTAIL_DESCRIPTION
+```
+
+| variable              | format/ value | description   |
+|-----------------------|----------|--------------------|
+| `cocktail_name`       |  *%s*    |  random name       |
+| `mass_unit`           |  *%s*    |  Bq/number/mass    |
+| `gas_phase`           | `YES/NO` |  YES/NO		|
+| `component_fraction`  | *%s %f*  |  component name and mass fraction in the mixture |
+
+For the case of a cockatil with more than one component:
+
+```
+COCKTAIL_DESCRIPTION_V3_2
+   cocktail_name = VOC_S72
+   mass_unit = kg
+   gas_phase = YES
+   if_normalise = NO
+   component_fraction = ALD2 0.065000
+   component_fraction = ETH 0.120000
+   component_fraction = HCHO 0.060000
+   component_fraction = OLE5 0.080000
+   component_fraction = PAR5 0.885672
+   component_fraction = TOL 0.015000
+   component_fraction = XYL 0.225000
+END_COCKTAIL_DESCRIPTION
+```
 
 
+here the component fractions has mass fractions diferent than 1.0, and there should be as many `component_fraction` lines as the number of substances that the user is trying to simulate.
 
+For coctails with aerosol species, two more items should be included:
 
-<!-- Rami: a brief description of how to build the netcdf/grib name tables would be great so users can incorporate their own data to the model 
-## 3.6 NetCDF/GRIB2 name tables
+| variable                    | format/value        | description                                      |
+|-----------------------------|---------------------|------------------------------------------------- |
+| `aerosol_mode`              | *%f %f %f %s %f %s* | diameter (min,max,avg,unit), density & density unit. |
+| `aerosol_distribution_type` | `FIXED_DIAMETER`    | (so far the only available).	               |
 
--->
+For example the cocktail *PM10* could be defined as:
+```
+COCKTAIL_DESCRIPTION_V3_2
+  cocktail_name = PM10  
+  mass_unit     = kg
+  gas_phase = NO     
+  aerosol_mode = 1  0.01   2.5  0.5  mkm   1100  kg/m3 
+  aerosol_mode = 2  2.5   10.   6.   mkm   1500  kg/m3 
+  mode_distribution_type = FIXED_DIAMETER 
+  component_fraction = PM  0.5 0.5
+END_COCKTAIL_DESCRIPTION
+```
 
+> Only **substances available in `silam_chemicals.ini` file can be added to the cocktail**. 
 
+Coctails that has gas and aerosol components could be defined too, for example:
+```
+COCKTAIL_DESCRIPTION_V3_2
+  cocktail_name = SOX
+  mass_unit     = mole
+  gas_phase = YES
+  aerosol_mode =  1  0.01    0.3  0.2  mkm   1000  kg/m3 
+  mode_distribution_type = FIXED_DIAMETER
+  component_fraction = SO2   0.0 0.95 
+  component_fraction = SO4   0.05 0.0
+END_COCKTAIL_DESCRIPTION
+```
 
+If `gas_phase` = YES and aerosol modes coexist.
 
+- `component_fraction` = *Component name* *number_of modes* *mass fraction in the aerosol mixture*  *mass fraction in the gas mixture*
+
+If gas_phase = NO:
+
+-  `component_fraction` = *Component name* *number of modes* *mass fraction in the aerosol mixture* 
+
+If `gas_phase` = YES and no aerosol phase: 
+
+- `component_fraction` = *Component name* *mass fraction in the gas mixture*
 
 
 # 4 Running the model
@@ -890,8 +1080,32 @@ In case of Linux-based users, a run with SILAM can be set with several threads s
 
 
 
-<!-- SOME APENDICES TO EXTEND SOME ISSUES WOULD BE GREAT 
-# A.1 APENDIX 1: 
+<!-- SOME APPENDICES TO EXTEND SOME ISSUES WOULD BE GREAT -->
 
+<!--
+# A.1 `transformation_parameters` (revisited)
+
+- `max_scav_rate_depends_on              `  = CAPE
+- `use_dynamic_albedo                    `  = YES
+- `if_actual_humidity_for_particle_size  `  = YES
+- `default_relative_humidity             `  = 0.8
+- `passive_subst_ref_lifetime            `  = 1000000 day
+- `passive_subst_ref_tempr               `  = 288
+- `passive_subst_dLifeTime_dT            `  = 0 min/K
+- `passive_ones_tracer                   `  = NO
+- `mass_low_threshold                    `  = STANDARD_ACCURACY
+- `oh_param_method                       `  = FROM_MASSMAP
+- `biogenic_SOA_aging_rate               `  = 1.2E-11
+- `anthropogenic_SOA_aging_rate          `  = 4.0E-11
+- `intermediate_volatility_OC_aging_rate `  = 4.0E-11
+- `if_monoterpene_products               `  = 1.0
+- `if_full_acid_chemistry                `  = YES
+- `make_coarse_no3                       `  = sslt   0.03
+- `methylchloroform_OH_rate_factor       `  = 1.0
+- `photolysis_affected_by_o3col          `  = YES
+- `photolysis_affected_by_aod            `  = YES
+- `photolysis_AOD_wavelength             `  = 550 nm
+- `cbm_tolerance                         `  = FAST
+
+# A.2 NetCDF/GRIB name tables
 -->
-

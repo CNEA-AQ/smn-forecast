@@ -1,0 +1,36 @@
+# Oportunities of improve for Silam:
+
+
+- Cleanning:
+	- rm from ./ini all the old/depreciated files. 
+        - all scripts should have headers with description of what it does. 
+	- separation of concerns in source (organize scripts into folders)
+	- remove depreciated items/options in the code:
+		+ rm all cmb4 since they are not longer used. 
+		+
+
+        - rename scripts with confusing names.
+	- too many stdout when running, could it be reduced? (at least in "no-debug" mode)
+
+- "User-interface"
+	- dispersion_parameters (grid_parameters) -> put this namelist items inside the control_namelist
+	- Define ONLY ONE grid (remove this "duality" of output (grid/levels) options) -> let the user do the post-processing, just give the modeled grid w/chance to cropped it.
+	- centralized io module?
+
+
+- New features/updates
+        - Recover INVENTORY source class, as netCDF/grib gridded emissions inputs (CAMS, EDGAR, etc.).
+        - MEGAN last version, w/global coverage.
+        - FINN  last version, w/global coverage.
+	- Define Point, Line and Area sources with different and compact sintax.
+		+ POINT: id,wkt,z,h,q  (g/s)  ,w,t,d
+		+ LINE : id,wkt,z,h,q (g/s.m) ,w,t  
+		+ AREA : id,wkt,z,h,q (g/s.m2),w,t  
+        - For time-varying emissions, implement something like:
+		+ diurnal_cycle= 
+		+ weekly_cycle=
+		+ monthly_cycle=
+- METEO:
+	- GFS? (why not?)
+
+

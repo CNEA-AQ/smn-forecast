@@ -1,3 +1,46 @@
+#"Homework"
+
+- Pick 10 sources, and 10 receptors.
+
+- Run FORWARDS from sources.
+- Pick-up the concentrations. For a given time (the time where concentrations are "above" receptors)
+
+- Run BACKWARDS from receptors with same mass.
+- Get back the concentrations in the sources.
+
+Compare: I should get 10x10 comparissions.
+	-make a xy scatterplot
+
+
+
+
+
+
+
+#Questions about the model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#USERGUIDE STUFF =================================================================
 # Q4Ro. After reading the user-manual.
 
 #Short ones:
@@ -40,68 +83,67 @@
 #         - `CB5_STRATO_SOA` 
 #         - `RADIOACTIVE`
 
-- Is there other aerosol_dynamics otherwise of SIMPLE?
-	Yes, full list: 'NONE' 'SIMPLE' 'MIDDLE_ATMOSPHERE' 'BASIC' 'VBS'    (from chemistry_manager.silam.mod.f90)
- 	VBS goes with SOA
-	Remove BASIC
+#- Is there other aerosol_dynamics otherwise of SIMPLE?
+#	Yes, full list: 'NONE' 'SIMPLE' 'MIDDLE_ATMOSPHERE' 'BASIC' 'VBS'    (from chemistry_manager.silam.mod.f90)
+# 	VBS goes with SOA
+#	Remove BASIC
 
-Regarding "dispersion parameters":
-- Are mainly grid parameters?
-	Yes. (So why there are calling dispersio params?)
+#Regarding "dispersion parameters":
+#- Are mainly grid parameters?
+#	Yes. (So why there are calling dispersio params?)
 
-- what grid_methods are available? (not in user-guide)
-     METEO_GRID/CUSTOM_GRID  !AREA_BASED/EMIS_GRID/
+#- what grid_methods are available? (not in user-guide)
+#     METEO_GRID/CUSTOM_GRID  !AREA_BASED/EMIS_GRID/
 
-- what vertical_methods are available? (not in user-guide)
-    `OUTPUT_LEVELS` it assumes the same vertical levels defined for the output.
-    `METEO_LEVELS`  it assumes the same vertical level as the meteorological files
-    `CUSTOM_LEVELS` the user has to set the levels by defining the following namelists:
-    
-    !remove it `EMIS_LEVELS`    (from emis_file?)
-    !remove it `SURFACE_LEVELS` (from meteo_static?)
+#- what vertical_methods are available? (not in user-guide)
+#    `OUTPUT_LEVELS` it assumes the same vertical levels defined for the output.
+#    `METEO_LEVELS`  it assumes the same vertical level as the meteorological files
+#    `CUSTOM_LEVELS` the user has to set the levels by defining the following namelists:
+#    !remove it `EMIS_LEVELS`    (from emis_file?)
+#    !remove it `SURFACE_LEVELS` (from meteo_static?)
 
-- Area computations carried out ON the meteo grid, and then interpolated and reprojected according with outfile params?
-	Yes. (just a guess)
-
-
-Regarding emission sources:
-- what source types are now supported? (EULERIAN|INVENTORY|VOID_SOURCE|SEA_SALT|DESERT_DUST|POLLEN), what is VOID_SOURCE?
-	
-	None. Now is only EULERIAN/LAGRANGIAN   (from source_terms_general.silja.mod.f90)
-
-- U-G says that "There are three types of sources supported: bomb source, point source and area source." Is it still true? what about gridded emissions?
-       full list:  'AREA_SOURCE_' 'BOMB_SOURCE_' 'FIRE_SOURCE_' 'POINT_SOURCE_' 'POLLEN_SOURCE_' 'BIOGENIC_VOC_SOURCE_' 'VOLCANO_SOURCE_' 'WIND_BLOWN_DUST_' 'SEA_SALT_SOURCE_' 'DMS_SOURCE_' (from source_terms_general.silja.mod.f90)
+#- Area computations carried out ON the meteo grid, and then interpolated and reprojected according with outfile params?
+#	Yes. (just a guess)
 
 
-- Files needed:
-	- DUST:     NETCDF:dust_emis_0  ^dust_emis_0_v3.nc4
-	- BIOVOCS:  Megan Global Emis |  OR?  land_use_features_USGS_Eurasia.dat?
-	- FIRES:    Fire_MOD_MYD_coll_6__FRP_fake_from_20160330.fs1 ?
-	- SEASALT:  eco_collection_water_bodies.ctl.super_ctl       ? (water mask)
-        - DMS:      NETCDF:dms_clim dms_lana_2011.nc
-		    NETCDF:dms_clim sslt_emission_global_50km.fld.nc
+#Regarding emission sources:
+#- what source types are now supported? (EULERIAN|INVENTORY|VOID_SOURCE|SEA_SALT|DESERT_DUST|POLLEN), what is VOID_SOURCE?
+#	
+#	None. Now is only EULERIAN/LAGRANGIAN   (from source_terms_general.silja.mod.f90)
 
-- Are AREA_SOURCES still suported? 
-	Yes, it is call INVENTORY in the user guide. (source_terms_general.silja.mod.f90:1458)
-
-- Are there specific source_term files with specific *ITEMS* variables for diferent type of emissions (dust, bio_vocs, fires, etc)?
-	Yes. (tell me what does changes, or where can i found it)
-
-
----
-
-Regarding "cocktails":
-	
-- how are related/linked with kpp and chemistry modeling?
-
-
-Regarding bcon and icon:
-- initialization_quantity: complete list of initialized quantities?
-- i dont understand par_str in the context of my "toy" run.
-
-
-Regarding internal setup:
-- Is the advection_method_lagrangian item defined anywhere in the code defined?	dont mention it in the ug.
+#- U-G says that "There are three types of sources supported: bomb source, point source and area source." Is it still true? what about gridded emissions?
+#       full list:  'AREA_SOURCE_' 'BOMB_SOURCE_' 'FIRE_SOURCE_' 'POINT_SOURCE_' 'POLLEN_SOURCE_' 'BIOGENIC_VOC_SOURCE_' 'VOLCANO_SOURCE_' 'WIND_BLOWN_DUST_' 'SEA_SALT_SOURCE_' 'DMS_SOURCE_' (from source_terms_general.silja.mod.f90)
+#
+#
+#- Files needed:
+#	- DUST:     NETCDF:dust_emis_0  ^dust_emis_0_v3.nc4
+#	- BIOVOCS:  Megan Global Emis |  OR?  land_use_features_USGS_Eurasia.dat?
+#	- FIRES:    Fire_MOD_MYD_coll_6__FRP_fake_from_20160330.fs1 ?
+#	- SEASALT:  eco_collection_water_bodies.ctl.super_ctl       ? (water mask)
+#        - DMS:      NETCDF:dms_clim dms_lana_2011.nc
+#		    NETCDF:dms_clim sslt_emission_global_50km.fld.nc
+#
+#- Are AREA_SOURCES still suported? 
+#	Yes, it is call INVENTORY in the user guide. (source_terms_general.silja.mod.f90:1458)
+#
+#- Are there specific source_term files with specific *ITEMS* variables for diferent type of emissions (dust, bio_vocs, fires, etc)?
+#	Yes. (tell me what does changes, or where can i found it)
+#
+#
+#---
+#
+#Regarding "cocktails":
+#	
+#- how are related/linked with kpp and chemistry modeling?
+#
+#
+#Regarding bcon and icon:
+#- initialization_quantity: complete list of initialized quantities?
+#- i dont understand par_str in the context of my "toy" run.
+#
+#
+##Regarding internal setup:
+##- Is the advection_method_lagrangian item defined anywhere in the code defined?	dont mention it in the ug.
 
 
 
