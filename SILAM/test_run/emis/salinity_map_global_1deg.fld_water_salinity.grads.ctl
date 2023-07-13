@@ -1,0 +1,1 @@
+/home/rama/data/silam_data/sea_salt/salinity_map_global_1deg.fld_water_salinity.grads.ctl
