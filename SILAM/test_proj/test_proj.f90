@@ -1,111 +1,120 @@
 program test_proj
 
-!use, intrinsic :: ISO_C_BINDING, only: c_int,c_char,c_double,c_ptr,c_null_ptr,c_associated,c_size_t,c_loc,c_funptr,c_null_funptr
-use ISO_C_BINDING
+use, intrinsic :: ISO_C_BINDING, only: c_int,c_char,c_double,c_ptr,c_null_ptr,c_associated,c_size_t,c_loc,c_sizeof !(ojo borre cosas)
 implicit none
 
-#ifdef USE_PROJ6
-
-type, bind(C) :: PJ_XY
-    real(c_double) :: x
-    real(c_double) :: y
-endtype
-
 interface
-  function proj_create_crs_to_crs(s_srs,t_srs) bind(C,name='proj_create_crs_to_crs')
+  function proj_context_create() bind(C,name='proj_context_create')
     use iso_c_binding
     implicit none
-    type(C_PTR) :: proj_create_crs_to_crs
-    character(kind=C_CHAR) :: s_srs,t_srs   !source and target SRS.
+    type(c_ptr) :: proj_context_create
   end function
-
-  function proj_trans(pj, dir, coords) bind(C,name='proj_trans')
+  subroutine proj_context_destroy(ctx) bind(C,name='proj_context_destroy')
     use iso_c_binding
     implicit none
-    type(C_PTR), value :: PJ
-    character(C_CHAR), value :: dir !PJ_FWD, PJ_INV, PJ_IDENT
-    type(C_PTR) :: coords
-    type(C_PTR) :: proj_trans
+    type(c_ptr),value :: ctx
+  end subroutine
+  function proj_create_crs_to_crs(ctx,s_srs,t_srs,area) bind(C,name='proj_create_crs_to_crs') 
+    use iso_c_binding                                                                         
+    implicit none                                                                             
+    type(C_PTR)            :: proj_create_crs_to_crs
+    character(kind=C_CHAR) :: s_srs(*)
+    character(kind=C_CHAR) :: t_srs(*)
+    type(C_PTR), value     :: ctx, area
   end function
-
+  subroutine proj_destroy(PJ) bind(C,name='proj_destroy')
+    use iso_c_binding
+    implicit none
+    type(c_ptr), value :: PJ
+  end subroutine
+  function proj_trans_generic(pj,dir,x,sx,nx,y,sy,ny,z,sz,nz,t,st,nt) bind(C,name='proj_trans_generic')
+    use iso_c_binding
+    implicit none
+    integer(c_int)       :: proj_trans_generic
+    type(c_ptr), value   :: pj
+    integer(c_int),value :: dir 
+    type(c_ptr),value    :: x,y,z,t
+    integer(c_long),value:: sx,sy,sz,st
+    integer(c_int),value :: nx,ny,nz,nt
+  end function
 end interface
-#endif
-
 
 !MAIN:
-!     character (len=*), parameter :: hirlam_rll_proj4 = &
-!           & "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=30 +lon_0=0"
-!    character (len=*), parameter :: lcc_example="+proj=lcc +lon_0=-90 +lat_1=33 +lat_2=45"
-!
-!
-!    !! corners of EU meteo in projected lon-lat
-!    lons(1:np) = (/-26., -26., 40., 40./)*ddeg_to_rad
-!    lats(1:np) = (/-35., 22.5, 22.5, -35./)*ddeg_to_rad
-!
-!    print*,("rotated-pole coordinates lon, lat")
-!    print*,(hirlam_rll_proj4)
-!    do i=1,np
-!      print*,(fu_str(i), lons(i)*drad_to_deg,lats(i)*drad_to_deg)
-!    enddo
-!
-!    call lonalt2proj(hirlam_rll_proj4, lons, lats, np, backwards)
-!
-!    print*,("Same in WGS84 coordinates lon, lat")
-!    print*,(lonlat_proj4)
-!    do i=1,np
-!      print*,(fu_str(i), lons(i)*drad_to_deg,lats(i)*drad_to_deg)
-!    enddo
-!
-!    call lonalt2proj(hirlam_rll_proj4, lons, lats, np, forwards)
-!
-!    print*,("And back! lon, lat")
-!    print*,(hirlam_rll_proj4)
-!    do i=1,np
-!      print*,(fu_str(i), lons(i)*drad_to_deg,lats(i)*drad_to_deg)
-!    enddo
-!    print*,("Done")
-!
+integer :: i
+character (len=*), parameter ::     lonlat_proj4="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+character (len=*), parameter :: hirlam_rll_proj4="+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=30 +lon_0=0"
+character (len=*), parameter ::      lcc_example="+proj=lcc +lon_0=-90 +lat_1=33 +lat_2=45"
+
+integer, parameter :: np=4
+real(8)     :: lats(np),lons(np)
+
+type(c_ptr) :: CTX = c_null_ptr
+type(c_ptr) ::  PJ = c_null_ptr
+
+!corners of EU meteo in projected lon-lat
+lons(1:np) = (/-26., -26.0, 40.0,  40.0/)
+lats(1:np) = (/-35.,  22.5, 22.5, -35.0/)
+
+CTX=proj_context_create() 
+PJ=proj_create_crs_to_crs(CTX, lonlat_proj4, hirlam_rll_proj4, C_NULL_PTR)
+    
+   call latlon2proj(PJ, lons, lats, np, "PJ_IDENT")
+   
+   print*,("rotated-pole coordinates lon, lat")
+   print*,(hirlam_rll_proj4)
+   do i=1,np
+     print*,i, lons(i),lats(i)
+   enddo
+   
+   call latlon2proj(PJ, lons, lats, np, "PJ_INV")
+   
+   print*,("Same in WGS84 coordinates lon, lat")
+   print*,(lonlat_proj4)
+   do i=1,np
+     print*,i, lons(i),lats(i)
+   enddo
+   
+   call latlon2proj(PJ, lons, lats, np, "PJ_FWD")
+   
+   print*,("And back! lon, lat")
+   print*,(hirlam_rll_proj4)
+   do i=1,np
+     print*,i, lons(i),lats(i)
+   enddo
+
+   print*,("Done")
+
+!Clean:
+call proj_destroy(PJ)
+call proj_context_destroy(CTX)
 
 contains
 
-function create_proj(s_srs,t_srs)       result(P)
-        implicit none
-        type(c_ptr) :: P
-        character(len=*) :: s_srs,t_srs
-        P=proj_create_crs_to_crs(s_srs,t_srs)
-end function
+subroutine latlon2proj(PJ,x,y,np,direction) 
+  implicit none
+  integer             :: i, status
+  type(c_ptr)         :: PJ
+  integer, intent(in) :: np
+  real(8), dimension (:), target, intent(inout) :: x, y
+  character(*)        :: direction !PJ_FWD,PJ_INV,PJ_IDENT
+  integer :: dir
+  integer(8) :: sp
 
-subroutine latlon2proj(P,direction,c,x,y) 
-        implicit none
-        integer :: i
-        type(c_ptr) :: P
-        type(PJ_XY) :: c
-        type(PJ_XY) :: c_out
-        integer :: np
-        character(3) :: direction !FWD,INV,ITY
-        character(7) :: dir       !PJ_FWD,PJ_INV,PJ_IDENT
-        real,intent(inout) :: x,y !output
+  if      ( trim(direction) == "PJ_FWD"  ) then
+     dir=1;
+  else if ( trim(direction) == "PJ_IDENT") then                     
+     dir=0;
+  else if ( trim(direction) == "PJ_INV"  ) then                   
+     dir=-1;
+  endif
 
-        if( direction == "FWD") then
-                dir="PJ_FWD"
-        elseif( direction == "ITY")then
-                dir="PJ_IDEN"
-        elseif( direction == "BWD")then
-                dir="PJ_INV"
-        else
-                print*, "ERROR: Direction not known";stop;
-        endif
-
-        do i=1,1,np
-               c_out=proj_trans(P, dir, c_loc(c))
-               x=c_out%x
-               y=c_out%y
-        enddo
-
+  sp=c_sizeof(x(1))
+  status=proj_trans_generic( PJ, dir,              &
+                           & c_loc(x(1)),sp, np,   &
+                           & c_loc(y(1)),sp, np,   &
+                           & c_null_ptr ,sp, 0,    &
+                           & c_null_ptr ,sp, 0)  
 end subroutine
-
-
-
 
 
 
