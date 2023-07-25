@@ -1,33 +1,41 @@
-#"Homework"
-
-- Pick 10 sources, and 10 receptors.
-
-- Run FORWARDS from sources.
-- Pick-up the concentrations. For a given time (the time where concentrations are "above" receptors)
-
-- Run BACKWARDS from receptors with same mass.
-- Get back the concentrations in the sources.
-
-Compare: I should get 10x10 comparissions.
-	-make a xy scatterplot
-
-
-
-
-
-
 
 #Questions about the model
 
 
++ Where concentrations are stored on runtime?   Silam doesn't deal with concentration but MASS!
+						they are stored in a "struc" called ~ "total mass map" 
+                                                Tmass_map (not sure)
+
+
++ Where emissions are stored on runtime?        In a "struc" called ~ "total mass emis map"
+
++ What supermarket_of_fields script is for?     is like a centralized place to ask for fields.
+
++ Does Silam has a grid "object"?               Yes, there is. But there is an ambiguity on the concept of "grid" 
+                                                (cubic volumes/boxes) and "mesh" (nodes). And the model uses it withour distinction.
+
+
++ How Silam deals with topography?              It uses following the terrain coordinate system (so meteo has to handle topography).
+
+---
++ Distinction between "validity time", "analysis time" and "forecast time".
+
++ How does Silam contemplates difusion?  
+
++ Do you need "spherical distances" to compute advection? Are they in degrees or meters? Are they calculated using proj?
++ Any documentation on advection numerical scheme?
 
 
 
 
 
 
+#Random facts:
 
-
++ Silam only deals with 2D grids (historical reasons). This slows down some runs
++ Silam reads all emissions before starting the run so it knows what is the available data.
++ Grib files doesn't have header. (no way to know it structure before open it)
++ NetCDF is not prepared for multi-thread access. this is one reason of why runs way slow in silam.
 
 
 

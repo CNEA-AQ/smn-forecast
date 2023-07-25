@@ -23,7 +23,6 @@ Each cocktail has specific species and characteristics regarding its composition
 | `POLLEN`       | transport and deposition of pollen grains              |	               |
 | `PM_GENERAL`   | transport & deposition (no chemistry involved)         | PM                 |
 | `DMAT_SULPHUR` | linear chemistry for SO2 / SO4, transport & deposition.| SOx                |
-| `ACID_BASIC`   | inorganic chemistry, transport & deposition.           | CO, NOx, SOx & NH3 |
 | `CB5_SOA`      | inorganic & organic chemistry, transport & deposition. | CO, NMVOC & NOx    |
 | `RADIOACTIVE`  | radioactive, transport & deposition features.          |                    |
 
@@ -41,7 +40,7 @@ Diferent dynamics for aerosols have been also implemented:
 SILAM may have up to ten input files depending on the complexity of the setup.
 
 <!-- ![Figure 2](./imgs/figure-2.png) -->
-```Haskell
+```
        control file 
        ├── general_parameters
        │
@@ -151,8 +150,6 @@ Observation time (any combination in hours and minutes is valid, subject to data
 
 
 
-
-
 # 3 Configuration files
 
 ## 3.1 Control file
@@ -223,7 +220,7 @@ END_LIST = emission_parameters
 
 ### 3.1.3 `DISPERSION_PARAMETERS`
 
-Mainly grid (horizontal and vertical) definitions and configuration.
+This namelist includes mainly grid (horizontal and vertical) definitions and configuration.
 
 ```
 LIST = dispersion_parameters
@@ -285,8 +282,6 @@ Dispersion output must be made into layers, while meteorology makes sense at lev
 
 
 
-
-
 ### 3.1.4 `METEO_PARAMETERS`
 
 Mainly paths to meteorological data.
@@ -314,7 +309,7 @@ END_LIST = meteo_parameters
 |`abl_parameterization_method` | `DRY_ABL`/`FULL_PARAM` |  Method for boundary layer height computation     |
 |`number_of_precipitation_fields` | `1`/`2`| number of precip. fields needed (convective and larg-scale)    |
 
-File formats for meteo data should be defined in the NetCDF or GRIB name table files common values are: `GRIB / NETCDF ASCII /`. 
+File formats for meteo data should be defined in the `netcdf_name_table_fnm` or `grib_name_table_fnm` files (defined in the  `standard_setup` namelist), common values are: `GRIB / NETCDF ASCII /`. 
 
 The methods available for the computation of ABL height are: 
   - `DRY_ABL`: parameterization is computing atmospheric boundary layer without humidity correction. 
@@ -367,7 +362,6 @@ Here only the main items are described:
 |                            |`POLLEN`                  |                                          | 
 |                            |`PM_GENERAL`              |                                          |
 |                            |`DMAT_SULPHUR`            |                                          |
-|                            |`ACID_BASIC`              |                                          |
 |                            |`CB5_SOA`                 |                                          |
 |                            |`CB5_STRATO_SOA`          |                                          |
 |                            |`RADIOACTIVE`             |                                          |
@@ -584,17 +578,18 @@ mandatory!!.
 ``` 
 POINT_SOURCE_5 
 source_name = TOYPOINT
-source_sector_name =        # source sector name, e.g. SNAP_10. May be empty
+source_sector_name =        # source sector (just to group sources). May be empty
 
-source_longitude = -70      # start geograph. lat., degrees and decimals, N positive
-source_latitude = -50       # start geograph. lon., degrees and decimals, E positive
+source_longitude = -70      # [decimal degrees]
+source_latitude = -50       # [decimal degrees]
 
 plume_rise = NO
 release_rate_unit = kg/sec  # Unit of the release rate:`<mass>/<time>`
                             # [kg][g][t][bq][mole] - mass(radioactivity);
                             # [yr][mon][day][hr][min][sec] - time units
+
 vertical_unit = m  #hpa     # unit of the vertical release boundaries [hpa] or [m]
-vertical_distribution =  SINGLE_LEVEL_DYNAMIC # SINGLE_LEVEL_DYNAMIC, MULTI_LEVEL_FIXED, PLUME_RISE
+vertical_distribution =  SINGLE_LEVEL_DYNAMIC # MULTI_LEVEL_FIXED, PLUME_RISE
 stack_height = 10 m
 
 par_str_point = 2009 03 15 19 00 0.0    1.    500. 1000.   5.0   450.  PASSIVE_COCKTAIL 2.  PM_COARSE 5. PM_VERY_COARSE 5. #TEST_COCKTAIL 1.  AEROSOL_2_5_COCKTAIL  1. 
@@ -992,7 +987,6 @@ COCKTAIL_DESCRIPTION_V3_2
 END_COCKTAIL_DESCRIPTION
 ```
 
-
 here the component fractions has mass fractions diferent than 1.0, and there should be as many `component_fraction` lines as the number of substances that the user is trying to simulate.
 
 For coctails with aerosol species, two more items should be included:
@@ -1030,22 +1024,22 @@ COCKTAIL_DESCRIPTION_V3_2
 END_COCKTAIL_DESCRIPTION
 ```
 
-If `gas_phase` = YES and aerosol modes coexist.
+If `gas_phase = YES` and aerosol modes coexist.
 
 - `component_fraction` = *Component name* *number_of modes* *mass fraction in the aerosol mixture*  *mass fraction in the gas mixture*
 
-If gas_phase = NO:
+If `gas_phase = NO`:
 
 -  `component_fraction` = *Component name* *number of modes* *mass fraction in the aerosol mixture* 
 
-If `gas_phase` = YES and no aerosol phase: 
+If `gas_phase = YES` and no aerosol phase: 
 
 - `component_fraction` = *Component name* *mass fraction in the gas mixture*
 
 
 # 4 Running the model
 
-There is only one argument to be given to run the model, the control file name. This can be done via one of the following command line constructions in a command prompt window.
+There is only one argument to be given to run the model: the control file name. This can be done via one of the following command line constructions in a command prompt window.
 
 Notations below are:
 
@@ -1106,6 +1100,109 @@ In case of Linux-based users, a run with SILAM can be set with several threads s
 - `photolysis_affected_by_aod            `  = YES
 - `photolysis_AOD_wavelength             `  = 550 nm
 - `cbm_tolerance                         `  = FAST
-
-# A.2 NetCDF/GRIB name tables
 -->
+
+# A.1 NetCDF & GRIB name tables
+
+The files defined in the `setup_setup` as grib_code_table_fnm` and `netcdf_name_table_fnm` contains definitions to conect variables in grib or netcdf to SILAM internal variables.
+
+
+ File structure:
+
+ The file contains different tables for files from different sources and a standard table in case the
+ source can't be tetermined. That will only work if the file follows exactly cf conventions.
+ The files are recognized by title. Each table can have several possible title lines.
+ This is inconvinient but the files have to be told apart somehow because the same variable names can be used
+ for different variables in different files.
+
+ Each table contains a set of variable lines of space-delimited fields:
+ var = varname   silam_quantity   silam_level_type   silam_level_value   subst_name   mode_value   wavelength   factor   offset 
+ If a field is not needed, it should be filled by XXX for text and -1 for numeric value:
+ var = varname   silam_quantity         *                   -1                *           -1           -1          1        0
+ All the quantities are assumed to have SI units. Factor and offset fields can be used to deal with unit conversions
+ and oddities in the file.
+ Level type and value should be used only for 2d variables, for 3d variables the level type should be *
+ For vertical dimension the vertical type should be set at dimension definition because it can have no dimension variable 
+
+ Each table can contain a set of lines to define the dimensions of the file:
+ dim = dimname   axis   dimvar   type 
+ Values for axis: x, y, z, t
+ Some dimensions may not have a dimension variable
+ dim = dimname   axis      *      *
+
+ Variables defining grids of anygrid type:
+ gridvar = var_name_in_file var var_to_use_for_staggered_grids
+ for staggered grids only dimensions are taken from the first field given and
+ values are interpolated from the second one
+
+ If no dimension lines are present, the cf conventions will be assumed:
+ SILAM will look for dimension variables with same name as dimension. 
+ Units "degrees_north" and "degrees_east" will indicate lat and lon,
+ for vertical coordinate the standard name attribute is requred to determine the type of the vertical levels.
+ The unlimited dimension will be assumed to be time, with units "something since some_time".
+
+ Dimension variables don't have to be defined separately, unless they are necessary
+ SILAM quantities (pressure for instance).
+
+ The dimensions with variables with different name than themselves have to be defined here.
+ If a dimension is not defined in this table and does not follow CF conventions, it will be ignored. 
+ Unless the undefined dimension is string length, any variables with that dimension will be unavailible. 
+ If a variable is not defined, the standard name attribute is checked and the variable name is checked to be a SILAM quantity.
+
+ Rules for filling the codes:
+ 1. If the silam quantity name is fully defined by the variable name - set to level
+ type and levels. Example - temperature (3D, any level) or precipitation
+ amount (always surface field)
+ 2. For 2d quantities with missing dimension set it exactly.
+ Example: 2m temperature, which must be at 2m above the ground.
+
+
+```
+LIST = EDGAR
+
+!---------------------------------
+! emissions
+!---------------------------------
+
+title = EDGAR
+
+! dims have to be defined to fix the strange hybrid sigma pressure vertical ()
+dim     =     lon     x     lon    *
+dim     =     lat     y     lat    *
+dim     =     time    t     time   *
+
+analysis_time = TIME_DIMENSION_START
+ifCocktails = YES
+
+var = emi_pm10_1A1a          emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1A1a         -1  -1   1   0 
+var = emi_pm10_1A2           emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1A2          -1  -1   1   0 
+var = emi_pm10_1A3a_c_d_e    emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1A3a_c_d_e   -1  -1   1   0 
+var = emi_pm10_1A3b          emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1A3b         -1  -1   1   0 
+var = emi_pm10_1A4           emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1A4          -1  -1   1   0 
+var = emi_pm10_1B2a_c_1A1b_c emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_1B2a_c_1A1b_c-1  -1   1   0 
+var = emi_pm10_2_3           emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_2_3          -1  -1   1   0 
+var = emi_pm10_4B            emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_4B           -1  -1   1   0 
+var = emi_pm10_4C_4D         emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_4C_4D        -1  -1   1   0 
+var = emi_pm10_4F            emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_4F           -1  -1   1   0 
+var = emi_pm10_5A_C_D_F_4E   emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_5A_C_D_F_4E  -1  -1   1   0 
+var = emi_pm10_6A_6C         emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_6A_6C        -1  -1   1   0 
+var = emi_pm10_7A            emission_rate  HEIGHT_LYR_FROM_SURF  25  PM10_7A           -1  -1   1   0 
+     
+END_LIST = EDGAR
+```
+
+ ATTENTION!!! 
+ As variable names in netcdf files usually don't follow any standard, this table is really file specific and has to be updated
+ for each new type of ntcdf files!!!
+
+ for hybrid vertical, coefficient variables or coefficient values can also be set in this file:
+ a, b, aP0, P0;     
+ a = dim val1 val2 val3 ...
+ aVar, bVar, P0Var, PsVar.
+ aVar = dim aVar
+
+ Hybrid levels can be defined either by one or two coefficients.
+ If one coefficient is given it has to be defined here as b or bVar and will be treated in following way:
+ a = 0; b = coef/1000
+ pressure = b*surface_pressure
+'

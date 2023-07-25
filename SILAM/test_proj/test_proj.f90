@@ -1,6 +1,7 @@
 program test_proj
 
-use, intrinsic :: ISO_C_BINDING, only: c_int,c_char,c_double,c_ptr,c_null_ptr,c_associated,c_size_t,c_loc,c_sizeof !(ojo borre cosas)
+use,intrinsic:: ISO_C_BINDING, only: c_int, c_char, c_ptr, c_null_ptr, &
+        & c_associated, c_size_t, c_loc, c_funptr, c_null_funptr,c_sizeof
 implicit none
 
 interface

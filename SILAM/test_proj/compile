@@ -1,6 +1,0 @@
-# C:
-gcc test_proj.c -o test_proj.exe -lproj
-
-# Fortran:
-gfortran -g test_proj.f90 -lproj -DUSE_PROJ6
-
