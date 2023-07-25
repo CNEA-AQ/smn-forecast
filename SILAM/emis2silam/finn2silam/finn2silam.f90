@@ -7,11 +7,6 @@ program finn2silam
   INTEGER, PARAMETER :: ascii = selected_char_KIND ("ascii")
   INTEGER, PARAMETER :: ucs4  = selected_char_KIND ('ISO_10646') 
 
-  real, parameter :: R_EARTH = 6370000.
-  real, parameter :: PI = 3.141592653589793
-  real, parameter :: RAD2DEG = 180./PI
-  real, parameter :: DEG2RAD = PI/180.
-
   type grid_type
       character(12)   :: gName        !grid-name
       integer         :: nx,ny,nz     !number of cells in x-y direction (ncols, nrows, nlevs)
@@ -25,9 +20,7 @@ program finn2silam
   integer :: status,iostat
   integer :: ncid,tstep_dim_id,date_time_dim_id,col_dim_id,row_dim_id,lay_dim_id,var_dim_id,pollut_var_id
   logical :: file_exists
-#ifdef WGET
-  character(256) :: command
-#endif 
+  character(256) :: command     !(por si uso wget)
   character(256) :: griddesc_file,finn_data_directory,finnFile,outFile
   character(16)  :: gridname, chemistry, pollut
   character(16), allocatable :: var_list(:), var_units(:) !lista de polluts
@@ -36,33 +29,36 @@ program finn2silam
   integer :: nvars
   
   !finnFile:
-  character(len=512) :: header!, line
+  character(len=512) :: header                !
   character(10)      :: colnames(6)           !columnames de finnFile
   integer            :: day,time,genveg       !vars de finnFile
   real               :: lati,longi,area       !vars de finnFile
   real, allocatable  :: emis(:)               !emision de cada fila de finnFile.
  
   integer :: i,j,k,h,ii,ij                    !indices.
-  real    :: xi,yi
-  real   , allocatable  :: data(:,:,:,:,:)    !buffer donde meter la grilla con valores de emision [nt,nz,nx,ny,nvars]
-  integer, allocatable  :: tflag(:,:,:)       !buffer donde meter los valores de TFLAG [nt,nvars,2]
+  !real    :: xi,yi
+  real   , allocatable  :: data(:,:,:,:,:)         !buffer donde meter la grilla con valores de emision [nt,nz,nx,ny,nvars]
+  real   , allocatable  :: lat(:),lon(:),height(:) !buffer donde meter las coordenadas [nx] y [ny]
+  integer :: timevar(24)                           !buffer donde meter los valores de tiempo [24]
 
   real, dimension(24) :: diurnal_cycle
 
   character(len=17) :: start_date, end_date
-  integer :: end_date_s, current_date_s 
+  integer :: end_date_s, current_date_s
+  character(19) :: current_date !current date with format %Y-%m-%d %H:%M:%S
   character(4) :: YYYY
   character(3) :: DDD
-  character(2) :: MM,HH!,DD 
+  character(2) :: MM,HH,DD 
   integer      :: todays_date(8)
 
-  real    :: lon_start,lat_start,lon_end,lat_end,dx,dy,
+  real    :: lon_start,lat_start,lon_end,lat_end,dx,dy
   integer ::nx,ny
 
   namelist /control/ chemistry,start_date,end_date,finn_data_directory,lon_start,lat_start,lon_end,lat_end,dx,dy,nx,ny,diurnal_cycle
   
   call date_and_time(values=todays_date)       !fecha de hoy.
 
+  nx=-999;ny=-999;lon_end=-999.;lat_end=-999.
   !Leo namelist:
   read(*,nml=control, iostat=iostat)
   if( iostat /= 0 ) then
@@ -70,17 +66,46 @@ program finn2silam
     stop
   end if
 
-  !Leo GRIDDESC:
-  call read_GRIDDESC(griddesc_file,gridname, proj, grid)    !(!) TO-DO: mejorar esta funcion basado en lo que haga IOAPI
+  !Set grid parameters:
+  grid%lonmin=lon_start      ; grid%latmin=lat_start
+  grid%dx=dx                 ; grid%dy= dy      
+  if ( nx == -999 ) then
+        if ( lon_end == -999.0 ) then
+            print*, "Error: nx nor lon_end has been initialized on namelist!"; stop;
+        else 
+            grid%lonmax=lon_end; grid%nx=(grid%lonmax-grid%lonmin)/grid%dx
+        endif
+  else if ( lon_end == -999.0 ) then
+        grid%nx=nx; grid%lonmax=grid%lonmin+grid%nx*grid%dx
+  endif
+  if ( ny == -999 ) then
+        if ( lat_end == -999.0 ) then
+            print*, "Error: nx nor lon_end has been initialized on namelist!"; stop;
+        else 
+            grid%latmax=lat_end; grid%ny=(grid%latmax-grid%latmin)/grid%dy
+        endif
+  else if ( lat_end == -999.0 ) then
+        grid%ny=nx; grid%latmax=grid%latmin+grid%ny*grid%dy
+  endif
+
+  allocate(height(1))
+  allocate(lon(grid%nx))
+  allocate(lat(grid%ny))
+  height=[50.0] !50 meters as emission height (change!)
+  lon=[(grid%lonmin+i*grid%dx,i=1,grid%nx)]
+  lat=[(grid%latmin+i*grid%dy,i=1,grid%ny)]
 
   !Loop over each day
    current_date_s = atoi( date(start_date, "%s") )
        end_date_s = atoi( date(  end_date, "%s") )
 
   do while (current_date_s <= end_date_s)
- 
+                    
+    current_date=date("@"//itoa(current_date_s), "%Y-%m-%d %H:%M:%S")
+
     YYYY=date("@"//itoa(current_date_s), "%Y")   !año
       MM=date("@"//itoa(current_date_s), "%m")   !mes
+      DD=date("@"//itoa(current_date_s), "%d")   !dia juliano
      DDD=date("@"//itoa(current_date_s), "%j")   !dia juliano
 
     write(*,'(A,A4,A,A3,A,A2,A)') "Day: ",YYYY,"-",DDD," (month: ", MM,")"
@@ -114,7 +139,7 @@ program finn2silam
           allocate(emis(nvars))                             !array con emisiones de los polluts
           allocate(var_units(nvars))                        !array con unidades de emisiones
           allocate(data(grid%nx,grid%ny,1,24,nvars))        !grilla de emisiones
-          allocate(tflag(2,nvars,24))                       !variable tflag
+          !allocate(timevar(24))                       !variable timevar
           data=0.0
 
           read(header,*) colnames,var_list
@@ -127,13 +152,12 @@ program finn2silam
               if ( lati > grid%latmax .or. lati < grid%latmin .or. longi > grid%lonmax .or. longi < grid%lonmin ) then
                 continue
               else    
-                !call ll2xy(proj,longi,lati,xi,yi)  !transformo lati y longi a proyectada xi, yi
-                ii=floor((xi-grid%xmin)/(grid%xmax-grid%xmin)*grid%nx) !calculo posición-X en la grilla
-                ij=floor((yi-grid%ymin)/(grid%ymax-grid%ymin)*grid%ny) !calculo posición-Y en la grilla
+                ii=floor((longi-grid%lonmin)/(grid%lonmax-grid%lonmin)*grid%nx) !calculo posición-X en la grilla
+                ij=floor(( lati-grid%latmin)/(grid%latmax-grid%latmin)*grid%ny) !calculo posición-Y en la grilla
                 do k=1,nvars
                         pollut=var_list(k)
                         if ( trim(pollut) == "OC" .or. trim(pollut)  == "BC" .or.  trim(pollut) == "PM25" .or. trim(pollut) == "PM10" ) then
-                                emis(k) = emis(k) / 3600000.0      !  kg/day -> g/s    (estrictamente es cierto cuando aplico el ciclo diurno)
+                                emis(k) = emis(k) / 3600000.0      !kg/day -> g/s      (estrictamente es cierto cuando aplico el ciclo diurno)
                                 var_units(k)="g/s"             
                         else
                                 emis(k) = emis(k) / 3600.0         !mole/day -> mole/s (estrictamente es cierto cuando aplico el ciclo diurno)
@@ -141,42 +165,62 @@ program finn2silam
                         endif
 
                         do h=1,24
-                            write(HH, '(I0.2)') h-1
-                                       
-                            tflag(1,:,h) = atoi(YYYY//DDD) 
-                            tflag(2,:,h) = atoi(HH//"0000")
-                        
+                            timevar(h) = current_date_s + 3600*(h-1)  !seconds from base_date_s
                             data(ii,ij,1,h,k) = data(ii,ij,1,h,k) + emis(k)*diurnal_cycle(h)
-                         enddo
+                        enddo
                 enddo
               endif
           enddo
        close(1) !Cierro finnFile
        
-       outFile="./emis_fires_"//YYYY//DDD//"_d01.nc"
+       outFile="./emis_fires_"//YYYY//MM//DD//"_d01.nc"
 
        print*," Creating NetCDF file: ",trim(outFile)
        ! Create the NetCDF file                                                                                          
        call check(nf90_create(outFile, NF90_CLOBBER, ncid))
            !! Defino dimensiones
-           call check(nf90_def_dim(ncid, "time"    ,   24   , tstep_dim_id    )) 
+           call check(nf90_def_dim(ncid, "time"    ,   24   , tstep_dim_id    )) !24 because daily file, hourly time-step.
            call check(nf90_def_dim(ncid, "lon"     , grid%nx, col_dim_id      )) 
            call check(nf90_def_dim(ncid, "lat"     , grid%ny, row_dim_id      )) 
            call check(nf90_def_dim(ncid, "height"  ,   1    , lay_dim_id      )) 
-           !! Defino attributos
+           !! Defino attributos globales
            call check(nf90_put_att(ncid, nf90_global,"title"       , "SILAM_OUTPUT"   ))
            call check(nf90_put_att(ncid, nf90_global,"Conventions" , "CF-1.3"         ))
            call check(nf90_put_att(ncid, nf90_global,"source"      ,"SILAM v5_7_SVN (r588062)" ))
-           call check(nf90_put_att(ncid, nf90_global,"_CoordinateModelRunDate","2016-12-02T00:00:00Z"))
+           call check(nf90_put_att(ncid, nf90_global,"_CoordinateModelRunDate",current_date//"Z"))
            call check(nf90_put_att(ncid, nf90_global,"grid_projection" , "lonlat"     ))
            call check(nf90_put_att(ncid, nf90_global,"pole_lat", -90.0                ))
            call check(nf90_put_att(ncid, nf90_global,"pole_lon",   0.0                ))
            call check(nf90_put_att(ncid, nf90_global,"history" , ""                   ))
-           !!Defino variables
-           call check(nf90_def_var(ncid,"TFLAG"       ,NF90_FLOAT    , [date_time_dim_id,var_dim_id,tstep_dim_id], pollut_var_id))
-           call check(nf90_put_att(ncid, pollut_var_id, "units"      , "<YYYYDDD,HHMMSS>" ))
-           call check(nf90_put_att(ncid, pollut_var_id, "long_name"  , "TFLAG           " ))
-           call check(nf90_put_att(ncid, pollut_var_id, "var_desc"   , "Timestep-valid flags:  (1) YYYYDDD or (2) HHMMSS                                "))
+           !!Defino variables extra (height,lat,lon,time)
+           call check(nf90_def_var(ncid,"height"      ,NF90_FLOAT            , [lay_dim_id], pollut_var_id          ));
+           call check(nf90_put_att(ncid, pollut_var_id, "units"              , "m"                                  ));
+           call check(nf90_put_att(ncid, pollut_var_id, "long_name"          , "layer midpoint constant height from surface"));
+           call check(nf90_put_att(ncid, pollut_var_id, "axis"               , "Z"                                  ));
+           call check(nf90_put_att(ncid, pollut_var_id, "standard_name"      ,"layer_midpoint_height_above_ground"))
+           !lat
+           call check(nf90_def_var(ncid,"lat"         ,NF90_FLOAT            , [row_dim_id], pollut_var_id          ));
+           call check(nf90_put_att(ncid, pollut_var_id,"units"               , "degrees_north" ));
+           call check(nf90_put_att(ncid, pollut_var_id,"axis"                , "Y"             ));        
+           call check(nf90_put_att(ncid, pollut_var_id,"long_name"           , "latitude"      )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"standard_name"       , "latitude"      )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"_CoordinateAxisType" , "Lat"           ));
+           !lon
+           call check(nf90_def_var(ncid,"lon"         ,NF90_FLOAT            , [col_dim_id], pollut_var_id          ));
+           call check(nf90_put_att(ncid, pollut_var_id,"units"               , "degrees_east"  ));
+           call check(nf90_put_att(ncid, pollut_var_id,"axis"                , "X"             ));        
+           call check(nf90_put_att(ncid, pollut_var_id,"long_name"           , "longitude"     )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"standard_name"       , "longitude"     )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"_CoordinateAxisType" , "Lon"           ));
+           !time
+           call check(nf90_def_var(ncid,"time"        ,NF90_INT              , [tstep_dim_id], pollut_var_id  ));
+           call check(nf90_put_att(ncid, pollut_var_id,"units"               , "seconds since "//current_date//" UTC" ));
+           call check(nf90_put_att(ncid, pollut_var_id,"long_name"           , "time"                                  ));        
+           call check(nf90_put_att(ncid, pollut_var_id,"axis"                , "T"                                     )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"calendar"            , "standard"                              )); 
+           call check(nf90_put_att(ncid, pollut_var_id,"standard_name"       , "time"                                  ));
+
+           !emission variables:
            do k=1, nvars             
              pollut=var_list(k) 
              att_var_desc=trim(pollut)//"[1]"
@@ -196,14 +240,24 @@ program finn2silam
            call check(nf90_inq_varid(ncid, trim(pollut), pollut_var_id))     !Obtengo id de variable
            call check(nf90_put_var(ncid, pollut_var_id, data(:,:,:,:,k)  ))  !Escribo valores en NetCDF
        enddo
-       call check(nf90_inq_varid(ncid, "TFLAG"    , pollut_var_id))                                
-       call check(nf90_put_var(ncid, pollut_var_id, tflag(:,:,:) ))
+       !height
+       call check(nf90_inq_varid(ncid, "height"  , pollut_var_id))                                
+       call check(nf90_put_var(ncid, pollut_var_id, height(:)   ))
+       !lat
+       call check(nf90_inq_varid(ncid, "lat"     , pollut_var_id))                                
+       call check(nf90_put_var(ncid, pollut_var_id, lat(:)     ))
+       !lon
+       call check(nf90_inq_varid(ncid, "lon"     , pollut_var_id))                                
+       call check(nf90_put_var(ncid, pollut_var_id, lon(:)     ))
+       !time
+       call check(nf90_inq_varid(ncid, "time"    , pollut_var_id))                                
+       call check(nf90_put_var(ncid, pollut_var_id, timevar(:) ))
 
        call check(nf90_close(ncid))
        !Cierro NetCDF outFile
 
     deallocate(data)       !Libero memoria
-    deallocate(tflag)      !Libero memoria
+    timevar=0
     deallocate(var_list)   !Libero memoria
     deallocate(var_units)  !Libero memoria
     deallocate(emis)       !Libero memoria
@@ -259,53 +313,5 @@ contains
     write(rtoa, '(F16.3)') r
     rtoa = adjustl(rtoa)
  end function
-
- subroutine read_GRIDDESC(griddescFile,gridName, p, g)
-    implicit none
-    character(200),intent(in) :: griddescFile
-    character(*) ,intent(in)  :: gridName
-    type(proj_type), intent(inout) :: p
-    type(grid_type), intent(inout) :: g
-    character(20) :: row
-    iostat=0
-    open(unit=2,file=griddescFile,status='old',action='read',access='sequential')
-    do while(iostat == 0)  !loop por cada fila
-       read(2,*,iostat=iostat) row
-       if ( trim(row) == trim(gridname)) then
-         g%gName=row
-         read(2,*) p%pName,g%xmin,g%ymin,g%dx,g%dy,g%nx,g%ny !projName xorig yorig xcell ycell nrows ncols
-         rewind(2)
-       endif
-       if (trim(row) == trim(p%pName)) then
-         read(2,*) p%typ,p%alp,p%bet,p%gam,p%xcent,p%ycent   !map_proj truelat1 truelat2 stand_lon ref_lon ref_lat
-         iostat=1
-       endif
-    enddo
-    close(2)
-
-    !Calculate proj parameters used then for coordinate transformations:
-    call set_additional_proj_params(p)
-    if ( p%typ ==1 ) then
-            g%lonmin=g%xmin                ;g%latmin=g%ymin
-            g%lonmax=g%lonmin+g%nx*g%dx    ;g%latmax=g%latmin+g%ny*g%dy
-            g%xmax=g%lonmax                ;g%ymax=g%latmax
-            p%xcent=g%lonmin+g%nx*g%dx*0.5 ;p%ycent= g%latmin+g%ny*g%dy*0.5
-            g%xc= p%xcent                  ;g%yc= p%ycent
-    else
-            call set_additional_grid_params(p,g)
-    endif
-
-    !!debug:-------------------------------
-    !print*,"Test: xy -> ll ..."
-    !print*,"g%xmin, g%xmax, g%ymin, g%ymax      ",g%xmin, g%xmax, g%ymin, g%ymax
-    !print*,"g%lonmin,g%lonmax,g%latmin,g%latmax ",g%lonmin,g%lonmax,g%latmin,g%latmax
-    !print*,"Test: ll -> xy ..."
-    !call ll2xy(p,g%lonmin,g%latmin,g%xmin,g%ymin)
-    !call ll2xy(p,g%lonmax,g%latmax,g%xmax,g%ymax)
-    !print*,"g%lonmin,g%lonmax,g%latmin,g%latmax ",g%lonmin,g%lonmax,g%latmin,g%latmax
-    !print*,"g%xmin, g%xmax, g%ymin, g%ymax      ",g%xmin, g%xmax, g%ymin, g%ymax
-    !!------------------------------------- 
-
- end subroutine
 
 end program finn2silam
