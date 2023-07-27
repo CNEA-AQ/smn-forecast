@@ -18,14 +18,13 @@ program finn2silam
   type(grid_type) :: grid
 
   integer :: status,iostat
-  integer :: ncid,tstep_dim_id,date_time_dim_id,col_dim_id,row_dim_id,lay_dim_id,var_dim_id,pollut_var_id
+  integer :: ncid,tstep_dim_id,date_time_dim_id,col_dim_id,row_dim_id,lay_dim_id,pollut_var_id
   logical :: file_exists
   character(256) :: command     !(por si uso wget)
-  character(256) :: griddesc_file,finn_data_directory,finnFile,outFile
-  character(16)  :: gridname, chemistry, pollut
+  character(256) :: finn_data_directory,finnFile,outFile
+  character(16)  :: chemistry, pollut
   character(16), allocatable :: var_list(:), var_units(:) !lista de polluts
   character(800) :: var_list_string
-  character(80) :: att_var_desc
   integer :: nvars
   
   !finnFile:
@@ -36,7 +35,6 @@ program finn2silam
   real, allocatable  :: emis(:)               !emision de cada fila de finnFile.
  
   integer :: i,j,k,h,ii,ij                    !indices.
-  !real    :: xi,yi
   real   , allocatable  :: data(:,:,:,:,:)         !buffer donde meter la grilla con valores de emision [nt,nz,nx,ny,nvars]
   real   , allocatable  :: lat(:),lon(:),height(:) !buffer donde meter las coordenadas [nx] y [ny]
   integer :: timevar(24)                           !buffer donde meter los valores de tiempo [24]
@@ -44,13 +42,15 @@ program finn2silam
   real, dimension(24) :: diurnal_cycle
 
   character(len=17) :: start_date, end_date
-  integer :: end_date_s, current_date_s
-  character(19) :: current_date !current date with format %Y-%m-%d %H:%M:%S
+  integer :: end_date_s, current_date_s      !, base_date_s
+  character(19) :: current_date              !current date with format %Y-%m-%d %H:%M:%S
   character(4) :: YYYY
   character(3) :: DDD
   character(2) :: MM,HH,DD 
   integer      :: todays_date(8)
 
+  real :: mode_min, mode_avg, mode_max, mode_nom
+  character(12) :: mode_str
   real    :: lon_start,lat_start,lon_end,lat_end,dx,dy
   integer ::nx,ny
 
@@ -96,6 +96,7 @@ program finn2silam
   lat=[(grid%latmin+i*grid%dy,i=1,grid%ny)]
 
   !Loop over each day
+
    current_date_s = atoi( date(start_date, "%s") )
        end_date_s = atoi( date(  end_date, "%s") )
 
@@ -105,7 +106,7 @@ program finn2silam
 
     YYYY=date("@"//itoa(current_date_s), "%Y")   !año
       MM=date("@"//itoa(current_date_s), "%m")   !mes
-      DD=date("@"//itoa(current_date_s), "%d")   !dia juliano
+      DD=date("@"//itoa(current_date_s), "%d")   !dia 
      DDD=date("@"//itoa(current_date_s), "%j")   !dia juliano
 
     write(*,'(A,A4,A,A3,A,A2,A)') "Day: ",YYYY,"-",DDD," (month: ", MM,")"
@@ -135,15 +136,15 @@ program finn2silam
           read(1,'(A)') header                                                  !Aca asumo que FinnFile header es siempre:
           nvars = COUNT((/ (header(i:i) == ',', i=1,len(header)) /)) - 6 + 1    !DAY,TIME,GENVEG,LATI,LONGI,AREA,CO2,CO,...,PM25
 
-          allocate(var_list(nvars))                         !array con nombre de polluts
-          allocate(emis(nvars))                             !array con emisiones de los polluts
-          allocate(var_units(nvars))                        !array con unidades de emisiones
-          allocate(data(grid%nx,grid%ny,1,24,nvars))        !grilla de emisiones
+          allocate(var_list(nvars))                    !array con nombre de polluts
+          allocate(emis(nvars))                        !array con emisiones de los polluts
+          allocate(var_units(nvars))                   !array con unidades de emisiones
+          allocate(data(grid%nx,grid%ny,1,24,nvars))   !grilla de emisiones
           !allocate(timevar(24))                       !variable timevar
           data=0.0
 
           read(header,*) colnames,var_list
-          write(var_list_string,*) var_list                !este es un global attr importante.
+          write(var_list_string,*) var_list             !este es un global attr importante (en cmaq).
 
           iostat=0
           do while(iostat == 0)  !loop por cada fila de finnFile:
@@ -155,17 +156,12 @@ program finn2silam
                 ii=floor((longi-grid%lonmin)/(grid%lonmax-grid%lonmin)*grid%nx) !calculo posición-X en la grilla
                 ij=floor(( lati-grid%latmin)/(grid%latmax-grid%latmin)*grid%ny) !calculo posición-Y en la grilla
                 do k=1,nvars
-                        pollut=var_list(k)
-                        if ( trim(pollut) == "OC" .or. trim(pollut)  == "BC" .or.  trim(pollut) == "PM25" .or. trim(pollut) == "PM10" ) then
-                                emis(k) = emis(k) / 3600000.0      !kg/day -> g/s      (estrictamente es cierto cuando aplico el ciclo diurno)
-                                var_units(k)="g/s"             
-                        else
-                                emis(k) = emis(k) / 3600.0         !mole/day -> mole/s (estrictamente es cierto cuando aplico el ciclo diurno)
-                                var_units(k) = "mole/s"           
-                        endif
 
+                        emis(k) = emis(k) / 3600.0  !mole/day -> mole/s (estrictamente es cierto cuando aplico el ciclo diurno)
+                                                    !kg/day   -> kg/s   (estrictamente es cierto cuando aplico el ciclo diurno)
+                        
                         do h=1,24
-                            timevar(h) = current_date_s + 3600*(h-1)  !seconds from base_date_s
+                            timevar(h) = 3600*(h-1) !current_date_s +  !seconds from base_date_s
                             data(ii,ij,1,h,k) = data(ii,ij,1,h,k) + emis(k)*diurnal_cycle(h)
                         enddo
                 enddo
@@ -179,10 +175,10 @@ program finn2silam
        ! Create the NetCDF file                                                                                          
        call check(nf90_create(outFile, NF90_CLOBBER, ncid))
            !! Defino dimensiones
-           call check(nf90_def_dim(ncid, "time"    ,   24   , tstep_dim_id    )) !24 because daily file, hourly time-step.
-           call check(nf90_def_dim(ncid, "lon"     , grid%nx, col_dim_id      )) 
-           call check(nf90_def_dim(ncid, "lat"     , grid%ny, row_dim_id      )) 
-           call check(nf90_def_dim(ncid, "height"  ,   1    , lay_dim_id      )) 
+           call check(nf90_def_dim(ncid, "time"     ,   24   , tstep_dim_id    )) !24 because daily file, hourly time-step.
+           call check(nf90_def_dim(ncid, "lon"      , grid%nx, col_dim_id      )) 
+           call check(nf90_def_dim(ncid, "lat"      , grid%ny, row_dim_id      )) 
+           call check(nf90_def_dim(ncid, "height"   ,   1    , lay_dim_id      )) 
            !! Defino attributos globales
            call check(nf90_put_att(ncid, nf90_global,"title"       , "SILAM_OUTPUT"   ))
            call check(nf90_put_att(ncid, nf90_global,"Conventions" , "CF-1.3"         ))
@@ -221,13 +217,43 @@ program finn2silam
            call check(nf90_put_att(ncid, pollut_var_id,"standard_name"       , "time"                                  ));
 
            !emission variables:
-           do k=1, nvars             
-             pollut=var_list(k) 
-             att_var_desc=trim(pollut)//"[1]"
-             call check(nf90_def_var(ncid, pollut       ,NF90_FLOAT , [col_dim_id,row_dim_id,lay_dim_id,tstep_dim_id], pollut_var_id)) !
-             call check(nf90_put_att(ncid, pollut_var_id,"units"    , trim(var_units(k)) ))
-             call check(nf90_put_att(ncid, pollut_var_id,"long_name", pollut             ))
-             call check(nf90_put_att(ncid, pollut_var_id,"var_desc" , att_var_desc       ))
+           do k=1, nvars
+             pollut=var_list(k)
+
+             if ( trim(pollut) == "OC" .or. trim(pollut)  == "BC" .or.  trim(pollut) == "PM25" .or. trim(pollut) == "PM10" ) then
+                   
+                   if ( trim(pollut)=="PM25") then; pollut="PM" ; mode_min=0.01; mode_avg=2.00; mode_max=2.50; mode_nom=2.50; endif
+                   if ( trim(pollut)=="PM10") then; pollut="PM" ; mode_min=0.01; mode_avg=5.00; mode_max=10.0; mode_nom=10.0; endif
+                   if ( trim(pollut)=="BC"  ) then;               mode_min=0.01; mode_avg=0.50; mode_max=1.00; mode_nom=1.00; endif
+                   if ( trim(pollut)=="OC"  ) then;               mode_min=0.01; mode_avg=0.50; mode_max=1.00; mode_nom=0.50; endif
+                     
+                   mode_str=mode2str(mode_nom)!  
+                   var_list(k) = "ems_"//trim(pollut)//trim(mode_str)
+                   call check(nf90_def_var(ncid, var_list(k)  ,NF90_FLOAT, [col_dim_id,row_dim_id,lay_dim_id,tstep_dim_id], pollut_var_id)) !
+                   call check(nf90_put_att(ncid, pollut_var_id,"silam_amount_unit"     ,"kg"            ))                                            
+                   call check(nf90_put_att(ncid, pollut_var_id,"mode_name"             ,""              ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"mode_distribution_type","FIXED_DIAMETER"))                                            
+                   call check(nf90_put_att(ncid, pollut_var_id,"mode_nominal_diameter"      ,trim(rtoa(mode_nom))//" um"   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"fix_diam_mode_min_diameter" ,trim(rtoa(mode_min))//" um"   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"fix_diam_mode_max_diameter" ,trim(rtoa(mode_max))//" um"   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"fix_diam_mode_mean_diameter",trim(rtoa(mode_avg))//" um"   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"long_name"             ,"Emission intensity [massunits/s] "//trim(pollut)//trim(mode_str) )) 
+                   call check(nf90_put_att(ncid, pollut_var_id,"units"                 ,"kg/sec"        ))                                            
+                   call check(nf90_put_att(ncid, pollut_var_id,"_FillValue"            , -9.99999e+14   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"substance_name"        , trim(pollut)   ))
+             else
+                   var_list(k)= "ems_"//trim(pollut)//"_gas"
+                   call check(nf90_def_var(ncid, var_list(k)  ,NF90_FLOAT, [col_dim_id,row_dim_id,lay_dim_id,tstep_dim_id], pollut_var_id)) !
+                   call check(nf90_put_att(ncid, pollut_var_id,"_FillValue"            , -9.99999e+14   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"substance_name"        , trim(pollut)   ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"silam_amount_unit"     ,"mole"          ))
+                   !call check(nf90_put_att(ncid, pollut_var_id,"molar_mass"            ,"0.04  kg/mole"))!NOT TRUE! but silam will change it
+                   !call check(nf90_put_att(ncid, pollut_var_id,"mode_name"             ,""             ))
+                   !call check(nf90_put_att(ncid, pollut_var_id,"mode_solubility"       ,"0.0"          ))!NOT TRUE! but silam will change it
+                   call check(nf90_put_att(ncid, pollut_var_id,"mode_distribution_type","GAS_PHASE"     ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"units"                 ,"mole/sec"      ))
+                   call check(nf90_put_att(ncid, pollut_var_id,"long_name"             ,"Emission intensity [massunits/s] "//trim(pollut)//"_gas" ))
+             endif
            end do
 
        call check(nf90_enddef(ncid))
@@ -313,5 +339,60 @@ contains
     write(rtoa, '(F16.3)') r
     rtoa = adjustl(rtoa)
  end function
+ pure recursive function replaceStr(string,search,substitute) result(modifiedString)
+     implicit none
+     character(len=*), intent(in)  :: string, search, substitute
+     character(len=:), allocatable :: modifiedString
+     integer                       :: i, stringLen, searchLen
+     stringLen = len(string)
+     searchLen = len(search)
+     if (stringLen==0 .or. searchLen==0) then
+         modifiedString = ""
+         return
+     elseif (stringLen<searchLen) then
+         modifiedString = string
+         return
+     end if
+     i = 1 
+     do
+         if (string(i:i+searchLen-1)==search) then
+             modifiedString = string(1:i-1) // substitute // replaceStr(string(i+searchLen:stringLen),search,substitute)
+             exit   
+         end if
+         if (i+searchLen>stringLen) then
+             modifiedString = string
+             exit
+         end if
+         i = i + 1 
+         cycle
+     end do
+ end function replaceStr
+
+ function mode2str(ModeSize) result(strModeSize) !fu_aerosol_mode_size_to_str(fAerosolModeSize)
+    !Misma rutina que usa Silam para nombrar aerosoles en funcion de su diametro nominal
+    implicit none
+    character(len=10) :: strModeSize! Return value
+    real, intent(in) :: ModeSize    ! in ug 
+    integer :: iTmp
+    real :: fTmp
+
+    fTmp = ModeSize !* 1.e6     (la funcion original ModeSize está en m, pero acá en um)
+    if(fTmp < 5.e-4)then            ! Less than half-a nanometer is actually a gas
+      write(unit=strModeSize,fmt='(A1)')'0'
+    elseif(fTmp < 0.01)then
+      write(unit=strModeSize,fmt='(f4.3)')fTmp  ! ".00x"
+    elseif(fTmp < 0.99)then
+      write(unit=strModeSize,fmt='(f3.2)')fTmp  ! ".0x"
+    elseif(fTmp < 10.)then
+      write(unit=strModeSize,fmt='(f3.1)')fTmp  ! "x.x"
+    elseif(fTmp < 99.5)then
+      write(unit=strModeSize,fmt='(i2,X)')nint(fTmp)  ! "xx"
+    elseif(fTmp < 999.5)then
+      write(unit=strModeSize,fmt='(i3)')nint(fTmp)  ! "xxx"
+    else
+      print*,'Too large mode size:', ModeSize; stop
+    endif
+    strModeSize="_m"//replaceStr(strModeSize,".","_")
+  end function 
 
 end program finn2silam

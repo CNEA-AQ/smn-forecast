@@ -1,7 +1,7 @@
 &control    
 
-start_date="2021-12-01", 		!%Y-%m-%d (YYYY-MM-DD)
-  end_date="2021-12-03",   		!%Y-%m-%d (YYYY-MM-DD)
+start_date="2021-12-10", 		!%Y-%m-%d (YYYY-MM-DD)
+  end_date="2021-12-12",   		!%Y-%m-%d (YYYY-MM-DD)
 
 finn_data_directory = './finn_data/'	!path to directory with data
 
