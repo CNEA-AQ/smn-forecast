@@ -1,43 +1,53 @@
 # Improvements for Silam:
 
 - Cleanning:
-   - rm from "./ini/" all the old/depreciated files.
-   - all scripts should have headers with description of what it does. Same for procedures.
-   - separation of concerns in source code (organize scripts into folders?)
-   - remove depreciated items/options in the code:
+   [-] rm from "./ini/" all the old/depreciated files.
+   [-] all scripts should have headers with description of what it does (and what aguments means). Same for procedures.
+   [-] separation of concerns in source code (organize scripts into folders? or group with prefix on names)
+   [-] remove depreciated items/options in the code:
       + rm cmb4 since since is not longer used.
       + rm acid-basic since is not longer used.
       + rm POP chemistry and depo?
       + box_model.f90?
-   - grids_geo.silja.mod.f90: remove gauss krueger and polar stereo grids types?
-   - see if geography_tools.silam.mod.f90 is still necesary after proj6?
-   - renaming (scripts, functions, subroutines, variables) 
-   - reduce stdout while running (at least in "no-debug" mode) <- (CLEANER MSG HANDLER) (add verbose index?)
-   - add #ifdef DEGBUG to all the tests routines in silam. So are not taking into acount in a normal compilation.
-   - fix earth_radius to earth_radius = 6370000.0. params of WGS-84 ellipsoid (a=6378.1370km, b=6356.7523km, f=(a-b)/a)
-   - Define ONLY ONE grid (remove this "duality" of output (grid/levels) options) -> let users do the post-processing, just give the modeled grid w/chance to cropped it.
-   - dispersion_parameters (are just grid_parameters) -> put the items of this namelist inside the control_namelist
-   - centralized io module? (kind of these supermarket scripts)
+   [-] grids_geo.silja.mod.f90: remove gauss krueger and polar stereo grids types?
+   [-] see if geography_tools.silam.mod.f90 is still necesary after proj6?
+   [-] renaming
+	+ scripts, functions, subroutines, variables, that are misspelled or has confusing names.
+	+ area sources should be called GRIDDED sources!
+        + dispersion_paameters are GRID parameters (and should it be incorporated in the control_namelist)
+   [-] reduce stdout while running (at least in "no-debug" mode) <- (CLEANER MSG HANDLER) (add verbose index?)
+   [-] add #ifdef DEGBUG to all the tests routines in silam. So are not taking into acount in a normal compilation.
+   [-] fix earth_radius to earth_radius = 6370000.0. params of WGS-84 ellipsoid (a=6378.1370km, b=6356.7523km, f=(a-b)/a)
+   [-] Define ONLY ONE grid (remove this "duality" of output (grid/levels) options) -> let users do the post-processing, just give the modeled grid w/chance to cropped it.
+   [-] dispersion_parameters (are just grid_parameters) -> put the items of this namelist inside the control_namelist
+   [-] centralized io module? (kind of these supermarket scripts)
+   [-] STANDARIZED rules for substances names (at least make a list and put it in the userguide) and sugestions for cocktail names and preparation.
 
 - Documentation:
    - UserGuide. 
    - Dev.Guide. (in the future? )
 
 - New features/updates
-   - Recover INVENTORY source class, as netCDF/grib gridded emissions inputs (CAMS, EDGAR, etc.).
-   - Custom Source Term (Emisions) from ASCII (.csv)?
-      + Define Point, Line and Area sources with different and compact sintax.
-         + POINT: id,wkt,z,h,q (g/s)    ,w,t,d
-         + LINE : id,wkt,z,h,q (g/s.m)  ,w,t  
-         + AREA : id,wkt,z,h,q (g/s.m2) ,w,t  
-      + For time-varying emissions, implement something like:
-         + diurnal_cycle= 
-         + weekly_cycle=
-         + monthly_cycle=
-   - Fires: FINN  last version, w/global coverage.
-   - Bio-VOCs: MEGAN last version, w/global coverage.
-   - DUST: try Ginoux, AFWA, Shao's.
-   - METEO:
-      + GFS? (do some research to check if is imposible)
-   - Add to namelist a section for "soil & land"? Where one can specify where to take some data, and some options to represent it.
+   [+] Recover INVENTORY source class, as netCDF/grib gridded emissions inputs (CAMS, EDGAR, etc.).  -> already exists but its name is "AREA SOURCE" :/
+   [-] Custom Source Term (Emisions) from ASCII (.csv)?
+        + Define Point, Line and Area sources with different and compact sintax.
+           + POINT: id,wkt,z,h,q (g/s)    ,w,t,d
+           + LINE : id,wkt,z,h,q (g/s.m)  ,w,t  
+           + AREA : id,wkt,z,h,q (g/s.m2) ,w,t  
+        + For time-varying emissions, implement something like:
+           + diurnal_cycle= 
+           + weekly_cycle=
+           + monthly_cycle=
+   [x] Fires: FINN  last version, w/global coverage.    
+   [-] Bio-VOCs: MEGAN last version, w/global coverage.
+   [-] DUST: try Ginoux, AFWA, Shao's.
+   [-] SeaSalt: they say it has to be improved, maybe i can help.
+   [-] METEO:
+        + GFS? (do some research to check if is imposible)
+   [-] Add to namelist a section for "soil & land"? Where one can specify where to take some data, and some options to represent it.
+   [-] One-liner defs for chemicals and cocktails (or json notation)
+   [-] Interpolation/remap methods:
+	- Conservative (1st Order)
+	- Conservative (2nd Order)
+	- Distance weight avgerage
 
