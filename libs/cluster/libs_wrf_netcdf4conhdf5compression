@@ -1,0 +1,80 @@
+#Cargar Modulos
+module load curl/curl-7.56.1_intel15 http_proxy intel/impi_5.0.3.048 intel/intel_2015.3.187
+# Miscellaneous libs (i will put them into the folder $LIBSDIR/grib2 folder)
+export LIBSDIR=/home/mdiaz/pquimica_mdiaz/libs_wrf
+misc_path=$LIBSDIR/grib2  
+mkdir $LIBSDIR/grib2; mkdir $LIBSDIR/grib2/include;mkdir $LIBSDIR/grib2/lib;
+# Compilar en este orden:
+# ZLIB (zlib-1.2.7), SZIP (szip-2.1.1),  LIBPNG (libpng-1.2.50),  JASPER  (jasper-1.900.1)
+# BYACC (byacc-20120115), FLEX (flex-2.5.3), CURL (curl-7.61.1)
+CC=icc CXX=icpc FC=ifort F77=ifort F90=ifort ./configure --prefix=$LIBSDIR/grib2 --enable-shared --enable-static
+export MISC=$LIBSDIR/grib2
+export PATH=$PATH:$MISC/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MISC/lib
+
+# hdf5-1.8.21
+CC=icc CXX=icpc FC=ifort F77=ifort F90=ifort CXXFLAGS='-g -O2 -fPIC' CFLAGS='-g -O2 -fPIC' FFLAGS='-g -fPIC' FCFLAGS='-g -fPIC' LDFLAGS='-fPIC' F90LDFLAGS='-fPIC' FLDFLAGS='-fPIC' ./configure --prefix=$LIBSDIR/hdf5 -enable-shared --with-szlib='/home/mdiaz/pquimica_mdiaz/libs_wrf/grib2' --with-zlib='/home/mdiaz/pquimica_mdiaz/libs_wrf/grib2' --enable-hl --enable-fortran
+
+make check
+make install
+export HDF5=$LIBSDIR/hdf5
+export PATH=$PATH:$HDF5/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HDF5/lib
+
+incs="-I${LIBSDIR}/grib2/include -I${LIBSDIR}/hdf5/include -I${LIBSDIR}/netcdf/include"
+libs="-L${LIBSDIR}/grib2/lib -L${LIBSDIR}/hdf5/lib -L${LIBSDIR}/netcdf/lib "
+export CPPFLAGS="${incs} ${libs}" 
+export CXXFLAGS="${incs} ${libs}" 
+export   CFLAGS="${incs} ${libs}"
+export   FFLAGS="${incs} ${libs}" 
+export  FCFLAGS="${incs} ${libs}" 
+export  LDFLAGS="${incs} ${libs}"
+
+# netcdf-c-4.7.2
+CC=icc CXX=icpc FC=ifort F90=ifort F77=ifort MPICC=mpiicc MPICXX=mpiicpc MPIFC=mpiifort MPIF77=mpiifort MPIF90=mpiifort ./configure --prefix=$LIBSDIR/netcdf --enable-fortran --enable-shared --enable-static --with-pic --enable-large-file-tests --enable-largefile 
+
+make; make install
+export NETCDF=$LIBSDIR/netcdf
+export PATH=$PATH:$NETCDF/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NETCDF/lib
+
+#netcdf-fortran-4.5.2
+export CPPFLAGS="-I/home/mdiaz/libs_intel_2015.3.187/grib2/include -I/home/mdiaz/libs_intel_2015.3.187/hdf5/include -L/home/mdiaz/libs_intel_2015.3.187/grib2/lib -L/home/mdiaz/libs_intel_2015.3.187/hdf5/lib -I/home/mdiaz/libs_intel_2015.3.187/netcdf/include -L/home/mdiaz/libs_intel_2015.3.187/netcdf/lib"
+CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77 MPICC=icc MPICXX=icpc MPIFC=ifort MPIF77=ifort MPIF90=ifort ./configure --prefix=$LIBSDIR/netcdf --enable-shared --enable-static --with-pic --enable-large-file-tests --enable-largefile
+
+export CPPFLAGS="-I/home/mdiaz/libs_wrf/grib2/include -I/home/mdiaz/libs_wrf/hdf5/include -L/home/mdiaz/libs_wrf/grib2/lib -L/home/mdiaz/libs_wrf/hdf5/lib -I/home/mdiaz/libs_wrf/netcdf/include -L/home/mdiaz/libs_wrf/netcdf/lib"
+CC=icc CXX=icpc FC=ifort F90=ifort F77=ifort MPICC=mpiicc MPICXX=mpiicpc MPIFC=mpiifort MPIF77=mpiifort MPIF90=mpiifort ./configure --prefix=$LIBSDIR/netcdf --enable-shared --enable-static --with-pic --enable-large-file-tests --enable-largefile
+
+
+make; make install
+
+# Seteo de librerias. Crear un modulo con estos paths.
+module load curl/curl-7.56.1_intel15 http_proxy intel/impi_5.0.3.048 intel/intel_2015.3.187
+export LIBSDIR=/home/mdiaz/pquimica_mdiaz/libs_wrf
+export NETCDF=$LIBSDIR/netcdf
+export PATH=$PATH:$NETCDF/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NETCDF/lib
+
+export WRFIO_NCD_LARGE_FILE_SUPPORT=1
+export HDF5=$LIBSDIR/hdf5
+export PATH=$PATH:$HDF5/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HDF5/lib
+export MISC=$LIBSDIR/grib2
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MISC/lib
+export PATH=$PATH:$MISC/bin
+# Seteo de compilación de WRF-Chem con netcdf4
+export WRFIO_NCD_LARGE_FILE_SUPPORT=1
+export NETCDF4=1
+export WRF_EM_CORE=1
+export WRF_NMM_CORE=0
+export WRF_CHEM=1
+export WRF_KPP=1
+export FLEX_LIB_DIR=$LIBSDIR/grib2/lib
+export YACC="${LIBSDIR}/grib2/bin/yacc -y -d"
+export JASPERINC=$LIBSDIR/grib2/include
+export JASPERLIB=$LIBSDIR/grib2/lib
+
+./configure #opción 15
+vi configure.wrf # cambiar mpif90 por mpiifort y mpicc por mpiicc
+./compile em_real &> log_compile
+# Chequear que se hayan creado los ejecutables correctamente
