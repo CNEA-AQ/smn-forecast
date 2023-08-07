@@ -14,7 +14,7 @@
 sudo apt install gfortran-9 libopenmpi-dev libhdf5-dev libeccodes-dev libnetcdf-dev libnetcdff-dev libaec-dev
 #------------------------------------------------
 
-git clone https://github.con/wrf_model/WRF
+git clone https://github.com/wrf_model/WRF.git
 cd WRF
 #------------------------------------------------
 
@@ -54,7 +54,7 @@ echo 'Compile WRF ...'
 #Build WPS: (Preprocesador del wrf)
 
 #Bajo el repo:
-git clone https://github.con/wrf_model/WPS
+git clone https://github.com/wrf_model/WPS.git
 cd WPS
 
 ./clean -a
