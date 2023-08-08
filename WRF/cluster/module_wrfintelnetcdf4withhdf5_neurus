@@ -1,0 +1,37 @@
+#%Module1.0#####################################################################
+##
+## modules wrfchem/wrfchem
+##
+##
+proc ModulesHelp { } {
+        global version modroot
+
+        puts stderr "wrfchem/wrfchem4.4_intel - sets the Environment for wrfchem4.4 with NETCDF4 compiled with intel 2015 in my home directory"
+}
+
+module-whatis   "Sets the Environment for wrfchem4.4 with NETCDF4 compiled with intel"
+
+module load curl/curl-7.56.1_intel15 http_proxy intel/intel_2015.3.187 intel/impi_5.0.3.048
+prereq intel/intel_2015.3.187 intel/impi_5.0.3.048
+
+set     topdir          /home/mdiaz/pquimica_mdiaz/libs_wrf
+
+setenv          NETCDF          $topdir/netcdf
+setenv          NETCDFPATH      $topdir/netcdf
+setenv          NETCDF_DIR      $topdir/netcdf
+
+setenv          FC              ifort
+setenv          WRF_DIR         /home/mdiaz/pquimica_mdiaz/WRF
+
+setenv          FLEX_LIB_DIR    $topdir/grib2/lib
+setenv          YACC            "${topdir}/grib2/bin/yacc -y -d"
+setenv          JASPERINC       $topdir/grib2/include
+setenv          JASPERLIB       $topdir/grib2/lib
+
+# add to path and library path
+prepend-path    PATH            $topdir/netcdf/bin
+prepend-path    LD_LIBRARY_PATH $topdir/netcdf/lib
+prepend-path    PATH            $topdir/grib2/bin
+prepend-path    LD_LIBRARY_PATH $topdir/grib2/lib
+prepend-path    PATH            $topdir/hdf5/bin
+prepend-path    LD_LIBRARY_PATH $topdir/hdf5/lib
