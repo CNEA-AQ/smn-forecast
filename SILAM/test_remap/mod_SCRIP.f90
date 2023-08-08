@@ -11,25 +11,86 @@ module SCRIP
    use timers                     ! CPU timers
    use grids                      ! module with grid information
    use remap_vars                 ! common remapping variables
+
    use remap_conservative         ! routines for conservative remap
    use remap_distance_weight      ! routines for dist-weight remap
    use remap_bilinear             ! routines for bilinear interp
    use remap_bicubic              ! routines for bicubic  interp
+
    use remap_write                ! routines for remap output
+   use remap_read                 ! routines for reading remap files
+   use remap_mod                  ! module containing remapping routines
 
 contains
 
 
-subroutine remap(g,iFile,oFile,varlist, mapMethod)
 
+!subroutine remap_field(var,interp_file)
+!
+!
+!   !read variable from iFile (befor calling this subroutine).
+!!!-----------------------------------------------------------------------
+!!     initialize SCRIP
+!!-----------------------------------------------------------------------
+!      errorCode = SCRIP_Success
+!      call SCRIP_CommInitMessageEnvironment
+!      call SCRIP_Initialize(errorCode)
+!      if (SCRIP_errorCheck(errorCode, rtnName,
+!     &                     'error initializing SCRIP')) then
+!        call SCRIP_TestExit(errorCode)
+!      endif
+!
+!!-----------------------------------------------------------------------
+!!     read namelist for file and mapping info
+!!-----------------------------------------------------------------------
+!      call SCRIP_IOUnitsGet(iunit)
+!      open(iunit, file='scrip_test_in', status='old', form='formatted')
+!      read(iunit, nml=remap_inputs)
+!      call SCRIP_IOUnitsRelease(iunit)
+!      write(*,nml=remap_inputs)
+!!-----------------------------------------------------------------------
+!!     read remapping data
+!!-----------------------------------------------------------------------
+!      call read_remap(map_name, interp_file, errorCode)
+!      if (SCRIP_ErrorCheck(errorCode, rtnName,
+!     &    'error reading remap file')) call SCRIP_TestExit(errorCode)
+!
+!
+!! Allocate variables!
+
+
+!!-----------------------------------------------------------------------
+!!     apply remap        
+!!-----------------------------------------------------------------------
+!
+!      if (map_type /= map_type_bicubic) then
+!        call remap(grid2_tmp, wts_map1, grid2_add_map1, grid1_add_map1,
+!     &             grid1_array)
+!      else
+!        call remap(grid2_tmp, wts_map1, grid2_add_map1, grid1_add_map1,
+!     &             grid1_array, src_grad1=grad1_lat,
+!     &                          src_grad2=grad1_lon,
+!     &                          src_grad3=grad1_latlon)
+!      endif
+!
+!! Deallocate variables (free memory)
+!
+!end subroutine remap_field
+
+subroutine createRemapFile(g,iFile,method,interp_file)   
+   !objetivo: silamGrid, iFile, method ==> interp_file = 'remaps/rmp_<iFile_name>_to_silam_<method>.nc'
+
+   !read iFile -> get x,y coords
+
+   !subroutine remap(g,iFile,oFile,varlist, mapMethod)
    implicit none 
    !-----------------------------------------------------------------------
    ! external variables
    !-----------------------------------------------------------------------
-   type(grid_type) :: g                !grid/proj specs of dest grid (will be saved on oFile)
-   character(254)  :: iFile, oFile     !input and output File.
-   character(50)   :: varlist(:)       !list of variable names to remap on iFile.
-   integer         :: mapMethod        !bilinear, bicubic, conserv (1st and 2nd).
+   type(grid_type) :: g               !grid/proj specs of dest grid (will be saved on oFile)
+   character(254)  :: iFile,oFile     !input and output File.
+   character(50)   :: varlist(:)      !list of variable names to remap on iFile.
+   integer         :: mapMethod       !bilinear, bicubic, conserv (1st and 2nd).
    !-----------------------------------------------------------------------
    !  local variables
    !-----------------------------------------------------------------------
@@ -46,7 +107,7 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
       normalizeOpt, &! option for normalizing weights
       outputFormat   ! option for output conventions
    
-   character (12), parameter :: rtnName = 'SCRIP_driver'
+   !character (12), parameter :: rtnName = 'SCRIP_driver'
    
    integer (SCRIP_i4) :: n, iunit  ! dummy counter & unit number for input configuration file
    
@@ -57,16 +118,15 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
    
    call SCRIP_CommInitMessageEnvironment
    call SCRIP_Initialize(errorCode)
-   !if (SCRIP_errorCheck(errorCode, rtnName, 'error initializing SCRIP')) &
-   !   call SCRIP_driverExit(errorCode)
-   
+   if (errorCode /= 0) then; print*, 'error initializing SCRIP';stop;endif
+
    !-----------------------------------------------------------------------
    !  initialize timers
    !-----------------------------------------------------------------------
-      call timers_init
-      do n=1,max_timers
-         call timer_clear(n)
-      end do
+   call timers_init
+   do n=1,max_timers
+      call timer_clear(n)
+   end do
    !-----------------------------------------------------------------------
    !  read input namelist
    !-----------------------------------------------------------------------
@@ -93,7 +153,6 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
     south_thresh=-2.0_SCRIP_r8         ! spole_threshold = -1.5
     nthreads=2                         ! num_threads = 2
                                        !/
-
     select case(mapMethod)
     case ('conservative')
        map_type = map_type_conserv
@@ -108,8 +167,7 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
        map_type = map_type_distwgt
        luse_grid_centers = .true.
     case default
-       !call SCRIP_ErrorSet(errorCode, rtnName, 'unknown mapping method')
-       !call SCRIP_driverExit(errorCode)
+       print*,'Error: unknown mapping method';stop
     end select
 
     select case(trim(normalizeOpt))
@@ -120,27 +178,17 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
     case ('destArea')
        norm_opt = norm_opt_dstarea
     case default
-       !call SCRIP_ErrorSet(errorCode, rtnName, 'unknown normalization option')
-       !call SCRIP_driverExit(errorCode)
+       print*,'Error: unknown normalization option';stop
     end select
-    
 !-----------------------------------------------------------------------
 !  initialize grid information for both grids
 !-----------------------------------------------------------------------
-
-   call grid_init(gridFile1, gridFile2, errorCode)
-
-   !if (SCRIP_ErrorCheck(errorCode, rtnName, 'Error initializing grids')) &
-   !   call SCRIP_driverExit(errorCode)
-
-   write(SCRIP_stdout, *) 'Computing remappings between: ',grid1_name
-   write(SCRIP_stdout, *) '                         and  ',grid2_name
-
+   call grid_init(gridFile1, gridFile2, errorCode)     !src/grids.f
+   if ( errorCode /= 0) then; print*,'Error: initializing grids';stop; endif
 !-----------------------------------------------------------------------
 !  initialize some remapping variables.
 !-----------------------------------------------------------------------
-   call init_remap_vars
-
+   call init_remap_vars                                !src/remap_vars.f
 !-----------------------------------------------------------------------
 !  call appropriate interpolation setup routine based on type of
 !  remapping requested.
@@ -155,14 +203,11 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
    case(map_type_bicubic)
       call remap_bicub
    case default
-   !   call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
-   !   call SCRIP_driverExit(errorCode)
+      print*,'Error: Invalid Map Type';stop;
    end select                                     
-
 !-----------------------------------------------------------------------
 !  reduce size of remapping arrays and write remapping info to file.
 !-----------------------------------------------------------------------
-
    if (num_links_map1 /= max_links_map1) then
         call resize_remap_vars(1, num_links_map1-max_links_map1)
    endif
@@ -170,16 +215,13 @@ subroutine remap(g,iFile,oFile,varlist, mapMethod)
         call resize_remap_vars(2, num_links_map2-max_links_map2)
    endif
 
-   call write_remap( mapName1   , mapName2   , &
-                     interpFile1, interpFile2, &
-                    outputFormat, errorCode    )
-
+   call write_remap(mapName1, mapName2, interpFile1, interpFile2, &
+                    outputFormat, errorCode )
 !-----------------------------------------------------------------------
 !  All done, exit gracefully
 !-----------------------------------------------------------------------
-   call SCRIP_driverExit(errorCode)
-
+   if (errorCode == 0) then; print*,"Exit without errors..";endif
 
 end subroutine
 
-end module remap_SCRIP
+end module SCRIP
