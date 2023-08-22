@@ -4,7 +4,7 @@ input_files=(EMCABB1_2022.csv EMCABB2_2022.csv)
 out_dir=datafiles
 
 polluts=(CO O3 SO2 PM10 NO2 NO NOx)
-confact=(1150 1.96 2.62 1 1.88 1.23 1.88)	#factores de conversion ppm/ppb -> ug/m3
+confact=(1150 1.96 2.62 1 1.88 1.23 1.88) #factores de conversion ppm/ppb -> ug/m3
 
 stations=(EMCABB1 EMCABB2)
 start_date="2022-01-01"
@@ -31,12 +31,11 @@ do
 	   for(i=1; i<=NF; i++) {
 	      if ($i == pol ){ pollut=i; found=1 };
 	   }
-           if (found) {print "date",$pollut}else{exit 1};
+        if (found) {printf("%s,%s\n","date",$pollut)}else{exit 1};
         }
-        NR>1{ 
-	      if ( $pollut < 0){ $pollut=NaN}else {$pollut=$pollut*cf};
+        NR>1{ if ( $pollut < 0){ $pollut=NaN}else {$pollut=$pollut*cf};
 	      split($1, date, /[\/: ]/);
-	      if ( year == date[3] ){ printf("%4d/%02d/%02d %02d:%02d;%.2f;\n",date[3],date[2],date[1],date[4],date[5], $pollut) };
+	      if ( year == date[3] ){ printf("%4d/%02d/%02d %02d:%02d:00,%.2f\n",date[3],date[2],date[1],date[4],date[5],$pollut) };
         }' tmp_file > $out_dir/${s}_${year}_${p}.csv
   done
   rm tmp_file
