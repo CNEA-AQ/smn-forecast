@@ -16,6 +16,7 @@ total_hours=$(bc <<<"($s_end - $s_ini)/(60*60)")
 if [ -f date_file_${year}.csv ]
 then 
    #rm date_file_${year}.csv;
+   continue
 else
    echo "date" > date_file_${year}.csv
    for h in $(seq 0 ${total_hours})
@@ -24,8 +25,8 @@ else
    done
 fi
 
-
 files=($(ls -d $inp_dir/*))
+echo ${files[@]}
 for f in ${files[@]}
 do
 
@@ -37,7 +38,7 @@ do
       echo "file: $f : n1: $n1, n2:$n2"  
       awk -F"," 'BEGIN {OFS=","}
            NR == FNR {
-             if (NR == 1){ print "date,conc";next}
+             if (NR == 1){ print "date,conc"; next}
              datetime = $1; value = $2
              values[datetime] = value
              next

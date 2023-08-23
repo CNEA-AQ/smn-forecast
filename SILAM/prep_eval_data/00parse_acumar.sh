@@ -27,7 +27,7 @@ do
      ls $tmp_dir/* | grep "$s" | grep "\-$p\." | xargs cat | sort > tmp_${s}_${p}.csv
      sed -i 's/µg\/m3/ug\/m3/g' tmp_${s}_${p}.csv
      #Filter by year:
-     awk -F"[,]" -v year=$year -v pollut=$p 'BEGIN{OFS=",";printf("%s,%s\n","date",pollut)}
+     awk -F"[,]" -v year=$year 'BEGIN{OFS=",";printf("%s,%s\n","date","conc")}
      {
      split($1, date, /[\/]/);
      if ( date[1] == year){

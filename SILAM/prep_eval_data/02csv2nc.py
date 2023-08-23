@@ -79,9 +79,9 @@ for ipol, pol in enumerate(pollutants):
     for statid in list(stations.keys()):
         time_lut={}
         csvname="%s/%s_%d_%s.csv"%(inp_dir,statid,year,pol)
-        if os.path.isfile(csvname):
+        if os.path.exists(csvname):
             ist = stidx[statid]
-            #print(istat,statid,pol)
+            print(statid,pol)
             with open(csvname) as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
                 for d in reader:

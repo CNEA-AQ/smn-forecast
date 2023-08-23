@@ -31,11 +31,11 @@ do
 	   for(i=1; i<=NF; i++) {
 	      if ($i == pol ){ pollut=i; found=1 };
 	   }
-        if (found) {printf("%s,%s\n","date",$pollut)}else{exit 1};
+        if (found) {printf("%s,%s\n","date","conc")}else{exit 1};
         }
         NR>1{ if ( $pollut < 0){ $pollut=NaN}else {$pollut=$pollut*cf};
 	      split($1, date, /[\/: ]/);
-	      if ( year == date[3] ){ printf("%4d/%02d/%02d %02d:%02d:00,%.2f\n",date[3],date[2],date[1],date[4],date[5],$pollut) };
+	      if ( year == date[3] ){ printf("%4d/%02d/%02d %02d:%02d:00,%.2f\n",date[3],date[1],date[2],date[4],date[5],$pollut) };
         }' tmp_file > $out_dir/${s}_${year}_${p}.csv
   done
   rm tmp_file
