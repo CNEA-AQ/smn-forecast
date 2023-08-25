@@ -1,10 +1,10 @@
 #!/bin/bash
 #Parser para datos de ACUMAR: <station>_<year>_<pollut>.csv
-input_file=baseDeDatos200723_acumar.xlsx
+input_file=orig_data/baseDeDatos200723_acumar.xlsx
 out_dir=datafiles ; if  [ ! -d $tmp_dir ]; then mkdir $tmp_dir; fi
 tmp_dir=tmp_sheets; if [ ! -d $out_dir ]; then mkdir $out_dir; fi
 
-polluts=(CO NO NO2 NOx PM10 PM25 SO2 SH2)
+polluts=(CO NO NO2 NOx SO2 PM10 PM25 O3) # SH2)
 stations=(EMC1 EMC2)
 start_date="2022-01-01"
   end_date="2023-01-01"

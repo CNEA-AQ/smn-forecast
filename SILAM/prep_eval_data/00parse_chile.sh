@@ -1,10 +1,14 @@
 #!/bin/bash
-#Parser para datos de CTE:
-input_dir="orig_data"
+#
+# Objetivo: Parser para datos de red de AQ de Chile
+#    input_files --> out_dir/<stat>_<year>_<pollut>.csv
+#                    date (%Y/%m/%d %H:%M:%H); conc (ug/m3)
+#
+input_files=(EMCABB1_2022.csv EMCABB2_2022.csv)
 out_dir=datafiles
 
-polluts=(CO NO NO2 NOx SO2 PM10 PM25 O3)
-confact=(1150 1.23 1.88 1.88 2.62 1.0 1.0 1.96) #factores de conversion ppm/ppb -> ug/m3
+polluts=(CO O3 SO2 PM10 NO2 NO NOx)
+confact=(1150 1.96 2.62 1 1.88 1.23 1.88) #factores de conversion ppm/ppb -> ug/m3
 
 stations=(EMCABB1 EMCABB2)
 start_date="2022-01-01"
@@ -16,7 +20,7 @@ if [ ! -d $out_dir ]; then mkdir $out_dir; fi
 
 for s in ${stations[@]}
 do
-  iFile=$input_dir/${s}_${year}.csv
+  iFile=${s}_${year}.csv
   echo "Procesando $iFile .."
   sed 's/ *---/-999/g; s/< LD/0.0/g' $iFile > tmp_file
 
