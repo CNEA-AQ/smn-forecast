@@ -15,6 +15,7 @@ s_ini=`date -d "$start_date" +"%s"`
 s_end=`date -d "$end_date" +"%s"`
 total_hours=$(bc <<<"($s_end - $s_ini)/(60*60)")
 
+echo "Total hours: $total_hours"
 if [ -f date_${year}.csv ]
 then 
    continue #rm date_${year}.csv;
