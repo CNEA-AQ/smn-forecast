@@ -1,0 +1,1 @@
+/home/rama/data/ocean/CHLO_monthly_global_2019.nc
