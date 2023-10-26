@@ -1,20 +1,19 @@
-===== Compilar librerias de WRFChem o cargar modulo =====
-[[WRFCHEM: Compilar WRFCHEM4.4|Compilar WRFCHEM4.4 con intel]] \\
-module load wrfchem/wrfchem4
+# Compilar librerias de WRFChem o cargar modulo
+module load wrfchem/wrfchem4netcdf4.4_intel
 
-====== Compilar otras librerias ======
+## Compilar otras librerias
 <code> --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38//
 CC=mpiicc CXX=mpiicpc FC=mpiifort F90=mpiifort F77=mpiifort cmake .. -DCMAKE_C_FLAGS="-O2 -Wall -I/home/mdiaz/pquimica_mdiaz/libs_wrf/netcdf/include -L/home/mdiaz/pquimica_mdiaz/libs_wrf/netcdf/lib" -DCMAKE_INSTALL_PREFIX=/home/mdiaz/pquimica_mdiaz/libs_wrf/eccodes-2.23-Source/build -DENABLE_NETCDF=ON
 </code>
 
-====== Compilar chimere =====
+## Compilar chimere 
 <code>
 ./build-chimere.sh --arch neurus.ifort
 
 ./build-wrf.sh --arch neurus.ifort
 </code>
 
-===== mychimere.neurus.ifort =====
+## mychimere.neurus.ifort 
 <code>
 #!/bin/bash
 
@@ -201,7 +200,7 @@ srun --nodes=${SLURM_NNODES} bash -c 'hostname' | sort -r | uniq > $SLURM_JOBID.
 
 </code>
 
-===== Modificar en scripts chimere-step2.sh y chimere-meteo.sh =====
+## Modificar en scripts chimere-step2.sh y chimere-meteo.sh 
 **chimere-meteo.sh**
 <code>
 time ${my_mpirun} -n ${nproc_rea} ${real_exe} || exit 1
