@@ -2,19 +2,20 @@
 module load wrfchem/wrfchem4netcdf4.4_intel
 
 ## Compilar otras librerias
-<code> --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38//
+```
+--- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38// --- //[[mdiaz@cnea.gov.ar]] 2023/09/27 14:38//
 CC=mpiicc CXX=mpiicpc FC=mpiifort F90=mpiifort F77=mpiifort cmake .. -DCMAKE_C_FLAGS="-O2 -Wall -I/home/mdiaz/pquimica_mdiaz/libs_wrf/netcdf/include -L/home/mdiaz/pquimica_mdiaz/libs_wrf/netcdf/lib" -DCMAKE_INSTALL_PREFIX=/home/mdiaz/pquimica_mdiaz/libs_wrf/eccodes-2.23-Source/build -DENABLE_NETCDF=ON
-</code>
+```
 
 ## Compilar chimere 
-<code>
+```
 ./build-chimere.sh --arch neurus.ifort
 
 ./build-wrf.sh --arch neurus.ifort
-</code>
+```
 
 ## mychimere.neurus.ifort 
-<code>
+```
 #!/bin/bash
 
 #---------------------------------------------------------------------------------
@@ -113,11 +114,12 @@ export configure_wps_file_name=configure_ifort.wps              # Makefile heade
 #---------------------------------------------------------------------------------
 export LD_LIBRARY_PATH=${my_hdflib}:${my_netcdfF90lib}:${my_netcdfClib}:${my_griblib}:${my_mpilib}:${my_mpilib}/ompi:$LD_LIBRARY_PATH
                                                                                                                                             97,1          Bot
-</code>
+```
 
-===== sbatch Testcase online =====
+## sbatch Testcase online
 Completar los  \_\_FILL\_\_
-<code>
+
+```
 #!/bin/bash
 #SBATCH -J CHIMERE_DCAP_ONLINE          # Job NAME (human)
 #SBATCH -p __FILL__           # Job QUEUE (human)
@@ -198,40 +200,40 @@ cd $SLURM_SUBMIT_DIR
 srun --nodes=${SLURM_NNODES} bash -c 'hostname'> $SLURM_JOBID.machines
 srun --nodes=${SLURM_NNODES} bash -c 'hostname' | sort -r | uniq > $SLURM_JOBID.mpd.hosts
 
-</code>
+```
 
 ## Modificar en scripts chimere-step2.sh y chimere-meteo.sh 
 **chimere-meteo.sh**
-<code>
+```
 time ${my_mpirun} -n ${nproc_rea} ${real_exe} || exit 1
-</code>
+```
 por
-<code>
+```
 time srun --verbose -A ${accountneurus} -p ${partitionneurus} ${mpiparams} -n ${nproc_rea} ${real_exe} || exit 1      
-</code>
+```
 y
 
-<code>
+```
 time ${my_mpirun} -n ${nproc_rea} ${real_exe} || exit 1
-</code>
+```
 por
-<code>
+```
 time srun --verbose -A ${accountneurus} -p ${<code>
 time ${my_mpirun} -n ${nproc_rea} ${ndown_exe} || exit 1
-</code>
+```
 por
-<code>
+```
 time srun --verbose -A ${accountneurus} -p ${partitionneurus} ${mpiparams} -n ${nproc_rea} ${ndown_exe} || exit 1         
-</code>
+```
 
 **chimere-step2.sh**
-En offline mode \\
-<code>
+En offline mode 
+```
 time srun --verbose --threads-per-core=1 -A ${accountneurus} -p ${partitionneurus} -n ${nproc_chimere} ${mpiparams} ./chimere.e
-</code>
+```
 
-En online mode \\
-<code>
+En online mode 
+```
          echo "Running on Neurus-CNEA with hardcoded SRUN :"
          echo "PWD: "`pwd`
          touch chimwrf.conf
@@ -253,10 +255,10 @@ En online mode \\
          #cmd="echo hello word"
          ${cmd[@]}
          [ $? -eq 0 ] || { echo "Abnormal termination of chimwrf.conf"; exit 1; }
-</code>
+```
 
-En runwrfonly \\
-<code>
+En runwrfonly 
+```
          time srun --verbose -A ${accountneurus} -p ${partitionneurus} ${mpiparams} -n ${nproc_wrf} ${wrf_exe}
         # time ${my_mpirun} ${mpiparams} -np ${nproc_wrf} ${wrf_exe} 
-</code>
+```
