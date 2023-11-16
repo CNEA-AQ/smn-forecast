@@ -1,0 +1,15 @@
+&megan
+
+   start_date='2023-01-01_00:00:00',
+     end_date='2023-01-02_00:00:00',
+   
+   met_file='', !wrfout file
+
+   megan_CT3='',
+   megan_LAI='',
+   megan_EF='',
+   megan_LDF='',
+   megan_NDEP='',
+   megan_FERT='',
+
+/

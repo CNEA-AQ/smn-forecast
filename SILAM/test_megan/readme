@@ -1,0 +1,57 @@
+# Implementar nuevo esquema de emisiones para vocs biogenicos
+
+
+1. Entender como funcionan las emis en Silam:
+
+Los archivos base de emisiones son:
+       source_terms_general.silja.mod.f90
+	├── source_terms_bio_voc.silam.mod.f90
+	├── source_terms_dms.silam.mod.f90
+	├── source_terms_sea_salt.silam.mod.f90
+	├── source_terms_soil_NO.silam.mod.f90
+	├── ...
+	└── source_terms_wind_blown_dust.silam.mod.f90
+
+donde source_ters_general es el archivo madre. y cada "tipo" de emision tiene su propio modulo.
+
+La estructura general de estos archivos es:
+- fill_<src_type>_from_namelist     : lee parametros en namelist.
+- reserve_<src_type>_source         : inicializa la fuente: le da una posicion en la lista de emisiones.
+- add_input_needs_<src_type>_src    : selecciona datos a usar de la meteo (static y dinamic) (usado como subrutina en init_emission_<srctype>).
+- init_emission_<src_type>          : llama a add_input_needs, arma lista de campos a usar (add_shopping_variable), fill_minimarket_from_namelist (trae los campos), chequea que las variables necesarias estén en el "stack".
+- add_source_species_<src_type>_src : agrega las especies que serán emitidas por la fuente.  call addSpecies(species_list, nSpecies, wb_dust_src%species, wb_dust_src%nSpecies)
+- link_<src_type>_src_to_species    : linkeo entre fuente y cocktail. call create_adaptor(wb_dust_src%species, species_list, wb_dust_src%adaptor)  
+- create_src_cont_grd_<src_type>_src: crea grilla de emisiones (en la mayoria de los modulos no hace nada).
+- project_<src_type>_src_second_grd : crea "layers" donde poner las emisiones (eventualmente puede crear un perfil de emisión vertical)
+- compute_emission_for_<src_type>   : calcula las emisiones
+- typical_species_cnc_<scr_type>    :   
+- report_<src_type>_src             :   
+
+
+
+2. Entender como funciona Megan (CMAQ/MEGAN):
+
+
+   (a) MEGAN v3.2
+       Tiene esta estructura de directorios:  
+           ├── DAYMET
+           ├── IOAPI2UAM  
+           ├── MEGCAN     (MEGan Canopy calculations)
+           ├── MEGSEA     (MEGan Soil Emission Activity, principalmente NO)
+           ├── MEGVEA     (MEGan Vegetation Emission Activity)
+           ├── MET2MGN    
+           ├── MGN2MECH   (Mapeo de megan a mecanismo quimico)
+           └── TXT2IOAPI
+   
+   (b) CMAQ-megan
+       MEGAN_DEFN.F: MEGAN_INIT() GET_MEGAN() { FINDLAI(); MEGANCANOPY(); MEGAN_HNRO(); MEGVSA(); MEGVEA(); convert2mech()}
+            ├── megan_gspro.F:    Especiación de megan en mecanísmos.
+            ├── megan_hrno_mod.F: MEGAN_HRNO: calcula precip, temp y rad de las ultimas 24 horas.
+            ├── BDSNP_MOD.F:      Modulo para calculo de NO
+	    └── megan_fx_mod.f90 : acá estan definidas las subrutinas: MEGVSA, MEGVEA, convert2mech (parece medio hardcoded del Megan original)
+
+   
+   
+   
+   
+   
