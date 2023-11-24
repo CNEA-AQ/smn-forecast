@@ -149,27 +149,25 @@ module megan_fx
     !beta: temperature coefficient (emission type 2: light independent)
     REAL           beta(NCLASS)
 
-      DATA    beta(1),LDF(1),CT1(1),Cleo(1)        /  0.13,1.0,95,2  /
-      DATA    beta(2),LDF(2),CT1(2),Cleo(2)        /  0.13,1.0,95,2  /
-      DATA    beta(3),LDF(3),CT1(3),Cleo(3)        /  0.10,0.6,80,1.83  /
-      DATA    beta(4),LDF(4),CT1(4),Cleo(4)        /  0.10,0.9,80,1.83  /
-      DATA    beta(5),LDF(5),CT1(5),Cleo(5)        /  0.10,0.2,80,1.83  /
-      DATA    beta(6),LDF(6),CT1(6),Cleo(6)        /  0.10,0.4,80,1.83  /
-      DATA    beta(7),LDF(7),CT1(7),Cleo(7)        /  0.10,0.1,80,1.83  /
-      DATA    beta(8),LDF(8),CT1(8),Cleo(8)        /  0.10,0.0,80,1.83  /
-      DATA    beta(9),LDF(9),CT1(9),Cleo(9)        /  0.17,0.5,130,2.37  /
-      DATA    beta(10),LDF(10),CT1(10),Cleo(10)    /  0.17,0.4,130,2.37  /
-      DATA    beta(11),LDF(11),CT1(11),Cleo(11)    /  0.08,0.8,60,1.6  /
-      DATA    beta(12),LDF(12),CT1(12),Cleo(12)    /  0.10,0.2,80,1.83  /
-      DATA    beta(13),LDF(13),CT1(13),Cleo(13)    /  0.13,0.8,95,2  /
-      DATA    beta(14),LDF(14),CT1(14),Cleo(14)    /  0.13,0.8,95,2  /
-      DATA    beta(15),LDF(15),CT1(15),Cleo(15)    /  0.10,0.2,80,1.83  /
-      DATA    beta(16),LDF(16),CT1(16),Cleo(16)    /  0.10,0.2,80,1.83  /
-      DATA    beta(17),LDF(17),CT1(17),Cleo(17)    /  0.10,0.8,80,1.83  /
-      DATA    beta(18),LDF(18),CT1(18),Cleo(18)    /  0.10,0.1,80,1.83  /
-      DATA    beta(19),LDF(19),CT1(19),Cleo(19)    /  0.08,1.0,60,1.6  /
-
-
+      DATA    beta(1),LDF(1),CT1(1),Cleo(1)        / 0.13,1.0,95,2    /
+      DATA    beta(2),LDF(2),CT1(2),Cleo(2)        / 0.13,1.0,95,2    /
+      DATA    beta(3),LDF(3),CT1(3),Cleo(3)        / 0.10,0.6,80,1.83 /
+      DATA    beta(4),LDF(4),CT1(4),Cleo(4)        / 0.10,0.9,80,1.83 /
+      DATA    beta(5),LDF(5),CT1(5),Cleo(5)        / 0.10,0.2,80,1.83 /
+      DATA    beta(6),LDF(6),CT1(6),Cleo(6)        / 0.10,0.4,80,1.83 /
+      DATA    beta(7),LDF(7),CT1(7),Cleo(7)        / 0.10,0.1,80,1.83 /
+      DATA    beta(8),LDF(8),CT1(8),Cleo(8)        / 0.10,0.0,80,1.83 /
+      DATA    beta(9),LDF(9),CT1(9),Cleo(9)        / 0.17,0.5,130,2.37/
+      DATA    beta(10),LDF(10),CT1(10),Cleo(10)    / 0.17,0.4,130,2.37/
+      DATA    beta(11),LDF(11),CT1(11),Cleo(11)    / 0.08,0.8,60,1.6  /
+      DATA    beta(12),LDF(12),CT1(12),Cleo(12)    / 0.10,0.2,80,1.83 /
+      DATA    beta(13),LDF(13),CT1(13),Cleo(13)    / 0.13,0.8,95,2    /
+      DATA    beta(14),LDF(14),CT1(14),Cleo(14)    / 0.13,0.8,95,2    /
+      DATA    beta(15),LDF(15),CT1(15),Cleo(15)    / 0.10,0.2,80,1.83 /
+      DATA    beta(16),LDF(16),CT1(16),Cleo(16)    / 0.10,0.2,80,1.83 /
+      DATA    beta(17),LDF(17),CT1(17),Cleo(17)    / 0.10,0.8,80,1.83 /
+      DATA    beta(18),LDF(18),CT1(18),Cleo(18)    / 0.10,0.1,80,1.83 /
+      DATA    beta(19),LDF(19),CT1(19),Cleo(19)    / 0.08,1.0,60,1.6  /
 
     ! Parameters for leaf age algorithm for each emission activity classes
     REAL           Anew(NCLASS)
@@ -177,62 +175,25 @@ module megan_fx
     REAL           Amat(NCLASS)
     REAL           Aold(NCLASS)
 
-      DATA    Anew(  1),  Agro(  1),  Amat(  1),  Aold(  1) &
-          /  0.05     ,  0.6      ,  1.0    ,  0.9       /
-
-      DATA    Anew(  2),  Agro(  2),  Amat(  2),  Aold(  2) &
-          /  0.05     ,  0.6      ,  1.0     , 0.9       /
-
-      DATA    Anew(  3),  Agro(  3),  Amat(  3),  Aold(  3) &
-          /  2.0      ,  1.8      ,  1.0     ,  1.05       /
-
-      DATA    Anew(  4),  Agro(  4),  Amat(  4),  Aold(  4) &
-          /  2.0      ,  1.8      ,  1.0     ,  1.05       /
-
-      DATA    Anew(  5),  Agro(  5),  Amat(  5),  Aold(  5) &
-          /  2.0      ,  1.8      ,  1.0     ,  1.05       /
-
-      DATA    Anew(  6),  Agro(  6),  Amat(  6),  Aold(  6) &
-          /  2.0      ,  1.8      ,  1.0     ,  1.05       /
-
-      DATA    Anew(  7),  Agro(  7),  Amat(  7),  Aold(  7) &
-          /  2.0      ,  1.8      ,  1.0     ,  1.05       /
-
-      DATA    Anew(  8),  Agro(  8),  Amat(  8),  Aold(  8) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
-
-      DATA    Anew(  9),  Agro(  9),  Amat(  9),  Aold(  9) &
-          /  0.4      ,  0.6      ,  1.0     ,  0.95       /
-
-      DATA    Anew( 10),  Agro( 10),  Amat( 10),  Aold( 10) &
-          /  0.4      ,  0.6      ,  1.0    ,  0.95       /
-
-      DATA    Anew( 11),  Agro( 11),  Amat( 11),  Aold( 11) &
-          /  3.5      ,  3.0      ,  1.0    ,  1.2        /
-
-      DATA    Anew( 12),  Agro( 12),  Amat( 12),  Aold( 12) &
-          /  1.0      ,  1.0      ,  1.0    ,  1.0       /
-
-      DATA    Anew( 13),  Agro( 13),  Amat( 13),  Aold( 13) &
-          /  1.0      ,  1.0      ,  1.0    ,  1.0       /
-
-      DATA    Anew( 14),  Agro( 14),  Amat( 14),  Aold( 14) &
-          /  1.0      ,  1.0      ,  1.0    ,  1.0       /
-
-      DATA    Anew( 15),  Agro( 15),  Amat( 15),  Aold( 15) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
-
-      DATA    Anew( 16),  Agro( 16),  Amat( 16),  Aold( 16) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
-
-      DATA    Anew( 17),  Agro( 17),  Amat( 17),  Aold( 17) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
-
-      DATA    Anew( 18),  Agro( 18),  Amat( 18),  Aold( 18) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
-
-      DATA    Anew( 19),  Agro( 19),  Amat( 19),  Aold( 19) &
-          /  1.0      ,  1.0      ,  1.0      ,  1.0       /
+      DATA Anew( 1), Agro( 1), Amat( 1), Aold( 1) / 0.05 ,0.6, 1.0, 0.9  /
+      DATA Anew( 2), Agro( 2), Amat( 2), Aold( 2) / 0.05 ,0.6, 1.0, 0.9  /
+      DATA Anew( 3), Agro( 3), Amat( 3), Aold( 3) / 2.0  ,1.8, 1.0, 1.05 /
+      DATA Anew( 4), Agro( 4), Amat( 4), Aold( 4) / 2.0  ,1.8, 1.0, 1.05 /
+      DATA Anew( 5), Agro( 5), Amat( 5), Aold( 5) / 2.0  ,1.8, 1.0, 1.05 /
+      DATA Anew( 6), Agro( 6), Amat( 6), Aold( 6) / 2.0  ,1.8, 1.0, 1.05 /
+      DATA Anew( 7), Agro( 7), Amat( 7), Aold( 7) / 2.0  ,1.8, 1.0, 1.05 /
+      DATA Anew( 8), Agro( 8), Amat( 8), Aold( 8) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew( 9), Agro( 9), Amat( 9), Aold( 9) / 0.4  ,0.6, 1.0, 0.95 /
+      DATA Anew(10), Agro(10), Amat(10), Aold(10) / 0.4  ,0.6, 1.0, 0.95 /
+      DATA Anew(11), Agro(11), Amat(11), Aold(11) / 3.5  ,3.0, 1.0, 1.2  /
+      DATA Anew(12), Agro(12), Amat(12), Aold(12) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(13), Agro(13), Amat(13), Aold(13) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(14), Agro(14), Amat(14), Aold(14) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(15), Agro(15), Amat(15), Aold(15) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(16), Agro(16), Amat(16), Aold(16) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(17), Agro(17), Amat(17), Aold(17) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(18), Agro(18), Amat(18), Aold(18) / 1.0  ,1.0, 1.0, 1.0  /
+      DATA Anew(19), Agro(19), Amat(19), Aold(19) / 1.0  ,1.0, 1.0, 1.0  /
 
 
     !stress emission activity response coefficients for each emission class
@@ -244,8 +205,6 @@ module megan_fx
     REAL           CHT(NCLASS)
     !CLT: coefficient for high temperature stress
     REAL           CLT(NCLASS)
-
-
 
       DATA    CAQ(1),CHW(1),CHT(1),CLT(1)           /  1,1,1,1  /
       DATA    CAQ(2),CHW(2),CHT(2),CLT(2)           /  1,1,1,1  /

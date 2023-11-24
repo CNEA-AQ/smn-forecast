@@ -1,0 +1,1 @@
+/home/usuario/github/CNEA-AQ/prepmegan4cmaq/LAI3.nc

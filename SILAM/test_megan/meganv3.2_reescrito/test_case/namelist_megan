@@ -1,0 +1,19 @@
+&megan
+   start_date='2022-10-19 18:00:00',
+   end_date  ='2022-10-19 21:00:00',
+ 
+   griddesc_file="GRIDDESC",
+   gridname="Argentina" 
+   met_file='wrfout_d01_2022-10-19_18:00:00'   ,
+
+   ct3_file= 'CT3.nc',   !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   lai_file= 'LAI3.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   ef_file=  'EF.nc',    !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   ldf_file= 'LDF.nc',   !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   ndep_file='NDEP.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   fert_file='FERT.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   land_file='LAND.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+
+   chem_mech=''
+
+/
