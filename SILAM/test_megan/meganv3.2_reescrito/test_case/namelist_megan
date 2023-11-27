@@ -14,6 +14,5 @@
    fert_file='FERT.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
    land_file='LAND.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
 
-   chem_mech=''
-
+   chem_mech='CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
 /

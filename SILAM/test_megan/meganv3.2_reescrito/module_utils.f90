@@ -1,5 +1,5 @@
 module utils_mod
-
+  use netcdf
 contains
  !!Interfaz a "date"
 function date(date_str, fmt_str) result(output)
@@ -66,5 +66,12 @@ function mode(arr)      !calculate mode of a 2D array
   deallocate(arr1d)
 end function
 
+subroutine check(status)
+  integer, intent(in) :: status
+  if (status /= nf90_noerr) then
+    write(*,*) nf90_strerror(status)
+    stop 'netcdf error'
+  end if
+end subroutine check
 
 end module
