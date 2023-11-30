@@ -1,4 +1,4 @@
-module megcanopy
+module meg_can
    implicit none
      real , parameter :: convertwm2toumolm2s = 4.5, solarconstant = 1367., waterairratio = 18.016/28.97
      real,parameter :: Sb = 5.6704E-8 ! 0.0000000567 ! Stefan-boltzman constant  W m-2 K-4
@@ -25,105 +25,104 @@ module megcanopy
      ! 17 = canopy transparency
      REAL , DIMENSION(NRCHA,NRTYP) :: Canopychar = reshape( &                                                ! canopy types 
 !  vars: 1,      2,   3,    4,   5,   6,     7,     8,    9,   10,   11,   12,    13,   14,   15,  16,  17
-     [16.0, 0.005, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 0.85, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2,&! 1 = Needleleaf trees                      
-      16.0, 0.050, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 1.10, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2,&! 2 = Tropical forest trees,
-      16.0, 0.050, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 0.90, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2,&! 3 = Temperate broadleaf trees
-       1.0, 0.015, 0.10,  2.0, 0.2, 0.8, 0.057, 0.389, 0.85, 0.95, 1.00, 0.06, -0.06, 700., 150., 0.7, 0.2,&! 4 = shrubs
-       0.5, 0.010, 0.15,  0.5, 0.2, 0.8, 0.057, 0.389, 0.70, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2,&! 5 = herbaceous
-       1.0, 0.020, 0.15,  1.0, 0.2, 0.8, 0.057, 0.389, 0.65, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2]&! 6 = crops
+     [16.0, 0.005, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 0.85, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2, &! 1 = Needleleaf trees                      
+      16.0, 0.050, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 1.10, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2, &! 2 = Tropical forest trees,
+      16.0, 0.050, 0.10, 24.0, 0.2, 0.8, 0.057, 0.389, 0.90, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2, &! 3 = Temperate broadleaf trees
+       1.0, 0.015, 0.10,  2.0, 0.2, 0.8, 0.057, 0.389, 0.85, 0.95, 1.00, 0.06, -0.06, 700., 150., 0.7, 0.2, &! 4 = shrubs
+       0.5, 0.010, 0.15,  0.5, 0.2, 0.8, 0.057, 0.389, 0.70, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2, &! 5 = herbaceous
+       1.0, 0.020, 0.15,  1.0, 0.2, 0.8, 0.057, 0.389, 0.65, 0.95, 1.25, 0.06, -0.06, 700., 150., 0.7, 0.2 ]&! 6 = crops
       ,shape=[NRCHA,NRTYP])
 
 contains
 
-!subroutine MEGCAN(YEAR,NCOLS,NROWS,LAYERS,DOY,ZTIME,     &
-subroutine megcan(YYYY, DDD, HH,                                      & !date-time
-                 NCOLS,NROWS,LAYERS,                                  & !dimensions (x,y,levels)
-                 LAT, LONG, CTF, LAIc,                                & !inp variables (static)
-                 TEMP, PAR, WIND, PRES, QV,                           & !inp variables (dynamic)
-                 ShadeleafTK, SunleafTK, SunFrac, SunPPFD, ShadePPFD  ) !out variables
-!*****************************************************************
-! INPUTs
-!   TEMP          Temperature [K]
-!   PPFD          Incoming photosynthetic active radiation [umol/m2/s1]
-!   Wind          Wind speed [m s-1]
-!   Humidity      Relative humidity [%]
-!   Cantype       Defines set of canopy characteristics
-!   LAI           Leaf area index [m2 per m2 ground area]
-!   Pres          Pressure [Pa]
-!*****************************************************************
-! OUTPUTs
-! For each time step and location. Each variable is an array with a value for each canopy layer (vertical profile)
-! i = 1 is the top canopy layer, 2 is the next layer, etc.
-!   ShadeleafTK    leaf temperature for shade leaves [K] (weighted by canopy type)
-!   SunleafTK      leaf temperature for sun leaves [K] (weighted by canopy type)
-!   SunFrac        fraction of sun leaves (weighted by canopy type)
-!   SunPPFD        PPFD on a sun leaf [umol/m2/s] (weighted by canopy type)
-!   ShadePPFD      PPFD on a shade leaf [umol/m2/s] (weighted by canopy type)
+subroutine megcan(yyyy, ddd, hh,                & !date-time: year,jday,hour
+                 ncols,nrows,layers,            & !dimensions (x,y,levels)
+                 lat, long, ctf, laic,          & !inp vars (static) : lat [degrees],lon [degrees],ctf[1],LAIc[1]
+                 temp, ppfd, wind, pres, qv,    & !inp vars (dynamic): temp[ºK], ppfd[W/m2],wind[m/s],pres[Pa],Qv[1]
+                 ShadeleafTK, SunleafTK, SunFrac, SunPPFD, ShadePPFD ) !out vars
+       !*****************************************************************
+       ! OUTPUTs
+       ! For each time step and location. Each variable is an array with a value for each canopy layer (vertical profile)
+       ! i = 1 is the top canopy layer, 2 is the next layer, etc.
+       !   ShadeleafTK    leaf temperature for shade leaves [K] (weighted by canopy type)
+       !   SunleafTK      leaf temperature for sun leaves [K] (weighted by canopy type)
+       !   SunFrac        fraction of sun leaves (weighted by canopy type)
+       !   SunPPFD        PPFD on a sun leaf [umol/m2/s] (weighted by canopy type)
+       !   ShadePPFD      PPFD on a shade leaf [umol/m2/s] (weighted by canopy type)
      
-      IMPLICIT NONE
-      !   INPUT VARIABLES
-       INTEGER, INTENT(IN)                           :: YYYY, DDD, HH           ! year, jday, hour
-       INTEGER, INTENT(IN)                           :: NCOLS, NROWS, LAYERS    !dims x,y,levels
-       REAL,INTENT(IN), DIMENSION(NCOLS,NROWS)       :: LAT, LONG, TEMP, PAR, WIND, PRES, QV, LAIc
-       REAL,INTENT(IN), DIMENSION(NRTYP,NCOLS,NROWS) :: CTF ! Canopy type factor array
-      !   OUTPUT VARIABLES 
+      implicit none
+      ! input variables
+       integer, intent(in)                           :: yyyy, ddd, hh           ! year, jday, hour
+       integer, intent(in)                           :: ncols, nrows, layers    !dims x,y,levels
+       real,intent(in), dimension(ncols,nrows)       :: lat, long, temp, ppfd, wind, pres, qv, laic
+       real,intent(in), dimension(ncols,nrows,nrtyp) :: ctf ! canopy type factor array
+       !real,intent(in), dimension(nrtyp,ncols,nrows) :: ctf ! canopy type factor array
+      ! output variables 
        REAL,INTENT(OUT),DIMENSION(NCOLS,NROWS,LAYERS):: ShadeleafTK, SunleafTK, SunFrac, SunPPFD, ShadePPFD  
-      !   LOCAL VARIABLES
-       INTEGER             :: I, I_CT, J, MM, DD
-       INTEGER             :: IDAY         ! For using original solar method
-       REAL                :: PPFD(NCOLS, NROWS)
-       REAL                :: TotalCT
-       REAL                :: month, Date, JDAY
-       REAL                :: Sinbeta, Beta, HOUR, DAY
-       REAL,DIMENSION(LAYERS) ::  VPgausWt, VPgausDis2,             &
-        VPgausDis, VPslwWT,  QdAbsV, QsAbsV, QdAbsn,                &
-        QsAbsn, SunQv, ShadeQv, SunQn, ShadeQn,                     &
-        TairK, HumidairPa, Ws, SunleafSH, sun_ppfd,shade_ppfd,      &
-        SunleafLH,SunleafIR, ShadeleafSH, sun_tk,shade_tk,sun_frac, &
-        ShadeleafLH,ShadeleafIR, sun_ppfd_total, shade_ppfd_total,  &
-        sun_tk_total, shade_tk_total, sun_frac_total
-       REAL :: Solar, Maxsolar, Eccentricity,                       &
-               Difffrac, PPFDfrac, QbAbsn,                          &
-                Trate, Qbeamv,Qdiffv, Qbeamn, Qdiffn,               &
-                QbAbsV,Ea1tCanopy, Ea1pCanopy,                      &
-                TairK0, HumidairPa0, Ws0, SH
-!       REAL ::  CalcEccentricity,WaterVapPres,                      &      
-!                Stability, Calcbeta
-   
+      ! local variables
+       integer :: i, j, k, mm, dd
+       real    :: TotalCT
+       real    :: month,day,hour
+       real    :: Sinbeta, Beta
+       REAL    :: Solar, Maxsolar,Eccentricity,           &!
+                   Difffrac, PPFDfrac, QbAbsn,            &
+                   Trate, Qbeamv,Qdiffv, Qbeamn, Qdiffn,  &
+                   QbAbsV,Ea1tCanopy, Ea1pCanopy,         &
+                   TairK0, HumidairPa0, Ws0, SH
+       !REAL                :: PPFD(NCOLS, NROWS)
+       REAL,DIMENSION(LAYERS) ::  VPgausWt, VPgausDis2,VPgausDis, VPslwWT,                    &
+                                  QdAbsV, QsAbsV, QdAbsn,QsAbsn,                              &
+                                  SunQv, ShadeQv, SunQn, ShadeQn,                             &
+                                  TairK, HumidairPa, Ws, SunleafSH, sun_ppfd,shade_ppfd,      &
+                                  SunleafLH,SunleafIR, ShadeleafSH, sun_tk,shade_tk,sun_frac, &
+                                  ShadeleafLH,ShadeleafIR, sun_ppfd_total, shade_ppfd_total,  &
+                                  sun_tk_total, shade_tk_total, sun_frac_total
+      
    print*, "  + MEGCAN: (day,nx,ny,nl)",DDD,NCOLS,NROWS,layers
-   DAY=real(DDD)
-   HOUR=real(HH)
+   !DAY=real(DDD)
+   !HOUR=real(HH)
+
    !loop on each grid-cell:
    do j=1,NROWS
       do i=1, NCOLS
    
       !default values for output
-      SunleafTK(I,J,:)   = TEMP(I,J)
-      ShadeleafTK(I,J,:) = TEMP(I,J)
-      SunPPFD(I,J,:)     = PPFD(I,J)
-      ShadePPFD(I,J,:)   = PPFD(I,J)
-      SunFrac(I,J,:)     = 1.0
-      TotalCT           = 0.0
-
-      TotalCT=sum(CTF(i,j,:))*0.01
+      SunleafTK(i,j,:)   = temp(i,j)
+      ShadeleafTK(i,j,:) = temp(i,j)
+      SunPPFD(i,j,:)     = ppfd(i,j)
+      ShadePPFD(i,j,:)   = ppfd(i,j)
+      SunFrac(i,j,:)     = 1.0
+      TotalCT=sum(CTF(i,j,:)) !*0.01
       if (totalCT .gt. 0 .AND. LAIc(i,j) .gt. 0) then
- 
-         !(1) calc solar angle
-          TairK0   = TEMP(I,J)       !temp (from meteo)   
-          Ws0      = WIND(I,J)       !wind (from meteo)   
-          Solar    = PPFD(I,J)/2.25  !rad. (from meteo) 
+
+         ! Convert to "solar hour": 
+         Hour  = real(HH) + long(i,j) / 15.0                                                            
+         
+         if ( hour  .lt. 0.0 ) then                                                                 
+           hour  = hour + 24.0; day  = real(ddd)  - 1                                                                          
+         elseif ( hour  .gt. 24.0 ) then                                                            
+           hour  = hour - 24.0; day  = real(ddd)  + 1                                                                          
+         endif
+
+          TairK0   = temp(i,j)       !temp (from meteo)
+          Ws0      = wind(i,j)       !wind (from meteo)
+          Solar    = ppfd(i,j)/2.25  !solar rad. (from meteo) [W m-2] -> [umol photons m-2 s-1]
                                                                                                
-          Beta     = Calcbeta(Day , Lat(I,J) , Hour )
-          Sinbeta  = SIN(Beta  / 57.29578)
-          Maxsolar = Sinbeta * SolarConstant * CalcEccentricity(Day)
-         print*,"beta,maxsolar,solar",beta,maxsolar,solar
+         !(1) calc solar angle
+          Beta        = Calcbeta(day,lat(i,j),hour)
+          Sinbeta     = sin(Beta / 57.29578)
+          Eccentricity= CalcEccentricity(Day)
+          Maxsolar = Sinbeta * SolarConstant * Eccentricity
+
          !(2) gaussian dist.
          !
-         Call GaussianDist(VPgausDis, Layers)
+         call GaussianDist(VPgausDis, layers)
 
          !(3) determine fraction of diffuse PPFD, direct PPFD, diffuse near IR, direct near IR
          !
-         Call SolarFractions(Solar, Maxsolar, Qdiffv, Qbeamv, Qdiffn, Qbeamn)
+         call SolarFractions(Solar, Maxsolar, Qdiffv, Qbeamv, Qdiffn, Qbeamn)
+      
+
 
           sun_ppfd_total     = 0.0
           shade_ppfd_total   = 0.0
@@ -131,45 +130,51 @@ subroutine megcan(YYYY, DDD, HH,                                      & !date-ti
           shade_tk_total     = 0.0
           sun_frac_total     = 0.0
 
-          DO I_CT = 1,NRTYP   !canopy types
-            IF (CTF(I_CT,I,J) .NE. 0.0) THEN
-            sun_ppfd           = 0.0
-            shade_ppfd         = 0.0
-            sun_tk             = 0.0
-            shade_tk           = 0.0
-            sun_frac           = 0.0
+          do k = 1,NRTYP   !canopy types
+            if ( ctf(i,j,k) .ne. 0.0 ) then
+               sun_ppfd           = 0.0
+               shade_ppfd         = 0.0
+               sun_tk             = 0.0
+               shade_tk           = 0.0
+               sun_frac           = 0.0
    
-            !(4) canopy radiation dist (ppdf)
-            !
-            Call CanopyRad(VPgausDis, Layers, LAIc(I,J), Sinbeta, Qbeamv, &
-                  Qdiffv, Qbeamn, Qdiffn, I_CT, Canopychar, sun_frac,     &
-                  QbAbsV, QdAbsV, QsAbsV, QbAbsn, QdAbsn, QsAbsn, SunQv,  &
-                  ShadeQv, SunQn, ShadeQn, sun_ppfd, shade_ppfd,          &
-                  NrCha,NrTyp)
+               !(4) canopy radiation dist (ppdf)
+               !
+               call CanopyRad(VPgausDis, layers, LAIc(i,j), Sinbeta,         & !in
+                     Qbeamv, Qdiffv, Qbeamn, Qdiffn, k, Canopychar, sun_frac,& !in
+                     QbAbsV, QdAbsV, QsAbsV, QbAbsn, QdAbsn, QsAbsn, SunQv,  & !in
+                     ShadeQv, SunQn, ShadeQn, sun_ppfd, shade_ppfd,          & !out
+                     NrCha,NrTyp)
    
-            HumidairPa0  =  WaterVapPres(QV(I,J), PRES(I,J), WaterAirRatio)
-            Trate        =  Stability(Canopychar, I_CT, Solar , NrCha, NrTyp)
-            !(5) canopy energy balance (temp)
-            !
-            Call CanopyEB(Trate, Layers, VPgausDis, Canopychar, I_CT,    &
-                  TairK, HumidairPa, Ws, sun_ppfd,                       &
-                  shade_ppfd, SunQv, ShadeQv, SunQn, ShadeQn,            &
-                  sun_tk, SunleafSH, SunleafLH, SunleafIR,               &
-                  shade_tk,ShadeleafSH,ShadeleafLH,ShadeleafIR,          &
-                  NrCha, NrTyp, Ws0, TairK0, HumidairPa0)
-            ENDIF
-         enddo
-         !(6) compute output variables
-         !
-         sun_ppfd_total(:)   = sun_ppfd_total(:)   + 0.01*CTF(I_CT,I,J)*sun_ppfd(:)
-         shade_ppfd_total(:) = shade_ppfd_total(:) + 0.01*CTF(I_CT,I,J)*shade_ppfd(:)
-         sun_tk_total(:)     = sun_tk_total(:)     + 0.01*CTF(I_CT,I,J)*sun_tk(:)
-         shade_tk_total(:)   = shade_tk_total(:)   + 0.01*CTF(I_CT,I,J)*shade_tk(:)
-         sun_frac_total(:)   = sun_frac_total(:)   + 0.01*CTF(I_CT,I,J)*sun_frac(:)
+               HumidairPa0  =  WaterVapPres(qv(i,j), pres(i,j), waterairratio)
+               Trate        =  Stability(Canopychar, k, Solar , NrCha, NrTyp)
+               !(5) canopy energy balance (temp)
+               !
+               call CanopyEB(Trate, Layers, VPgausDis, Canopychar, k,    &
+                     TairK, HumidairPa, Ws, sun_ppfd,                    &
+                     shade_ppfd, SunQv, ShadeQv, SunQn, ShadeQn,         &
+                     sun_tk, SunleafSH, SunleafLH, SunleafIR,            &
+                     shade_tk,ShadeleafSH,ShadeleafLH,ShadeleafIR,       &
+                     NrCha, NrTyp, Ws0, TairK0, HumidairPa0)
+               !(6) compute output variables
+               !
+               sun_ppfd_total(:)   = sun_ppfd_total(:)   + sun_ppfd(:)  * ctf(i,j,k)!*0.01
+               shade_ppfd_total(:) = shade_ppfd_total(:) + shade_ppfd(:)* ctf(i,j,k)!*0.01
+               sun_tk_total(:)     = sun_tk_total(:)     + sun_tk(:)    * ctf(i,j,k)!*0.01
+               shade_tk_total(:)   = shade_tk_total(:)   + shade_tk(:)  * ctf(i,j,k)!*0.01
+               sun_frac_total(:)   = sun_frac_total(:)   + sun_frac(:)  * ctf(i,j,k)!*0.01
+            endif
+          enddo
+              SunleafTK(i,j,:)   = sun_tk_total(:)/TotalCT
+              ShadeleafTK(i,j,:) = shade_tk_total(:)/TotalCT
+              SunPPFD(i,j,:)     = sun_ppfd_total(:)/TotalCT
+              ShadePPFD(i,j,:)   = shade_ppfd_total(:)/TotalCT
+              SunFrac(i,j,:)     = sun_frac_total(:)/TotalCT
+
       else if (totalCT .lt. 0) then
-             !Send ERROR message!
+             print*,"Send ERROR message!"             !Send ERROR message!
       else   !totalCT == 0
-             !Do nothing: (default values)
+             !print*,"Default values!"
       endif
    
       enddo
@@ -186,21 +191,18 @@ end subroutine megcan
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION Calcbeta(Day, Lat, Hour)
       IMPLICIT NONE
-      !INTEGER :: Day
       REAL    :: Day
-      REAL :: Rpi,Hour,Lat,SinDelta,CosDelta,A,B,Sinbeta,Calcbeta
-      REAL,PARAMETER :: Pi = 3.14159, Rpi180 = 57.29578
-!--------------------------------------------------------------------
+      REAL    :: Rpi,Hour,Lat,SinDelta,CosDelta,A,B,Sinbeta,Calcbeta
+      REAL,PARAMETER :: PI = 3.14159, Rpi180 = 57.29578
+
       SinDelta = -SIN(0.40907) * COS(6.28 * (Day + 10) / (365))
       CosDelta = (1 - SinDelta**2.)**0.5
 
       A = SIN(Lat / Rpi180) * SinDelta
       B = COS(Lat / Rpi180) * Cosdelta
-      Sinbeta = A + B * COS(2 * Pi * (Hour - 12) / 24)
-      Calcbeta = ASIN(Sinbeta) * 57.29578
+      Sinbeta = A + B * COS(2 * PI * (Hour - 12) / 24)
+      Calcbeta = ASIN(Sinbeta) * Rpi180 !57.29578
 END FUNCTION Calcbeta
-! REVISE - Delete DIstomata
-!!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 !
 !   FUNCTION CalcEccentricity
@@ -246,22 +248,13 @@ subroutine GaussianDist(Distgauss, Layers)
       RETURN
 end subroutine GaussianDist
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
-!   SUBROUTINE SolarFractions
-!   Based on actual and potential max solar radiation:
-!   Determine the fraction of solar radiation that is 
-!   diffuse PPFD, direct PPFD, diffuse near IR, direct near IR 
-!
-!   Originally developed by Alex Guenther in 1990s
-!   Modified in 2010
-!ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-subroutine SolarFractions( Solar, Maxsolar, Qdiffv,Qbeamv, Qdiffn, Qbeamn)
+subroutine SolarFractions(Solar, Maxsolar, Qdiffv,Qbeamv,Qdiffn,Qbeamn)
       IMPLICIT NONE
       REAL,INTENT(IN) :: Solar, Maxsolar
       REAL,INTENT(OUT) ::  Qdiffv,Qbeamv, Qdiffn, Qbeamn
       REAL :: FracDiff, PPFDfrac,PPFDdifFrac,Qv, Qn
       ! internal variables
-      INTEGER :: I,J
+      !INTEGER :: I,J
       REAL ::  Transmis
 
       IF (Maxsolar  <= 0) THEN
@@ -281,15 +274,14 @@ subroutine SolarFractions( Solar, Maxsolar, Qdiffv,Qbeamv, Qdiffn, Qbeamn)
       IF (PPFDdifFrac > 1.0) THEN
       PPFDdifFrac = 1.0
       ENDIF
-      Qv     = PPFDfrac * Solar
-      Qdiffv = Qv * PPFDdifFrac
-      Qbeamv = Qv - Qdiffv
+      Qv     = PPFDfrac * Solar 
+      Qdiffv = Qv * PPFDdifFrac   !diffuse PPFD
+      Qbeamv = Qv - Qdiffv        !direct PPFD
       Qn     = Solar - Qv
-      Qdiffn =  Qn * FracDiff
-      Qbeamn =  Qn - Qdiffn
+      Qdiffn =  Qn * FracDiff     !diffuse near IR
+      Qbeamn =  Qn - Qdiffn       !direct near IR
       RETURN
 end subroutine SolarFractions
-
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo!
 !   Subroutine CanopyRad
 !
@@ -309,7 +301,7 @@ SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
                 ShadeQv, SunQn, ShadeQn, SunPPFD, ShadePPFD,  &
                 NrCha, NrTyp)
 
-      IMPLICIT NONE
+      implicit none
       ! input
       INTEGER,INTENT(IN) :: Layers, NrCha, NrTyp, Cantype
       REAL,INTENT(IN) :: Qbeamv,Qdiffv,Sinbeta,LAI,Qbeamn,Qdiffn
@@ -325,7 +317,6 @@ SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
       REAL :: ScatV, ScatN, RefldV, RefldN, ReflbV, ReflbN,     & 
              Kb, Kd, KbpV, KbpN, KdpV, KdpN, LAIdepth, Cluster, & 
              QdAbsVL, QsAbsVL, QdAbsNL, QsAbsNL, CANTRAN, LAIadj
-      
       
       REAL,PARAMETER :: ConvertShadePPFD = 4.6
       REAL,PARAMETER :: ConvertSunPPFD = 4.0
@@ -343,7 +334,7 @@ SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
         RefldV  = Canopychar(7,Cantype)
         RefldN  = Canopychar(8,Cantype)
         Cluster = Canopychar(9,Cantype)
-        !        print*,'cluster',  Cluster
+        
         ! Extinction coefficients for black leaves for beam (kb) or diffuse (kd)
         Kb = Cluster * 0.5 / Sinbeta
         ! (0.5 assumes a spherical leaf angle distribution (0.5 = cos (60 deg))
@@ -354,10 +345,9 @@ SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
         Call CalcExtCoeff(Qbeamn,ScatN,Kb,Kd,ReflbN,KbpN,KdpN,QbAbsn)
 
         DO i = 1,layers
-          ! LAI depth at this layer
-          LAIdepth   = LAIadj  * Distgauss(i)
-          !fraction of leaves that are sunlit
-          Sunfrac(i) = EXP(-Kb * LAIdepth)
+          
+          LAIdepth   = LAIadj  * Distgauss(i) ! LAI depth at this layer
+          Sunfrac(i) = EXP(-Kb * LAIdepth)    !fraction of leaves that are sunlit
 
           Call CalcRadComponents(Qdiffv , Qbeamv , kdpV, kbpV, kb, scatV, refldV, reflbV, LAIdepth, QdAbsVL, QsAbsVL)
           Call CalcRadComponents(Qdiffn , Qbeamn , kdpN, kbpN, kb, scatN, refldN, reflbN, LAIdepth, QdAbsNL, QsAbsNL)
@@ -663,12 +653,12 @@ FUNCTION Stability(Canopychar, Cantype, Solar, NrCha, NrTyp)
 
       Trateboundary = 500
       IF (Solar > Trateboundary) THEN
-            ! Daytime temperature lapse rate
+        ! Daytime temperature lapse rate
         Stability = Canopychar(12, Cantype)
       ELSEIF (Solar > 0) THEN
         Stability = Canopychar(12, Cantype) - ((Trateboundary - Solar) / Trateboundary) * (Canopychar(12, Cantype) - Canopychar(13, Cantype))
       ELSE
-            ! Nightime temperature lapse rate
+         ! Nightime temperature lapse rate
          Stability = Canopychar(13, Cantype)
       ENDIF
 END FUNCTION Stability
@@ -801,4 +791,4 @@ function SvdTk(Tk)
 end function  SvdTk
 
 
-end module megcanopy
+end module meg_can
