@@ -9,7 +9,7 @@ program meganv32
     use readGRIDDESC_mod  !GRIDDESC reader
  
    use meg_can     !canopy calculations
-   !#use megsea    !soil emission activity (SEA): BSNP
+   use meg_sea    !soil emission activity (SEA): BSNP
    !#use megvea    !vegetation emision activity (VEA)
    !#use mgn2mech  !species mapping to mechanism
 
@@ -25,7 +25,7 @@ program meganv32
    character(5)      :: chem_mech='CBM05' !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
    !logical           :: prep_megan=.false.
    character(250)    :: griddesc_file,gridname,met_file,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file
-
+   character(4)      :: lsm
    !date vars:
    integer      :: end_date_s,current_date_s
    character(4) :: YYYY
@@ -40,25 +40,24 @@ program meganv32
    !real,    allocatable, dimension(:,:,:)  :: ctf                         !(x,y,*) from prep_megan
    !real,    allocatable, dimension(:,:)    :: needl,tropi,broad,shrub,grass,crop
    real,    allocatable, dimension(:,:)     :: lai,ndep,fert               !(x,y,t) from prep_megan
-   real,    allocatable, dimension(:,:,:)   :: tmp,rad,u10,v10,pre,hum,smo !(x,y,t) from wrfout
-   integer, allocatable, dimension(:,:,:)   :: sty                         !(x,y,t) from wrfout
+   real,    allocatable, dimension(:,:,:)   :: tmp,rad,u10,v10,pre,hum,smois !(x,y,t) from wrfout
+   integer, allocatable, dimension(:,:,:)   :: styp                        !(x,y,t) from wrfout
    !intermediate vars:
    integer :: t!,i,j,k
    integer,parameter :: layers=5
    real,    allocatable, dimension(:,:,:)   :: wind                        !(x,y,t) from wrfout
-   real,    allocatable, dimension(:,:,:)   :: sunt,shat,sunfrac,sunp,shap !ShadeleafTK,SunleafTK,SunFrac,SunPPFD,ShadePPFD !megcan
-     !#   cfno, cfnog, gamsm,                          &  !Outs: Emiss activity (EA) of Crop & EA Grass, Soil moisture for isoprene
-     !#   gamno, bdsnp_no                              )  !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
-     !#   gamsm_in, maxt, mint, maxws, d_temp, d_ppfd, &  !
-     !#   sunfrac,sunt, shat,sunp,shap,                &  !from "MEGCAN"
-     !#   emis_rate, non_dimgarma                      )  !Outs
-
+   real,    allocatable, dimension(:,:,:)   :: sunt,shat,sunfrac,sunp,shap !ShadeleafTK,SunleafTK,SunFrac,SunPPFD,ShadePPFD from MEGCAN
+   real,    allocatable, dimension(:,:)     :: gamma_sm                    !(x,y,t) from MEGSEA
+     !#            
+     !#   cfno, cfnog,gamma_no, bdsnp_no     !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
+     !#   maxt, mint, maxws, d_temp, d_ppfd, 
+     !#   emis_rate, non_dimgarma            !Outs
    !output vars:
    !character(25)    :: outfile,diagfile
 
    !---
    !print '("Leo namelist.. ")'
-   namelist/megan/start_date,end_date,met_file,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file,chem_mech,griddesc_file,gridname
+   namelist/megan/start_date,end_date,met_file,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file,chem_mech,griddesc_file,gridname,lsm
    read(*,nml=megan, iostat=iostat)
    if( iostat /= 0 ) then
      write(*,*) 'megan: failed to read namelist; error = ',iostat
@@ -79,6 +78,8 @@ program meganv32
    allocate(sunfrac(grid%nx,grid%ny,layers))!  ShSunFrac
    allocate(   sunp(grid%nx,grid%ny,layers))!  ShSunPPFD
    allocate(   shap(grid%nx,grid%ny,layers))!ShShadePPFD
+   
+  allocate(gamma_sm(grid%nx,grid%ny)) !GAMSM
 
    !--- 
    print '("Comienza loop.. ")'
@@ -102,31 +103,39 @@ program meganv32
             !#call write_output_file()
          endif
          current_day=DD
-         call prep_dynamic_daily_data(grid,t,tmp,rad,u10,v10,pre,hum,smo,fert)
+         call prep_dynamic_daily_data(grid,t,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
          if ( current_month /= MM ) then
             current_month=MM
             call prep_dynamic_monthly_data(grid,MM,lai,ndep)
          endif    
       endif    
 
-      call megcan(atoi(yyyy),atoi(ddd),atoi(hh),                          &!calculate canopy tmp and rad parameters
-             grid%nx,grid%ny,layers,                                      & !dimensions
-             lat,lon,ctf(:,:,1,:)*0.01,lai,                               & !(INPs)
-             tmp(:,:,t),rad(:,:,t),wind(:,:,t),pre(:,:,t),hum(:,:,t),     & !(INPs)
-             sunt,shat,sunfrac,sunp,shap                                  ) !(OUTs) perfiles de temp y flujo fotonico para distintos niveles del canopeo
-             !ShadeleafTK,SunleafTK,SunFrac,SunPPFD,ShadePPFD              ) !(OUTs) perfiles de temp y flujo fotonico para distintos niveles del canopeo
+      !Formulas:
+      !F_i   = gamma_i *  sum_j{ EF_i,j  veg_fraction_j }                    (0) forall "i" in compounds and "j" in veg types
+      !gamma = C_ce LAI gamma_phot gamma_temp gamma_age gamma_sm gamma_co2   (1) activity factor
 
-      ! call megsea(atoi(yyyy),atoi(ddd),atoi(hh),          &!calculate soil (NO) activity
-      !        lat,                                         &
-      !        isltyp,ctf,lai,                              &  !Soil type, CTF, LAIc
-      !        tmp,soilm1,soilm2,soilt,precadj,             &  !temp, soil moisture, soil temp, precip adjustment
-      !        cfno, cfnog, gamsm,                          &  !Outs: Emiss activity (EA) of Crop & EA Grass, Soil moisture for isoprene
-      !        gamno, bdsnp_no                              )  !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
+      call megcan(atoi(yyyy),atoi(ddd),atoi(hh),                        &!calculate canopy tmp and rad parameters
+             grid%nx,grid%ny,layers,                                    & !dimensions
+             lat,lon,ctf(:,:,1,:)*0.01,lai,                             & !INPs: 
+             tmp(:,:,t),rad(:,:,t),wind(:,:,t),pre(:,:,t),hum(:,:,t),   & !INPs: 
+             sunt,shat,sunfrac,sunp,shap                                ) !OUTs:  perfiles de temp y flujo fotonico para distintos niveles del canopeo
+
+       call megsea(                                                     &!calculate soil (NO) activity
+              grid%nx,grid%ny,                                          & !dimensions
+              lsm,styp(:,:,t),smois(:,:,t),                             & !INPs: land surface model, soil type, soil moisture
+              gamma_sm                                                  ) !OUTs: soil moisture activity for isoprene
+
+       !soil NO model:
+       !call meg_no(atoi(yyyy),atoi(ddd),atoi(hh), 
+       !       gamma_no, bdsnp_no                                          ) !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
+       !ctf(:,:,1,:),lai,                               & !Soil type, CTF, LAIc
+       !tmp(:,:,t),soilm1(:,:,t),soilm2(:,:,t),soilt(:,:,t),precadj(:,:,t),  &  !temp, soil moisture, soil temp, precip adjustment
+       !cfno, cfnog, gamma_sm)                                      & !Outs: Emiss activity (EA) of Crop & EA Grass, Soil moisture for isoprene
 
       !#call megvea(atoi(yyyy),atoi(ddd),atoi(hh),          &!calculate vegetation emission activity
       !#       layers,                                      &  !nlayers
-      !#       lai, lai, ldf_in,                            &  !LAI (past), LAI (current), LDF
-      !#       gamsm_in,                                    &  !GAMSM: EA response to soil moisture,
+      !#       lai, lai, ldf,                               &  !LAI (past), LAI (current), LDF
+      !#       gamma_sm,                                    &  !GAMSM: EA response to soil moisture,
       !#       maxt, mint, maxws, d_temp, d_ppfd,           &  !max temp, min temp, 
       !#       sunfrac, sunt, shat, sunp, shap,             &  !from "MEGCAN"
       !#       emis_rate, non_dimgarma                      )  !Outs
@@ -215,14 +224,14 @@ subroutine prep_static_data(p,g,lat,lon,arid,non_arid,landtype,ctf,ef,ldf)
 end subroutine
 
 
-subroutine prep_dynamic_daily_data(g,ini_h,tmp,rad,u10,v10,pre,hum,smo,fert)
+subroutine prep_dynamic_daily_data(g,ini_h,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
   implicit none
   type(grid_type) :: g
   integer,intent(in) :: ini_h
   integer            :: end_h
   integer :: ncid,time_dimid,time_len
   real, allocatable,dimension(:,:)    , intent(inout) :: fert
-  real, allocatable,dimension(:,:,:), intent(inout) :: u10,v10,tmp,rad,pre,hum,smo
+  real, allocatable,dimension(:,:,:), intent(inout) :: u10,v10,tmp,rad,pre,hum,SMOIS
  
 print*,"  Preparo inputs dinámicos diarios.."
   !2d arrays:
@@ -239,14 +248,14 @@ print*,"  Preparo inputs dinámicos diarios.."
   call check(nf90_close(ncid))
   end_h=ini_h+time_len-2
                     
-  if (.not. allocated(tmp) ) then; allocate(tmp(g%nx,g%ny,24));endif 
-  if (.not. allocated(rad) ) then; allocate(rad(g%nx,g%ny,24));endif
-  if (.not. allocated(u10) ) then; allocate(u10(g%nx,g%ny,24));endif
-  if (.not. allocated(v10) ) then; allocate(v10(g%nx,g%ny,24));endif
-  if (.not. allocated(pre) ) then; allocate(pre(g%nx,g%ny,24));endif
-  if (.not. allocated(hum) ) then; allocate(hum(g%nx,g%ny,24));endif
-  if (.not. allocated(smo) ) then; allocate(smo(g%nx,g%ny,24));endif
-  if (.not. allocated(sty) ) then; allocate(sty(g%nx,g%ny,24));endif
+  if (.not. allocated(tmp) ) then; allocate(tmp(g%nx,g%ny,24) );endif 
+  if (.not. allocated(rad) ) then; allocate(rad(g%nx,g%ny,24) );endif
+  if (.not. allocated(u10) ) then; allocate(u10(g%nx,g%ny,24) );endif
+  if (.not. allocated(v10) ) then; allocate(v10(g%nx,g%ny,24) );endif
+  if (.not. allocated(pre) ) then; allocate(pre(g%nx,g%ny,24) );endif
+  if (.not. allocated(hum) ) then; allocate(hum(g%nx,g%ny,24) );endif
+  if (.not. allocated(SMOIS) ) then; allocate(SMOIS(g%nx,g%ny,24) );endif
+  if (.not. allocated(styp)) then; allocate(styp(g%nx,g%ny,24));endif
   call check(nf90_open(trim(met_file), nf90_write, ncid ))
      call check( nf90_inq_varid(ncid,'U10'   , var_id)); call check(nf90_get_var(ncid, var_id , U10(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'V10'   , var_id)); call check(nf90_get_var(ncid, var_id , V10(:,:,ini_h:end_h) ))
@@ -254,8 +263,8 @@ print*,"  Preparo inputs dinámicos diarios.."
      call check( nf90_inq_varid(ncid,'SWDOWN', var_id)); call check(nf90_get_var(ncid, var_id , RAD(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'PSFC'  , var_id)); call check(nf90_get_var(ncid, var_id , PRE(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'Q2'    , var_id)); call check(nf90_get_var(ncid, var_id , HUM(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'SMOIS' , var_id)); call check(nf90_get_var(ncid, var_id , SMO(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'ISLTYP', var_id)); call check(nf90_get_var(ncid, var_id , STY(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'SMOIS' , var_id)); call check(nf90_get_var(ncid, var_id , SMOIS(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'ISLTYP', var_id)); call check(nf90_get_var(ncid, var_id , STYP(:,:,ini_h:end_h)))
   call check(nf90_close(ncid))
 
   WIND=SQRT(U10*U10 + V10*V10)
@@ -266,8 +275,8 @@ end subroutine
  
 subroutine prep_dynamic_monthly_data(g,MM,lai,ndep)
   implicit none
-  type(grid_type) :: g
-  character(len=2) :: MM
+  type(grid_type)   :: g
+  character(len=2)  :: MM
   real, allocatable,dimension(:,:), intent(inout) :: lai,ndep
 
 print*,"  Preparo inputs dinámicos mensuales.."
@@ -288,7 +297,7 @@ end subroutine
 !!@#   outfile="out_"//DDD//"_"//MM//"_"//HH//".nc"
 !!@#   print*,outfile
 !!@#   call createNetCDF(trim(outfile),proj,grid,                     &
-!!@#             ['U10','V10','PRE','TMP','PAR','HUM','SMO'],         &
+!!@#             ['U10','V10','PRE','TMP','PAR','HUM','SMOIS'],         &
 !!@#             spread("FLOAT",1,7), spread("FLOAT",1,7), spread("FLOAT",1,7))
 !!@#    !print*,"algun problema acá?"
 !!@#   !Abro NetCDF outFile
@@ -306,7 +315,7 @@ end subroutine
 !!@#       call check(nf90_inq_varid(ncid,'HUM',var_id))
 !!@#       call check(nf90_put_var(ncid, var_id,HUM(:,:,1)   ))
 !!@#       call check(nf90_inq_varid(ncid,'SMO',var_id))
-!!@#       call check(nf90_put_var(ncid, var_id,SMO(:,:,1) ))
+!!@#       call check(nf90_put_var(ncid, var_id,SMOIS(:,:,1) ))
 !!@#   !Cierro NetCDF outFile
 !!@#   call check(nf90_close( ncid ))
 !!@#end subroutine
@@ -319,7 +328,7 @@ subroutine write_diagnostic_file(p,g) !write input and intermediate data so i ca
   integer           :: ncid,t_dim_id,x_dim_id,y_dim_id,z_dim_id,var_dim_id
   integer           :: k!,i,j
   integer           :: ntimes
-  character(len=5),dimension(23) :: var_names, var_types, var_dimen
+  character(len=5),dimension(24) :: var_names, var_types, var_dimen
 
   ntimes=size(U10(1,1,:))
 
@@ -328,9 +337,9 @@ subroutine write_diagnostic_file(p,g) !write input and intermediate data so i ca
 
   print*,'   Escrbibiendo diag_file: ',diag_file
 
-  var_names=['LAT  ','LON  ','EF   ','LDF  ','LAI  ','NDEP ','FERT ','ARID ','NARID','LTYPE','U10  ','V10  ','PRE  ','TMP  ','RAD  ','HUM  ','SMO  ','ISTYP','T_SHA','T_SUN','SunFr','R_SHA','R_SUN']
-  var_types=['FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT  ','INT  ','INT  ','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT  ','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT']
-  var_dimen=['XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYZ  ','XYZ  ','XYZ  ','XYZ  ','XYZ  ']
+  var_names=['LAT  ','LON  ','EF   ','LDF  ','LAI  ','NDEP ','FERT ','ARID ','NARID','LTYPE','U10  ','V10  ','PRE  ','TMP  ','RAD  ','HUM  ','SMOIS','ISTYP','T_SHA','T_SUN','SunFr','R_SHA','R_SUN','GAMSM']
+  var_types=['FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT  ','INT  ','INT  ','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT  ','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT']
+  var_dimen=['XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XY   ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYT  ','XYZ  ','XYZ  ','XYZ  ','XYZ  ','XYZ  ','XY   ']
 
   call check(nf90_create(trim(diag_file), NF90_CLOBBER, ncid))
     !Defino dimensiones
@@ -377,13 +386,14 @@ subroutine write_diagnostic_file(p,g) !write input and intermediate data so i ca
       call check(nf90_inq_varid(ncid,'TMP'  ,var_id )); call check(nf90_put_var(ncid, var_id, TMP(:,:,t) ))
       call check(nf90_inq_varid(ncid,'RAD'  ,var_id )); call check(nf90_put_var(ncid, var_id, RAD(:,:,t) ))
       call check(nf90_inq_varid(ncid,'HUM'  ,var_id )); call check(nf90_put_var(ncid, var_id, HUM(:,:,t) ))
-      call check(nf90_inq_varid(ncid,'SMO'  ,var_id )); call check(nf90_put_var(ncid, var_id, SMO(:,:,t) ))
-      call check(nf90_inq_varid(ncid,'ISTYP',var_id )); call check(nf90_put_var(ncid, var_id, STY(:,:,t) ))
+      call check(nf90_inq_varid(ncid,'SMOIS',var_id )); call check(nf90_put_var(ncid, var_id, SMOIS(:,:,t) ))
+      call check(nf90_inq_varid(ncid,'ISTYP',var_id )); call check(nf90_put_var(ncid, var_id,STYP(:,:,t) ))
       call check(nf90_inq_varid(ncid,'T_SHA',var_id )); call check(nf90_put_var(ncid, var_id, SHAT       ))
       call check(nf90_inq_varid(ncid,'T_SUN',var_id )); call check(nf90_put_var(ncid, var_id, SUNT       ))
       call check(nf90_inq_varid(ncid,'SunFr',var_id )); call check(nf90_put_var(ncid, var_id, SunFrac    ))
       call check(nf90_inq_varid(ncid,'R_SHA',var_id )); call check(nf90_put_var(ncid, var_id, SHAP       ))
       call check(nf90_inq_varid(ncid,'R_SUN',var_id )); call check(nf90_put_var(ncid, var_id, SUNP       ))
+      call check(nf90_inq_varid(ncid,'GAMSM',var_id )); call check(nf90_put_var(ncid, var_id, GAMMA_SM   ))
   call check(nf90_close( ncid ))
 end subroutine
 

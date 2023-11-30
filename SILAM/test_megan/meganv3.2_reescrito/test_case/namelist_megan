@@ -1,18 +1,19 @@
 &megan
    start_date='2022-10-19 18:00:00',
-   end_date  ='2022-10-19 21:00:00',
+   end_date  ='2022-10-19 22:00:00',
  
    griddesc_file="GRIDDESC",
    gridname="Argentina" 
    met_file='wrfout_d01_2022-10-19_18:00:00'   ,
+   LSM='NOAH',                                       !Land Surface Model used on Meteo
 
-   ctf_file= 'CT3.nc',   !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   lai_file= 'LAI3.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   ef_file=  'EF.nc',    !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   ldf_file= 'LDF.nc',   !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   ndep_file='NDEP.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   fert_file='FERT.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
-   land_file='LAND.nc',  !/home/usuario/github/CNEA-AQ/prepmegan4cmaq/
+   ctf_file= 'CT3.nc',   
+   lai_file= 'LAI3.nc',  
+   ef_file=  'EF.nc',    
+   ldf_file= 'LDF.nc',   
+   ndep_file='NDEP.nc',  
+   fert_file='FERT.nc',  
+   land_file='LAND.nc',  
 
    chem_mech='CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
 /

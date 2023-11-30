@@ -6,7 +6,7 @@ INC =-I/usr/include
 
 FCFLAGS=-O2 -ffree-line-length-none -Wall#-Wunused 
 LDFLAGS=-O2
-OBJS =module_utils.o module_proj.o module_griddesc_reader.o megcan.o main_megan.o #megvea.o megsea.o
+OBJS =module_utils.o module_proj.o module_griddesc_reader.o megcan.o megsea.o main_megan.o #megvea.o megsea.o
 #OBJS =module_utils.o module_proj.o module_griddesc_reader.o module_nc_handler.o module_interp.o megcan.o megvea.o megsea.o main_megan.o #
 EXE  = meganv3.2.exe
 
