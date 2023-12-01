@@ -1,4 +1,4 @@
-module megvea
+module meg_vea
    implicit none
 
    !Number of emission classes
@@ -50,10 +50,10 @@ module megvea
       DATA    beta(19),LDF(19),CT1(19),Cleo(19)    / 0.08,1.0,60,1.6  /
 
    ! Parameters for leaf age algorithm for each emission activity classes
-   REAL           Anew(NCLASS)
-   REAL           Agro(NCLASS)
-   REAL           Amat(NCLASS)
-   REAL           Aold(NCLASS)
+   real Anew(NCLASS)
+   real Agro(NCLASS)
+   real Amat(NCLASS)
+   real Aold(NCLASS)
       DATA Anew( 1), Agro( 1), Amat( 1), Aold( 1) / 0.05 ,0.6, 1.0, 0.9  /
       DATA Anew( 2), Agro( 2), Amat( 2), Aold( 2) / 0.05 ,0.6, 1.0, 0.9  /
       DATA Anew( 3), Agro( 3), Amat( 3), Aold( 3) / 2.0  ,1.8, 1.0, 1.05 /
@@ -83,25 +83,25 @@ module megvea
    REAL           CHT(NCLASS)
    !CLT: coefficient for high temperature stress
    REAL           CLT(NCLASS)
-      DATA    CAQ(1),CHW(1),CHT(1),CLT(1)           /  1,1,1,1  /
-      DATA    CAQ(2),CHW(2),CHT(2),CLT(2)           /  1,1,1,1  /
-      DATA    CAQ(3),CHW(3),CHT(3),CLT(3)           /  1,5,1,1  /
-      DATA    CAQ(4),CHW(4),CHT(4),CLT(4)           /  5,5,5,5  /
-      DATA    CAQ(5),CHW(5),CHT(5),CLT(5)           /  1,5,1,1  /
-      DATA    CAQ(6),CHW(6),CHT(6),CLT(6)           /  1,5,1,1  /
-      DATA    CAQ(7),CHW(7),CHT(7),CLT(7)           /  1,5,1,1  /
-      DATA    CAQ(8),CHW(8),CHT(8),CLT(8)           /  1,1,1,1  /
-      DATA    CAQ(9),CHW(9),CHT(9),CLT(9)           /  5,5,5,5  /
-      DATA    CAQ(10),CHW(10),CHT(10),CLT(10)       /  5,5,5,5  /
-      DATA    CAQ(11),CHW(11),CHT(11),CLT(11)       /  1,1,1,1  /
-      DATA    CAQ(12),CHW(12),CHT(12),CLT(12)       /  1,1,1,1  /
-      DATA    CAQ(13),CHW(13),CHT(13),CLT(13)       /  1,1,1,1  /
-      DATA    CAQ(14),CHW(14),CHT(14),CLT(14)       /  1,1,1,1  /
-      DATA    CAQ(15),CHW(15),CHT(15),CLT(15)       /  1,1,1,1  /
-      DATA    CAQ(16),CHW(16),CHT(16),CLT(16)       /  1,1,1,1  /
-      DATA    CAQ(17),CHW(17),CHT(17),CLT(17)       /  5,5,5,5  /
-      DATA    CAQ(18),CHW(18),CHT(18),CLT(18)       /  1,1,1,1  /
-      DATA    CAQ(19),CHW(19),CHT(19),CLT(19)       /  1,1,1,1  /
+      DATA  CAQ(1) ,CHW(1) ,CHT(1) ,CLT(1)    /  1,1,1,1  /
+      DATA  CAQ(2) ,CHW(2) ,CHT(2) ,CLT(2)    /  1,1,1,1  /
+      DATA  CAQ(3) ,CHW(3) ,CHT(3) ,CLT(3)    /  1,5,1,1  /
+      DATA  CAQ(4) ,CHW(4) ,CHT(4) ,CLT(4)    /  5,5,5,5  /
+      DATA  CAQ(5) ,CHW(5) ,CHT(5) ,CLT(5)    /  1,5,1,1  /
+      DATA  CAQ(6) ,CHW(6) ,CHT(6) ,CLT(6)    /  1,5,1,1  /
+      DATA  CAQ(7) ,CHW(7) ,CHT(7) ,CLT(7)    /  1,5,1,1  /
+      DATA  CAQ(8) ,CHW(8) ,CHT(8) ,CLT(8)    /  1,1,1,1  /
+      DATA  CAQ(9) ,CHW(9) ,CHT(9) ,CLT(9)    /  5,5,5,5  /
+      DATA  CAQ(10),CHW(10),CHT(10),CLT(10)   /  5,5,5,5  /
+      DATA  CAQ(11),CHW(11),CHT(11),CLT(11)   /  1,1,1,1  /
+      DATA  CAQ(12),CHW(12),CHT(12),CLT(12)   /  1,1,1,1  /
+      DATA  CAQ(13),CHW(13),CHT(13),CLT(13)   /  1,1,1,1  /
+      DATA  CAQ(14),CHW(14),CHT(14),CLT(14)   /  1,1,1,1  /
+      DATA  CAQ(15),CHW(15),CHT(15),CLT(15)   /  1,1,1,1  /
+      DATA  CAQ(16),CHW(16),CHT(16),CLT(16)   /  1,1,1,1  /
+      DATA  CAQ(17),CHW(17),CHT(17),CLT(17)   /  5,5,5,5  /
+      DATA  CAQ(18),CHW(18),CHT(18),CLT(18)   /  1,1,1,1  /
+      DATA  CAQ(19),CHW(19),CHT(19),CLT(19)   /  1,1,1,1  /
 
    !TAQ: threshold for poor Air Quality stress (ppm-hours)
    REAL           TAQ(NCLASS)
@@ -140,153 +140,56 @@ module megvea
     REAL           DTHT(NCLASS)
     !DTLT: delta threshold for low temperature stress (Celsius degree)
     REAL           DTLT(NCLASS)
-      DATA    DTAQ(1),DTHW(1),DTHT(1),DTLT(1)               /  30,8,8,8  /
-      DATA    DTAQ(2),DTHW(2),DTHT(2),DTLT(2)               /  30,8,8,8  /
-      DATA    DTAQ(3),DTHW(3),DTHT(3),DTLT(3)               /  30,8,8,8  /
-      DATA    DTAQ(4),DTHW(4),DTHT(4),DTLT(4)               /  30,8,8,8  /
-      DATA    DTAQ(5),DTHW(5),DTHT(5),DTLT(5)               /  30,8,8,8  /
-      DATA    DTAQ(6),DTHW(6),DTHT(6),DTLT(6)               /  30,8,8,8  /
-      DATA    DTAQ(7),DTHW(7),DTHT(7),DTLT(7)               /  30,8,8,8  /
-      DATA    DTAQ(8),DTHW(8),DTHT(8),DTLT(8)               /  30,8,8,8  /
-      DATA    DTAQ(9),DTHW(9),DTHT(9),DTLT(9)               /  30,8,8,8  /
-      DATA    DTAQ(10),DTHW(10),DTHT(10),DTLT(10)           /  30,8,8,8  /
-      DATA    DTAQ(11),DTHW(11),DTHT(11),DTLT(11)           /  30,8,8,8  /
-      DATA    DTAQ(12),DTHW(12),DTHT(12),DTLT(12)           /  30,8,8,8  /
-      DATA    DTAQ(13),DTHW(13),DTHT(13),DTLT(13)           /  30,8,8,8  /
-      DATA    DTAQ(14),DTHW(14),DTHT(14),DTLT(14)           /  30,8,8,8  /
-      DATA    DTAQ(15),DTHW(15),DTHT(15),DTLT(15)           /  30,8,8,8  /
-      DATA    DTAQ(16),DTHW(16),DTHT(16),DTLT(16)           /  30,8,8,8  /
-      DATA    DTAQ(17),DTHW(17),DTHT(17),DTLT(17)           /  30,8,8,8  /
-      DATA    DTAQ(18),DTHW(18),DTHT(18),DTLT(18)           /  30,8,8,8  /
-      DATA    DTAQ(19),DTHW(19),DTHT(19),DTLT(19)           /  30,8,8,8  /
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      DATA  DTAQ(1) ,DTHW(1) ,DTHT(1) ,DTLT(1)   / 30,8,8,8 /
+      DATA  DTAQ(2) ,DTHW(2) ,DTHT(2) ,DTLT(2)   / 30,8,8,8 /
+      DATA  DTAQ(3) ,DTHW(3) ,DTHT(3) ,DTLT(3)   / 30,8,8,8 /
+      DATA  DTAQ(4) ,DTHW(4) ,DTHT(4) ,DTLT(4)   / 30,8,8,8 /
+      DATA  DTAQ(5) ,DTHW(5) ,DTHT(5) ,DTLT(5)   / 30,8,8,8 /
+      DATA  DTAQ(6) ,DTHW(6) ,DTHT(6) ,DTLT(6)   / 30,8,8,8 /
+      DATA  DTAQ(7) ,DTHW(7) ,DTHT(7) ,DTLT(7)   / 30,8,8,8 /
+      DATA  DTAQ(8) ,DTHW(8) ,DTHT(8) ,DTLT(8)   / 30,8,8,8 /
+      DATA  DTAQ(9) ,DTHW(9) ,DTHT(9) ,DTLT(9)   / 30,8,8,8 /
+      DATA  DTAQ(10),DTHW(10),DTHT(10),DTLT(10)  / 30,8,8,8 /
+      DATA  DTAQ(11),DTHW(11),DTHT(11),DTLT(11)  / 30,8,8,8 /
+      DATA  DTAQ(12),DTHW(12),DTHT(12),DTLT(12)  / 30,8,8,8 /
+      DATA  DTAQ(13),DTHW(13),DTHT(13),DTLT(13)  / 30,8,8,8 /
+      DATA  DTAQ(14),DTHW(14),DTHT(14),DTLT(14)  / 30,8,8,8 /
+      DATA  DTAQ(15),DTHW(15),DTHT(15),DTLT(15)  / 30,8,8,8 /
+      DATA  DTAQ(16),DTHW(16),DTHT(16),DTLT(16)  / 30,8,8,8 /
+      DATA  DTAQ(17),DTHW(17),DTHT(17),DTLT(17)  / 30,8,8,8 /
+      DATA  DTAQ(18),DTHW(18),DTHT(18),DTLT(18)  / 30,8,8,8 /
+      DATA  DTAQ(19),DTHW(19),DTHT(19),DTLT(19)  / 30,8,8,8 /
 
 contains
 
-SUBROUTINE MEGVEA(  LAYERS, JDATE, ZTIME,                &
-                    LAIp, LAIc,LDF_in,                              &
-                                        GAMSM_in, MaxT, MinT,       &
-                    MaxWS,                                          &
-!AQI, 
-                    D_TEMP, D_PPFD, SUNT, SHAT,         &
-                    SUNF, SUNP, SHAP,ER, NON_DIMGARMA  )
-! PURPOSE: Calculate Vegetation emission activity (EA) for each emission
-!		class as the product of EA for individual drivers
-!		calculated by the following functions
-!
-! Vegetation Emission Activity (EA) algorithm FUNCTIONS
-!
-!   GAMTLD: EA Temperature response (light dependent emission) 
-!   GAMTLI: EA Temperature response (light independent emission)
-!   GAMP: EA Light response
-!   GAMTP: combines GAMLD, GAMLI, GAMP to get canopy average
-!
-!   GAMLA: EA leaf age response 
-!   GAMBD: EA bidirectional exchange LAI response
-!
-!   CDEA: Canopy depth emission response
-!
-!   GAMHW: EA response to high wind storms
-!   GAMHT: EA resposne to high temperature
-!   GAMLT: EA response to low temperature
-!
-!   GAMAQ: EA response to air pollution
-!
-!   GAMCO2: EA CO2 response (only applied to isoprene)
-!   GAMSM: EA response to soil moisture (multiplied with LDF)
-!
-! INCLUDE FILES
-!     'PARMS3.EXT'   ! I/O API parameters
-!     'IODECL3.EXT'  ! I/O API function declarations
-!     'FDESC3.EXT'   ! I/O API file desc. data structures
-!     'MEGVEA.EXT'    ! coefficients
-!
-!  INPUT Files
-!	Single value for each location
-!		LDF: Light dependent fraction (for categories other than
-!		monoterpene, use constant values from MEGVEA.EXT)
-!		AQ:  Air Quality indicator
-!	Time series for each location
-!		LAI: Leaf Area Index 
-!		GAMSM: emission activity response to soil moisture
-!		MaxT: Daily maximum temperature (K)
-!		MinT: Daily minimum temperature (K)
-!		MaxWS: Daily mximum wind speed (m/s)
-!               D_TEMP: Daily average temperature (K)
-!               D_PPFD: Daily averaged PPFD (umol/m2.s)
-!	Hourly time series for each canopy layer in each location
-!		sunfrac: fraction of leaves that are sunlit
-!		SUNT: leaf Temperature of sunlit leaves (K)
-!		SUNP: sun leaf PPFD visible light (micromol/m2/s)
-!		SHAT: leaf Temperature of shade leaves (K)
-!		SHAP: shade leaf PPFD visible light (micromol/m2/s)
-!	
-!  OUTPUT Files
-!	Hourly time series for each location 
-!		Emission activity for each of the 20 emission types
-!
-!
-! HISTORY:
-!   Based on code initiated by Alex Guenther in 1990s
-!   Coded in FORTRAN as
-!   MEGAN: Jack Chen 11/04
-!   MEGANv2.04: Tan 11/21/06
-!   MEGANv2.1: X. Wang 11/04/2007
-!       Modified by Julia Lee-Taylor 03/18/2008
-!       Modified by Xuemei Wang 09/30/2008
-!       Modified by Tan 07/28/2011
-!   MEGAN3.0:
-!   Alex Guenther and Ling Huang Feb 2017
-!     converted program to subroutine
+subroutine megvea(  ncols,nrows,layers,          &
+                    laip, laic,ldf_in,           &
+                    GAMSM_in,                    &
+                    MaxT, MinT, MaxWS,           &
+                    D_TEMP, D_PPFD,              &
+                    SUNT, SHAT, SUNF, SUNP, SHAP,&
+                    ER, NON_DIMGARMA             )!AQI, 
+    implicit none
+    ! input variables
+    integer, intent(in)  ::  ncols,nrows,layers
+    real, intent(in)     ::  laip(ncols,nrows),laic(ncols,nrows)
+    real, intent(in)     ::  ldf_in(ncols,nrows,4) !only 4 use maps
+    REAL, INTENT(IN)     ::  GAMSM_in(NCOLS,NROWS)
+    REAL, INTENT(IN)     ::  MaxT(NCOLS,NROWS),MinT(NCOLS,NROWS),MaxWS(NCOLS,NROWS)
+    REAL, INTENT(IN)     ::  D_TEMP(NCOLS,NROWS)
+    REAL, INTENT(IN)     ::  D_PPFD(NCOLS,NROWS)      ! comes in as rgrnd
+    real, intent(in)     ::  sunt(ncols,nrows,layers)
+    real, intent(in)     ::  shat(ncols,nrows,layers)
+    real, intent(in)     ::  sunf(ncols,nrows,layers)
+    real, intent(in)     ::  sunp(ncols,nrows,layers)
+    real, intent(in)     ::  shap(ncols,nrows,layers)
+    !REAL, INTENT(IN)     ::  AQI         ( NCOLS, NROWS )
+    ! output variables
+    real, intent(out)     :: ER(ncols,nrows)                    !emission rate
+    real, intent(out)     :: non_dimgarma (ncols,nrows,nclass)  !
 
-    IMPLICIT NONE
-! INPUT VARIABLES
-    INTEGER, INTENT(IN)  ::  LAYERS
-    INTEGER, INTENT(IN)  ::  JDATE
-    REAL, INTENT(IN)     ::  ZTIME
-    REAL, INTENT(IN)     ::  LAIp       ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  LAIc       ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  LDF_in      ( NCOLS, NROWS , 4 ) !only 4 use maps
-    REAL, INTENT(IN)     ::  GAMSM_in       ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  MaxT        ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  MinT        ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  MaxWS       ( NCOLS, NROWS )
-!    REAL, INTENT(IN)     ::  AQI         ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  D_TEMP      ( NCOLS, NROWS )
-    REAL, INTENT(IN)     ::  D_PPFD      ( NCOLS, NROWS ) ! comes in as rgrnd
-    REAL, INTENT(IN)     ::  SUNT        ( NCOLS, NROWS, LAYERS )
-    REAL, INTENT(IN)     ::  SHAT        ( NCOLS, NROWS, LAYERS )
-    REAL, INTENT(IN)     ::  SUNF        ( NCOLS, NROWS, LAYERS )
-    REAL, INTENT(IN)     ::  SUNP        ( NCOLS, NROWS, LAYERS )
-    REAL, INTENT(IN)     ::  SHAP       ( NCOLS, NROWS, LAYERS )
-
-! OUTPUT VARIABLES
-    REAL, INTENT(OUT)     :: ER(NCOLS, NROWS )
-    REAL, INTENT(OUT)     :: NON_DIMGARMA (NCLASS,NCOLS, NROWS)
-
- !LOCAL VARIABLES
-
+    !LOCAL VARIABLES
     LOGICAL, PARAMETER    :: GAMBD_YN  = .false.
-
     LOGICAL, PARAMETER    :: GAMAQ_YN  = .false.
 ! For the CMAQ implementation of MEGAN  we refer to soil moisture 
 ! at layer 2, which is 1 meter for PX and 0.5 m for NOAH.
@@ -301,35 +204,21 @@ SUBROUTINE MEGVEA(  LAYERS, JDATE, ZTIME,                &
 
     REAL  :: CDEA   ( NCOLS, NROWS, LAYERS ) ! Emission response to canopy depth
 
-
-    REAL  :: YEAR
-    REAl  :: DOY
-    REAL  :: GAMLA  ( NCOLS, NROWS )     ! EA leaf age response
-    REAL  :: GAMAQ  ( NCOLS, NROWS )     ! EA response to air pollution
-    REAL  :: GAMBD  ( NCOLS, NROWS )     ! EA bidirectional exchange LAI response
-    REAL  :: GAMHT  ( NCOLS, NROWS )     ! EA response to high temperature
-    REAL  :: GAMLT  ( NCOLS, NROWS )     ! EA response to low temperature
-
-    REAL  :: GAMHW  ( NCOLS, NROWS )     ! EA response to high wind speed
-    REAL  :: GAMSM  ( NCOLS, NROWS )     ! EA response to soil moisture
-    REAL  :: GAMCO2 ( NCOLS, NROWS )     ! EA response to CO2
+    REAL  :: GAMLA (NCOLS,NROWS)     ! EA leaf age response
+    REAL  :: GAMAQ (NCOLS,NROWS)     ! EA response to air pollution
+    REAL  :: GAMBD (NCOLS,NROWS)     ! EA bidirectional exchange LAI response
+    REAL  :: GAMHT (NCOLS,NROWS)     ! EA response to high temperature
+    REAL  :: GAMLT (NCOLS,NROWS)     ! EA response to low temperature
+    REAL  :: GAMHW (NCOLS,NROWS)     ! EA response to high wind speed
+    REAL  :: GAMSM (NCOLS,NROWS)     ! EA response to soil moisture
+    REAL  :: GAMCO2(NCOLS,NROWS)     ! EA response to CO2
     REAL  :: GAMTP                       ! combines GAMLD, GAMLI, GAMP to get canopy average
-
     REAL  :: LDFMAP ( NCOLS, NROWS )     ! light depenedent fraction map
 
-
     REAL ::  SUM1, SUM2
-
-
-
-
     ! loop indices
     !INTEGER :: IDATE, ITIME
-    INTEGER :: S, T, I, J, K 
-!         YEAR   = FLOAT( MOD( JDATE, 1000 ) )
-!         DOY    = FLOAT( JDATE / 1000  )       
-! these are backwards I think. don't need them anyway
-
+    integer :: s, t, i, j, k 
             
 
     ! EA response to canopy temperature/light
@@ -377,7 +266,6 @@ SUBROUTINE MEGVEA(  LAYERS, JDATE, ZTIME,                &
 
         ENDIF
 
-
         ! leaf age activity factor:  dependent upon S
         CALL GAMMA_A( NCOLS, NROWS, S, LAIp, LAIc, D_TEMP, GAMLA )
 
@@ -416,100 +304,539 @@ SUBROUTINE MEGVEA(  LAYERS, JDATE, ZTIME,                &
             GAMHW = 1.0
         ENDIF
 
-
-!
-
-! THe following code has bee revised for efficiency and clarity.
-!          DO I = 1, NCOLS
-!            DO J = 1, NROWS
-!
-!              DO K = 1, Layers
-!
-!
-!                Ea1L(K)  = CDEA(I,J,K) *                              &
-!                      GAMTLD(SunT(I,J,K),D_TEMP(I,J),S) *             &
-!                      GAMP(SunP(I,J,K),D_PPFD(I,J)) *  SunF(I,J,K) +  &
-!                      GAMTLD(ShaT(I,J,K),D_TEMP(I,J),S) *             &
-!                      GAMP(ShaP(I,J,K),D_PPFD(I,J))                   &
-!                      * (1-SunF(I,J,K))
-!
-!                Ea2L(K) = GAMTLI(SunT(I,J,K),S)* SunF(I,J,K)+         &
-!                   GAMTLI(ShaT(I,J,K),S)*(1-SunF(I,J,K))
-!
-!              ENDDO   ! ENDDO canopy layers
-!              
-!            GAMTP(I,J)=SUM((Ea1L(:)*LDFMAP(I,J) +                   &
-!                            Ea2L(:)*(1-LDFMAP(I,J)))* VPGWT( : )) )
-!            ENDDO   ! NROWS
-!          ENDDO ! NCOLS
-
-
-
-  
-        DO J = 1, NROWS
-        DO I = 1, NCOLS! Preserve stride 1 for output arrays
+        do j = 1, NROWS
+           do i = 1, NCOLS! preserve stride 1 for output arrays
 
             SUM1 = 0.0
             SUM2 = 0.0
 
-            DO K = 1, Layers
-! 2.025 is the conversion to PPFD. 
-! SWDNB*.45 = PAR (Wm-2)
-! PAR*4.5 = PPFD (umol/m2/s)
-                Ea1L = CDEA(I,J,K) *                                  &
-                      GAMTLD(SunT(I,J,K),D_TEMP(I,J),S) *             &
-              GAMP(SunP(I,J,K),D_PPFD(I,J)*2.025) *  SunF(I,J,K) +    &
-                      GAMTLD(ShaT(I,J,K),D_TEMP(I,J),S) *             &
-                  GAMP(ShaP(I,J,K),D_PPFD(I,J)*2.025)                 &
-                      * (1.0-SunF(I,J,K))
-                SUM1 = SUM1 + Ea1L*VPGWT(K)
+            do k = 1, layers
+               ! 2.025 is the conversion to PPFD. 
+               ! SWDNB*.45 = PAR (Wm-2)
+               ! PAR*4.5 = PPFD (umol/m2/s)
+              Ea1L = CDEA(I,J,K) *                                          &
+                    GAMTLD(SunT(I,J,K),D_TEMP(I,J),S) *                     &
+                    GAMP(SunP(I,J,K),D_PPFD(I,J)*2.025) *  SunF(I,J,K) +    &
+                    GAMTLD(ShaT(I,J,K),D_TEMP(I,J),S) *                     &
+                    GAMP(ShaP(I,J,K),D_PPFD(I,J)*2.025) *                   &
+                    (1.0-SunF(I,J,K))
+              SUM1 = SUM1 + Ea1L*VPGWT(K)
 
-                Ea2L = GAMTLI(SunT(I,J,K),S)* SunF(I,J,K) +           &
-                      GAMTLI(ShaT(I,J,K),S)*(1.0-SunF(I,J,K))
-                SUM2 = SUM2 + Ea2L*VPGWT(K)
-
-            END DO   ! END DO canopy layers
-
+              Ea2L = GAMTLI(SunT(I,J,K),S)* SunF(I,J,K)     + &
+                    GAMTLI(ShaT(I,J,K),S)*(1.0-SunF(I,J,K))
+              SUM2 = SUM2 + Ea2L*VPGWT(K)
+            end do   ! end do canopy layers
             GAMTP = SUM1*LDFMAP(I,J) + SUM2*( 1.0-LDFMAP(I,J) )
-
- ! ... Calculate emission activity factors
- 
+            ! ... Calculate emission activity factors
             IF ( S .EQ. 1 ) THEN
-!    GAMCO2 only applied to isoprene
+                ! GAMCO2 only applied to isoprene
                 ER(:,:) = LAIc(I,J) * GAMTP * GAMCO2(I,J) * GAMLA(I,J) *       &
                           GAMHW(I,J) * GAMAQ(I,J) * GAMHT(I,J) * GAMLT(I,J) *  &
                           GAMSM(I,J) 
-
             ELSE IF ( S .EQ. 13 ) THEN
-            
- !   GAMBD only applied to ethanol and acetaldehyde
-            
+                ! GAMBD only applied to ethanol and acetaldehyde
                 ER(I,J) = LAIc(I,J) * GAMTP * GAMBD(I,J) * GAMLA(I,J) *        &
                       GAMHW(I,J) * GAMAQ(I,J) * GAMHT(I,J) * GAMLT(I,J) *      &
                       GAMSM(I,J) 
-
             ELSE
-!  Process remaining species            
-            
-                ER(I,J) = LAIc(I,J) * GAMTP * GAMLA(I,J) *                            &
-                      GAMHW(I,J) * GAMAQ(I,J) * GAMHT(I,J) * GAMLT(I,J) *             &
+                !  Process remaining species            
+                ER(I,J) = LAIc(I,J) * GAMTP * GAMLA(I,J) *                     &
+                      GAMHW(I,J) * GAMAQ(I,J) * GAMHT(I,J) * GAMLT(I,J) *      &
                        GAMSM(I,J) 
-
             END IF
-            IF ( ER(I,J).GT.0.0 ) THEN
-                NON_DIMGARMA (S,I,J) = ER(I,J)
-            ELSE
-                NON_DIMGARMA (S,I,J) = 0.0
+            IF ( ER(I,J) .GT. 0.0 ) THEN
+                NON_DIMGARMA (I,J,S) = ER(I,J)
+            ELSE                   
+                NON_DIMGARMA (I,J,S) = 0.0
             END IF
+           end do   ! NCOLS
+        end do ! NROWS
 
-        END DO   ! NCOLS
-        END DO ! NROWS
-
-    END DO  ! End loop of species (S)
+    end do  ! End loop of species (S)
  
     RETURN
     
    END SUBROUTINE MEGVEA
 
+    !   These subroutines were in file megvea.f
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMMA_CD
+    !       Emission response to canopy depath
+    !----------------------------------------------------------------
+    SUBROUTINE GAMMA_CD(NCOLS,NROWS,Layers,LAI,CDEA)
 
-end module megan_fx
+        IMPLICIT NONE
+        ! input
+        INTEGER,INTENT(IN)                             :: NCOLS,NROWS,Layers
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(IN)         :: LAI
+        ! output
+        REAL,DIMENSION(NCOLS,NROWS,Layers),INTENT(OUT) :: CDEA
+
+        ! local
+        REAL,DIMENSION(Layers) :: Cdepth
+        REAL                   :: LAIdepth
+        INTEGER                 :: I,J,K
+
+        IF ( Layers .EQ. 5 ) THEN
+            Cdepth (1)   = 0.0469101
+            Cdepth (2)   = 0.2307534
+            Cdepth (3)   = 0.5
+            Cdepth (4)   = 0.7692465
+            Cdepth (5)   = 0.9530899
+        ELSE
+            DO K = 1,Layers
+                Cdepth(K) =(K - 0.5) /Layers
+            END DO
+        ENDIF
+
+        DO K = 1, Layers
+        DO J = 1, NROWS
+        DO I = 1, NCOLS
+            LAIdepth = MIN( LAI(I,J) * Cdepth(K), 3.0 )
+            CDEA(I,J,K) = CCD1 * LAIdepth + CCD2
+        END DO
+        END DO
+        END DO
+
+        RETURN
+
+    END SUBROUTINE GAMMA_CD
+    !----------------------------------------------------------------
+
+    !----------------------------------------------------------------
+    !
+    !   FUNCTION GAMTLD
+    !       EA Temperature response (light dependent emission)
+    !----------------------------------------------------------------
+    FUNCTION GAMTLD(T1,T24,S)
+
+        IMPLICIT NONE
+        REAL,PARAMETER :: Ct2 = 230
+        INTEGER        :: S
+        REAL           :: T1,T24,T240,Topt, X, Eopt, GAMTLD
+
+        T240 = T24
+
+        IF (T1 < 260.0) THEN
+            GAMTLD = 0.0
+        ELSE
+            ! Temperature at which maximum emission occurs
+            Topt = 312.5 + 0.6 * (T240 - 297.0)
+            X    = ((1.0 / Topt) - (1.0 / T1)) / 0.00831
+            ! Maximum emission (relative to emission at 30 C)
+            Eopt = Cleo(S) * EXP(0.05 * (T24 - 297.0)) *          &
+                  Exp(0.05*(T240-297.0))
+
+            GAMTLD= Eopt * Ct2 * Exp(Ct1(S) * X) /                &
+                  (Ct2 - Ct1(S) * (1.0 - EXP(Ct2 * X)))
+        ENDIF
+
+    END FUNCTION GAMTLD
+    !----------------------------------------------------------------
+
+    !----------------------------------------------------------------
+    !
+    !   FUNCTION GAMTLI
+    !       EA Temperature response (light independent emission)
+    !----------------------------------------------------------------
+
+
+    FUNCTION GAMTLI(temp,S)
+
+        IMPLICIT NONE
+
+        REAL           :: temp, GAMTLI
+        REAL,PARAMETER :: Ts = 303.15
+        INTEGER        :: S
+
+        GAMTLI = exp( beta(S)*(temp-Ts) )
+
+    END FUNCTION GAMTLI
+    !----------------------------------------------------------------
+
+
+    !----------------------------------------------------------------
+    !
+    !   FUNCTION GAMP
+    !       EA Light response
+    !----------------------------------------------------------------
+
+    FUNCTION GAMP(PPFD1,PPFD24)
+
+        IMPLICIT NONE
+        REAL            :: PPFD1, PPFD24, Alpha, C1, GAMP
+
+        IF (PPFD24 < 0.01) THEN
+            GAMP= 0.0
+        ELSE
+            Alpha  = 0.004
+            !        C1     = 0.0468 * EXP(0.0005 * (PPFD24 - PSTD))
+            !     &          * (PPFD24 ** 0.6)
+            C1 = 1.03
+            !        GAMP= (Alpha * C1 * PPFD1) / ((1 + Alpha**2. * PPFD1**2.)**0.5)
+            
+!   use SQRT her for clarity and efficiency
+            
+            GAMP= (Alpha * C1 * PPFD1) / SQRT(1.0 + Alpha**2 * PPFD1**2)
+        ENDIF
+
+    END FUNCTION GAMP
+
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMMA_HT
+    !   EA response to high temperature
+    !
+    !----------------------------------------------------------------
+
+    SUBROUTINE GAMMA_HT(NCOLS, NROWS, S, MaxT, GAMHT)
+
+        IMPLICIT NONE
+        ! input
+        INTEGER,INTENT(IN)                            :: NCOLS, NROWS, S
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(IN)        :: MaxT
+        ! output
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(OUT)       :: GAMHT
+        ! local
+        INTEGER     :: I,J
+        REAL        :: THTK, t1
+
+        DO J = 1,NROWS
+        DO I = 1,NCOLS
+            THTK = 273.15 + THT(S)
+            t1 = THTK + DTHT(S)
+            IF (MaxT(I,J) <= THTK) THEN
+                GAMHT(I,J) = 1.0
+            ELSE IF ( MaxT(I,J) < t1) THEN
+                GAMHT(I,J) = 1.0 + (CHT(S) - 1.0)* (MaxT(I,J) -  THTK)/DTHT(S)
+            ELSE
+                GAMHT(I,J) = CHT(S)
+            ENDIF
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_HT
+    !----------------------------------------------------------------
+
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMMA_LT
+    !   EA response to low temperature
+    !
+    !----------------------------------------------------------------
+
+    SUBROUTINE GAMMA_LT(NCOLS, NROWS, S, MinT, GAMLT)
+
+        IMPLICIT NONE
+        ! input
+        INTEGER,INTENT(IN)                       :: NCOLS, NROWS, S
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(IN)   :: MinT
+        ! output
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(OUT)  :: GAMLT
+        ! local
+        INTEGER      :: I,J
+        REAL         :: TLTK, t1
+
+        DO J = 1,NROWS
+        DO I = 1,NCOLS
+            TLTK = 273.15 + TLT(S)
+            t1 = TLTK - DTLT(S)
+            IF (MinT(I,J) >= TLTK) THEN
+                GAMLT(I,J) = 1.0
+            ELSE IF ( MinT(I,J) > t1) THEN
+                GAMLT(I,J) = 1.0 + (CLT(S) - 1.0)* (TLTK - MinT(I,J))/DTLT(S)
+            ELSE
+                GAMLT(I,J) = CLT(S)
+            ENDIF
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_LT
+    !----------------------------------------------------------------
+
+
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMMA_HW
+    !   EA response to high wind speed
+    !
+    !----------------------------------------------------------------
+
+    SUBROUTINE GAMMA_HW(NCOLS, NROWS, S, MaxWS, GAMHW)
+
+        IMPLICIT NONE
+        ! input
+        INTEGER,INTENT(IN)                        :: NCOLS, NROWS, S
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(IN)    :: MaxWS
+        ! output
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(OUT)   :: GAMHW
+        ! local
+        INTEGER     :: I,J
+        REAL        :: t1
+
+        DO J = 1,NROWS
+        DO I = 1,NCOLS
+            t1 = THW(S) + DTHW(S)
+            IF (MaxWS(I,J) <= THW(S)) THEN
+                GAMHW(I,J) = 1.0
+            ELSE IF ( MaxWS(I,J) < t1) THEN
+                GAMHW(I,J) = 1.0 + (CHW(S) - 1.0)* (MaxWs(I,J) - THW(S))/ DTHW(S)
+            ELSE
+                GAMHW(I,J) = CHW(S)
+            ENDIF
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_HW
+    !----------------------------------------------------------------
+
+
+
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMMA_AQ
+    !   EA response to air quality
+    !
+    !----------------------------------------------------------------
+
+    SUBROUTINE GAMMA_AQ(NCOLS, NROWS, S, AQI, GAMAQ)
+
+        IMPLICIT NONE
+        ! input
+        INTEGER, INTENT(IN)                       :: NCOLS, NROWS, S
+        REAL, DIMENSION(NCOLS,NROWS),INTENT(IN)   :: AQI
+        ! output
+        REAL, DIMENSION(NCOLS,NROWS),INTENT(OUT)   :: GAMAQ
+        ! local
+        INTEGER    :: I,J
+        REAL       :: t1
+
+
+        DO J = 1, NROWS
+        DO I = 1, NCOLS
+            t1 = TAQ(S) + DTAQ(S)
+            IF (AQI(I,J) <= TAQ(S)) THEN
+                GAMAQ(I,J) = 1.0
+            ELSE IF ( AQI(I,J) < t1) THEN
+                GAMAQ(I,J) = 1.0 + (CAQ(S) - 1.0)* (AQI(I,J) - TAQ(S))/DTAQ(S)
+            ELSE
+                GAMAQ(I,J) = CAQ(S)
+            ENDIF
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_AQ
+
+    !-----------------------------------------------------------------------
+    !
+    ! Subroutine GAMMA_CO2
+    !-----------------------------------------------------------------------
+    !From Alex Guenther 2017-03-11
+    SUBROUTINE GAMMA_CO2( NCOLS, NROWS, GAMCO2 )
+
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN)                         :: NCOLS, NROWS
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(OUT)     :: GAMCO2
+
+        ! local
+        REAL    :: Ci, CO2temp, cxxx, cyyy
+        INTEGER :: C, R
+
+        CO2temp = CO2
+        Ci      = 0.7 * CO2
+
+        IF ( CO2 .EQ. 400.0 ) THEN
+            GAMCO2 = 1.0
+        ELSE
+            DO R = 1, NROWS
+            DO C = 1, NCOLS
+!   set common factors for pipeline                 
+            
+                cxxx =  Ci**CO2h
+                cyyy =  Cstar**CO2h
+                
+     !      GAMCO2 = ISmax- ((ISmax * Ci**CO2h ) / (Cstar**CO2h + Ci **CO2h))
+                GAMCO2(C,R) = ISmax- ((ISmax * cxxx) / (cyyy + cxxx))
+                
+            END DO
+            END DO
+        END IF
+
+        RETURN
+
+    END SUBROUTINE GAMMA_CO2
+
+    !-----------------------------------------------------------------------
+
+
+    !-----------------------------------------------------------------------
+    !
+    ! Subroutine GAMMA_LAIbidir(gam_LAIbidir,LAI)
+    !-----------------------------------------------------------------------
+    !From Alex Guenther 2010-01-26
+    !If lai < 2 Then
+    !gammaLAIbidir= 0.5 * lai
+    !ElseIf lai <= 6 Then
+    !gammaLAIbidir= 1 - 0.0625 * (lai - 2)
+    !Else
+    !gammaLAIbidir= 0.75
+    !End If
+    !
+    !     SUBROUTINE GAMMA_LAIbidir returns the gam_LAIbidir values
+    !    Xuemei Wang-2010-01-28
+    !
+    !-----------------------------------------------------------------------
+    SUBROUTINE GAMMA_LAIbidir(NCOLS, NROWS,LAI,GAMBD)
+
+        IMPLICIT NONE
+        ! input
+        INTEGER,INTENT(IN)                          :: NCOLS, NROWS
+        REAL,DIMENSION(NCOLS, NROWS),INTENT(IN)     ::  LAI
+
+        ! output
+        REAL,DIMENSION(NCOLS, NROWS),INTENT(OUT)    :: GAMBD
+
+        ! local
+        INTEGER                                     :: I,J
+
+        DO J = 1, NROWS
+        DO I = 1, NCOLS
+
+            IF(LAI(I,J) < 2) THEN
+                GAMBD(I,J) =  0.5 * LAI(I,J)
+            ELSEIF (LAI(I,J) .LE. 6 ) THEN
+                GAMBD(I,J) = 1 - 0.0625 * (LAI(I,J) - 2)
+            ELSE
+                GAMBD(I,J) = 0.75
+            ENDIF
+
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_LAIbidir
+    !----------------------------------------------------------------
+
+
+    !----------------------------------------------------------------
+    !
+    !   SUBROUTINE GAMLA
+    !
+    !     EA leaf age response
+    !----------------------------------------------------------------
+    !
+    !       GAMLA = Fnew*Anew + Fgro*Agro + Fmat*Amat + Fold*Aold
+    !       where Fnew = new foliage fraction
+    !             Fgro = growing foliage fraction
+    !             Fmat = mature foliage fraction
+    !             Fold = old foliage fraction
+    !             Anew = emission activity for new foliage
+    !             Agro = emission activity for growing foliage
+    !             Amat = emission activity for mature foliage
+    !             Aold = emission activity for old foliage
+    !           Age class fractions are determined from LAI changes
+    !             LAIc = current LAI
+    !             LAIp = past LAI
+    !             t  = length of the time step (days)
+    !             ti = days between budbreak and emission induction
+    !             tm = days between budbreak and peak emission
+    !             Tt = average above canopy temperature (K)
+    !
+    !----------------------------------------------------------------
+
+    SUBROUTINE GAMMA_A( NCOLS, NROWS, S,                      &
+          LAIp, LAIc, D_TEMP, GAMLA )
+
+        IMPLICIT NONE
+ ! input
+        INTEGER,INTENT(IN)                       :: NCOLS,NROWS, S
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(IN)   :: D_TEMP, LAIp, LAIc
+ ! output
+        REAL,DIMENSION(NCOLS,NROWS),INTENT(OUT)  :: GAMLA
+
+        INTEGER :: C, R
+
+        REAL :: Fnew, Fgro, Fmat, Fold
+        REAL :: ti,tm
+        REAL :: Tt
+
+        REAL       :: TSTLEN  
+
+        !Time step of LAI data
+        !if (USE_MEGAN_LAI) THEN
+        !  TSTLEN = 8.0 ! 8 daily from MEGAN file
+        !else
+          TSTLEN = 1.0 ! 1 Daily from soilout/metcro
+        !end if
+
+        !---------------------------------------------------
+        ! local parameter arrays
+        
+        DO R = 1, NROWS
+        DO C = 1, NCOLS
+
+            Tt = D_TEMP(C,R)
+
+            !... Calculate foliage fraction
+
+            IF (LAIp(C,R) .LT. LAIc(C,R)) THEN
+
+                !        Calculate ti and tm
+                IF (Tt .LE. 303.0) THEN
+                    ti = 5.0 + 0.7*(300-Tt)
+                ELSE
+                    ti = 2.9
+                END IF
+                tm = 2.3*ti
+
+                !       Calculate Fnew and Fmat, then Fgro and Fold
+                !       Fnew
+                IF (ti .GE. TSTLEN) THEN
+                    Fnew = 1.0 - (LAIp(C,R)/LAIc(C,R))
+                ELSE
+                    Fnew = (ti/TSTLEN) * ( 1-(LAIp(C,R)/LAIc(C,R)) )
+                END IF
+
+                !       Fmat
+                IF (tm .GE. TSTLEN) THEN
+                    Fmat = LAIp(C,R)/LAIc(C,R)
+                ELSE
+                    Fmat = (LAIp(C,R)/LAIc(C,R)) +                             &
+                          ( (TSTLEN-tm)/TSTLEN ) * ( 1-(LAIp(C,R)/LAIc(C,R)) )
+                END IF
+
+                Fgro = 1.0 - Fnew - Fmat
+                Fold = 0.0
+
+            ELSE IF (LAIp(C,R) .EQ. LAIc(C,R)) THEN
+
+                Fnew = 0.0
+                Fgro = 0.1
+                Fmat = 0.8
+                Fold = 0.1
+
+            ELSE IF (LAIp(C,R) .GT. LAIc(C,R)) THEN
+
+                Fnew = 0.0
+                Fgro = 0.0
+                Fold = ( LAIp(C,R)-LAIc(C,R) ) / LAIp(C,R)
+                Fmat = 1-Fold
+
+            END IF
+
+            !...  Calculate GAMLA
+            GAMLA(C,R) = Fnew*Anew(S) + Fgro*Agro(S) + Fmat*Amat(S) + Fold*Aold(S)
+        
+        END DO
+        END DO
+
+        RETURN
+    END SUBROUTINE GAMMA_A
+
+end module meg_vea
