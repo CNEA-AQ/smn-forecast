@@ -1,10 +1,11 @@
 module meg_vea
+use megan_ini
    implicit none
 
-   !Number of emission classes
-   INTEGER, PARAMETER :: NCLASS = 19
-   INTEGER, PARAMETER :: NEMIS  = NCLASS
-   ! number of emission classes
+   !!!Number of emission classes
+   !!INTEGER, PARAMETER :: NCLASS = 19
+   !!INTEGER, PARAMETER :: NEMIS  = NCLASS
+   !!! number of emission classes
 
    ! CO2 related emission activity factor parameters
    REAL,PARAMETER :: CO2   = 400.0
@@ -187,7 +188,6 @@ subroutine megvea(  ncols,nrows,layers,          &
     ! output variables
     real, intent(out)     :: ER(ncols,nrows)                    !emission rate
     real, intent(out)     :: non_dimgarma (ncols,nrows,nclass)  !
-
     !LOCAL VARIABLES
     LOGICAL, PARAMETER    :: GAMBD_YN  = .false.
     LOGICAL, PARAMETER    :: GAMAQ_YN  = .false.

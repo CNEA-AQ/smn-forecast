@@ -15,5 +15,9 @@
    fert_file='FERT.nc',  
    land_file='LAND.nc',  
 
-   chem_mech='CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
+   mechanism='CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
+                         !'CB05','CB6',CB6_ae7','RACM2','SAPRC07T','CRACMM'
 /
+
+
+
