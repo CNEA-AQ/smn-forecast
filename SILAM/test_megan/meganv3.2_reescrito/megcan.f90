@@ -122,8 +122,6 @@ subroutine megcan(yyyy, ddd, hh,                & !date-time: year,jday,hour
          !
          call SolarFractions(Solar, Maxsolar, Qdiffv, Qbeamv, Qdiffn, Qbeamn)
       
-
-
           sun_ppfd_total     = 0.0
           shade_ppfd_total   = 0.0
           sun_tk_total       = 0.0

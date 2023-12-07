@@ -37,7 +37,7 @@ program meganv32
    !input variables:
    real,    allocatable, dimension(:,:)     :: lon,lat                     !(x,y)   from wrfout
    integer, allocatable, dimension(:,:)     :: arid,non_arid,landtype      !(x,y)   from prep_megan
-   real,    allocatable, dimension(:,:,:)   :: ef,ldf_in                      !(x,y,*) from prep_megan
+   real,    allocatable, dimension(:,:,:)   :: ef,ldf_in                   !(x,y,*) from prep_megan
    real,    allocatable, dimension(:,:,:,:) :: ctf                         !(x,y,*) from prep_megan
    !real,    allocatable, dimension(:,:,:)  :: ctf                         !(x,y,*) from prep_megan
    !real,    allocatable, dimension(:,:)    :: needl,tropi,broad,shrub,grass,crop
@@ -105,10 +105,10 @@ program meganv32
    current_month="99"
    do while (current_date_s <= end_date_s)
       YYYY=date("@"//itoa(current_date_s), "%Y")  !año
-        MM=date("@"//itoa(current_date_s), "%m")  !mes
-        DD=date("@"//itoa(current_date_s), "%d")  !dia
-       DDD=date("@"//itoa(current_date_s), "%j")  !dia juliano
-        HH=date("@"//itoa(current_date_s), "%H")  !hora
+      MM=date("@"//itoa(current_date_s), "%m")  !mes
+      DD=date("@"//itoa(current_date_s), "%d")  !dia
+      DDD=date("@"//itoa(current_date_s), "%j")  !dia juliano
+      HH=date("@"//itoa(current_date_s), "%H")  !hora
       print '("  Día: ",A4,"-",A2,"-",A2," (día: ",A3,"), hora: ",2A,".")',YYYY,MM,DD,DDD,HH
 
       t=atoi(HH) !time index
@@ -119,23 +119,25 @@ program meganv32
             call write_output_file(grid,YYYY,DDD,MECHANISM)
          endif
          current_day=DD
-         call prep_dynamic_daily_data(grid,t,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
+         !call prep_dynamic_daily_data(grid,t,tmp,rad,u10,v10,pre,hum,smois,fert)
+         call prep_dynamic_daily_data(grid,tmp,rad,u10,v10,pre,hum,smois,fert)
          if ( current_month /= MM ) then
             current_month=MM
             call prep_dynamic_monthly_data(grid,MM,lai,ndep)
          endif    
       endif    
 
-      call megcan(atoi(yyyy),atoi(ddd),atoi(hh),                      &!calculate canopy tmp and rad parameters
-             grid%nx,grid%ny,layers,                                  & !dimensions
-             lat,lon,ctf(:,:,1,:)*0.01,lai,                           & !INPs: 
-             tmp(:,:,t),rad(:,:,t),wind(:,:,t),pre(:,:,t),hum(:,:,t), & !INPs: 
-             sunt,shat,sunfrac,sunp,shap                              ) !OUTs:  perfiles de temp y flujo fotonico para distintos niveles del canopeo
-
-      call megsea(                                                    &!calculate soil (NO) activity
-              grid%nx,grid%ny,                                        & !dimensions
-              lsm,styp(:,:,t),smois(:,:,t),                           & !INPs: land surface model, soil type, soil moisture
-              gamma_sm                                                ) !OUTs: soil moisture activity for isoprene
+print*,"==>MEGCAN<=="
+      call megcan(atoi(yyyy),atoi(ddd),atoi(hh),                     &!calculate canopy tmp and rad parameters
+             grid%nx,grid%ny,layers,                                 & !dimensions
+             lat,lon,ctf(:,:,1,:)*0.01,lai,                          & !INPs: 
+             tmp(:,:,t),rad(:,:,t),wind(:,:,t),pre(:,:,t),hum(:,:,t),& !INPs: 
+             sunt,shat,sunfrac,sunp,shap                             ) !OUTs:  perfiles de temp y flujo fotonico para distintos niveles del canopeo
+print*,"==>MEGSEA<=="
+      call megsea(                                                   &!calculate soil (NO) activity
+             grid%nx,grid%ny,                                        & !dimensions
+             lsm,styp(:,:,t),smois(:,:,t),                           & !INPs: land surface model, soil type, soil moisture
+             gamma_sm                                                ) !OUTs: soil moisture activity for isoprene
 
       !soil NO model:
       !call megnox(atoi(yyyy),atoi(ddd),atoi(hh), 
@@ -143,7 +145,7 @@ program meganv32
       !ctf(:,:,1,:),lai,                               & !Soil type, CTF, LAIc
       !tmp(:,:,t),soilm1(:,:,t),soilm2(:,:,t),soilt(:,:,t),precadj(:,:,t),  &  !temp, soil moisture, soil temp, precip adjustment
       !cfno, cfnog, gamma_sm)                                      & !Outs: Emiss activity (EA) of Crop & EA Grass, Soil moisture for isoprene
-
+print*,"==>MEGVEA<=="
       call megvea(                                     &!calculate vegetation emission activity
              grid%nx,grid%ny,layers,                   &  !dimensions
              lai, lai, ldf_in,                         &  !LAI (past), LAI (current), LDF
@@ -151,11 +153,10 @@ program meganv32
              tmp_max,tmp_min,wind_max,tmp_avg,rad_avg, &  !max temp, min temp, max wind, daily temp and daily ppfd
              sunt,shat,sunfrac,sunp,shap,              &  !from "MEGCAN"
              emis_rate,non_dimgarma                    )  !Outs
-
-      !laip=laic
-
+     !laip=laic
      !----
      !speciate/assign emissions to mechanism 
+print*,"==>MGN2MECH<=="
      call convert2mech(grid%nx,grid%ny,  &
                   ef,non_dimgarma,   &
                   out_buffer(:,:,:,t))
@@ -178,12 +179,10 @@ subroutine prep_static_data(p,g,lat,lon,arid,non_arid,landtype,ctf,ef,ldf_in)
   integer,allocatable,dimension(:,:)    ,intent(inout) :: arid,non_arid,landtype  !(x,y)   from_prep_megan
   real,   allocatable,dimension(:,:,:)  ,intent(inout) :: ef,ldf_in                  !(x,y,*) from prep_megan
   real,   allocatable,dimension(:,:,:,:),intent(inout) :: ctf                     !(x,y,*) from prep_megan
-  !real,   allocatable,dimension(:,:,:),intent(inout) :: ctf                     !(x,y,*) from prep_megan
   !real,   allocatable, dimension(:,:)  :: needl,tropi,broad,shrub,grass,crop
 
   character(len=10),dimension(19) :: ef_vars=["EF_ISOP   ", "EF_MBO    ", "EF_MT_PINE", "EF_MT_ACYC", "EF_MT_CAMP", "EF_MT_SABI", "EF_MT_AROM", "EF_NO     ", "EF_SQT_HR ", "EF_SQT_LR ", "EF_MEOH   ", "EF_ACTO   ", "EF_ETOH   ", "EF_ACID   ", "EF_LVOC   ", "EF_OXPROD ", "EF_STRESS ", "EF_OTHER  ", "EF_CO     "]
   character(len=5),dimension(4)   :: ldf_vars=["LDF03","LDF04","LDF05","LDF06"]
-
 
   NRTYP=6 !(6 canopy types)
 
@@ -239,15 +238,17 @@ subroutine prep_static_data(p,g,lat,lon,arid,non_arid,landtype,ctf,ef,ldf_in)
 end subroutine
 
 
-subroutine prep_dynamic_daily_data(g,ini_h,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
+!subroutine prep_dynamic_daily_data(g,ini_h,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
+subroutine prep_dynamic_daily_data(g,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
   implicit none
   type(grid_type) :: g
-  integer,intent(in) :: ini_h
-  integer            :: end_h
+  !integer,intent(in) :: ini_h
+  integer            :: ini_h,end_h
   integer :: ncid,time_dimid,time_len
   real, allocatable,dimension(:,:)    , intent(inout) :: fert
-  real, allocatable,dimension(:,:,:), intent(inout) :: u10,v10,tmp,rad,pre,hum,SMOIS
- 
+  real, allocatable,dimension(:,:,:), intent(inout) :: u10,v10,tmp,rad,pre,hum,smois
+  character(len=19), dimension(:), allocatable :: Times
+
 print*,"  Preparo inputs dinámicos diarios.."
   !2d arrays:
   if (.not. allocated(fert)) then; allocate( fert(g%nx,g%ny));endif
@@ -260,26 +261,35 @@ print*,"  Preparo inputs dinámicos diarios.."
   call check(nf90_open(trim(met_file), nf90_write, ncid     ))
     call check (nf90_inq_dimid(ncid, "Time", time_dimid     ))
     call check (nf90_inquire_dimension(ncid,time_dimid,len=time_len))
+    allocate(Times(time_len))
+    call check( nf90_inq_varid(ncid,'Times' , var_id)); call check(nf90_get_var(ncid, var_id,  Times(:) ))
+print*,Times
+print*,Times(time_len-1)
+    read(Times(1         )(12:13), *) ini_h
+    read(Times(time_len-1)(12:13), *) end_h
+
   call check(nf90_close(ncid))
-  end_h=ini_h+time_len-2
-                    
-  if (.not. allocated(tmp)  ) then; allocate(tmp(g%nx,g%ny,24) );endif 
-  if (.not. allocated(rad)  ) then; allocate(rad(g%nx,g%ny,24) );endif
-  if (.not. allocated(u10)  ) then; allocate(u10(g%nx,g%ny,24) );endif
-  if (.not. allocated(v10)  ) then; allocate(v10(g%nx,g%ny,24) );endif
-  if (.not. allocated(pre)  ) then; allocate(pre(g%nx,g%ny,24) );endif
-  if (.not. allocated(hum)  ) then; allocate(hum(g%nx,g%ny,24) );endif
-  if (.not. allocated(SMOIS)) then; allocate(SMOIS(g%nx,g%ny,24) );endif
-  if (.not. allocated(styp) ) then; allocate(styp(g%nx,g%ny,24));endif
+  deallocate(Times)
+
+  !end_h=min(modulo(24-time_len,24), 24)
+print*,"ini_h,end_h,time_len: ",ini_h,end_h,time_len
+  if (.not. allocated(tmp)  ) then; allocate(  tmp(g%nx,g%ny,24));endif 
+  if (.not. allocated(rad)  ) then; allocate(  rad(g%nx,g%ny,24));endif
+  if (.not. allocated(u10)  ) then; allocate(  u10(g%nx,g%ny,24));endif
+  if (.not. allocated(v10)  ) then; allocate(  v10(g%nx,g%ny,24));endif
+  if (.not. allocated(pre)  ) then; allocate(  pre(g%nx,g%ny,24));endif
+  if (.not. allocated(hum)  ) then; allocate(  hum(g%nx,g%ny,24));endif
+  if (.not. allocated(SMOIS)) then; allocate(smois(g%nx,g%ny,24));endif
+  if (.not. allocated(styp) ) then; allocate( styp(g%nx,g%ny,24));endif
   call check(nf90_open(trim(met_file), nf90_write, ncid ))
-     call check( nf90_inq_varid(ncid,'U10'   , var_id)); call check(nf90_get_var(ncid, var_id, U10(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'V10'   , var_id)); call check(nf90_get_var(ncid, var_id, V10(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'T2'    , var_id)); call check(nf90_get_var(ncid, var_id, TMP(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'SWDOWN', var_id)); call check(nf90_get_var(ncid, var_id, RAD(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'PSFC'  , var_id)); call check(nf90_get_var(ncid, var_id, PRE(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'Q2'    , var_id)); call check(nf90_get_var(ncid, var_id, HUM(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'SMOIS' , var_id)); call check(nf90_get_var(ncid, var_id, SMOIS(:,:,ini_h:end_h) ))
-     call check( nf90_inq_varid(ncid,'ISLTYP', var_id)); call check(nf90_get_var(ncid, var_id, STYP(:,:,ini_h:end_h)))
+     call check( nf90_inq_varid(ncid,'U10'   , var_id)); call check(nf90_get_var(ncid, var_id,  U10(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'V10'   , var_id)); call check(nf90_get_var(ncid, var_id,  V10(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'T2'    , var_id)); call check(nf90_get_var(ncid, var_id,  TMP(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'SWDOWN', var_id)); call check(nf90_get_var(ncid, var_id,  RAD(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'PSFC'  , var_id)); call check(nf90_get_var(ncid, var_id,  PRE(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'Q2'    , var_id)); call check(nf90_get_var(ncid, var_id,  HUM(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'SMOIS' , var_id)); call check(nf90_get_var(ncid, var_id,SMOIS(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'ISLTYP', var_id)); call check(nf90_get_var(ncid, var_id, STYP(:,:,ini_h:end_h) ))
   call check(nf90_close(ncid))
 
   if (.not. allocated(wind)) then; allocate(wind(g%nx,g%ny,24) );endif 
