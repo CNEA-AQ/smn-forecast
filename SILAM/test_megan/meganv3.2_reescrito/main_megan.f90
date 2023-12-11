@@ -1,19 +1,16 @@
 program meganv32
-   !
    ! program:     MEGAN  v3.2
    ! description: Biogenic VOCs emission model (by Alex Guenther)
    ! coded:       by Ramiro Espada (date: 11/2023)
-    use netcdf   
-    use utils_mod         !utils
-    use proj_mod          !coordinate transformation functions
-    use readGRIDDESC_mod  !GRIDDESC reader
+   use netcdf   
+   use utils_mod         !utils
+   use proj_mod          !coordinate transformation functions
+   use readGRIDDESC_mod  !GRIDDESC reader
  
    use megan_ini   !initialize and set some global parameters based on namelist options
    use meg_can     !canopy calculations
-   use meg_sea     !soil emission activity (SEA): BSNP
    use meg_vea     !vegetation emision activity (VEA)
    !#use meg_nox   !NOx emision activity (VEA)
-   use mgn2mech    !species mapping to mechanism
 
    implicit none
 
@@ -24,15 +21,15 @@ program meganv32
    integer           :: iostat
    integer           :: ncid,var_id
    character(len=19) :: start_date, end_date
-   character(len=16) :: mechanism='CBM05' !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
+   character(len=16) :: mechanism='CBM05' !'CBM6' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
    !logical           :: prep_megan=.false.
-   character(250)    :: griddesc_file,gridname,met_file,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file
+   character(250)    :: griddesc_file,gridname,met_files,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file
    character(4)      :: lsm
    !date vars:
    integer      :: end_date_s,current_date_s
    character(4) :: YYYY
    character(3) :: DDD
-   character(2) :: MM,DD,HH,current_day,current_month
+   character(2) :: MM,DD,HH,current_day="99",current_month="99"
    
    !input variables:
    real,    allocatable, dimension(:,:)     :: lon,lat                     !(x,y)   from wrfout
@@ -49,20 +46,16 @@ program meganv32
    integer,parameter :: layers=5
    real,    allocatable, dimension(:,:,:)   :: wind                            !(x,y,t) from wrfout
    real,    allocatable, dimension(:,:,:)   :: sunt,shat,sunfrac,sunp,shap     !(x,y,z) ShadeleafTK,SunleafTK,SunFrac,SunPPFD,ShadePPFD from MEGCAN
-   real,    allocatable, dimension(:,:)     :: gamma_sm                        !(x,y) from MEGSEA
+   !real,    allocatable, dimension(:,:)     :: gamma_sm                        !(x,y) from MEGSEA
    real,    allocatable, dimension(:,:)     :: tmp_min,tmp_max,wind_max,tmp_avg,rad_avg !(x,y) daily meteo vars
    real,    allocatable, dimension(:,:)     :: emis_rate                       !(x,y)        from megvea 
    real,    allocatable, dimension(:,:,:)   :: non_dimgarma                    !(x,y,nclass) from megvea 
      !#   cfno, cfnog,gamma_no, bdsnp_no     !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
-     !#   maxt, mint, maxws, d_temp, d_ppfd, 
    !output vars:
    real,    allocatable, dimension(:,:,:,:) :: out_buffer                      !(x,y,nclass,t)
 
-   !character(25)    :: out_file,diag_file
-
    !---
-   !print '("Leo namelist.. ")'
-   namelist/megan/start_date,end_date,met_file,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file,mechanism,griddesc_file,gridname,lsm
+   namelist/megan/start_date,end_date,met_files,ctf_file,lai_file,ef_file,ldf_file,ndep_file,fert_file,land_file,mechanism,griddesc_file,gridname,lsm
    read(*,nml=megan, iostat=iostat)
    if( iostat /= 0 ) then
      write(*,*) 'megan: failed to read namelist; error = ',iostat
@@ -75,8 +68,8 @@ program meganv32
    !---
    print '("Preparo mecanísmo y especies.. ")'
    call megan_map(mechanism)
-   print*,"Mecanísmo: ",mechanism
-   print*,"Especies: ",megan_names
+   print*,"  Mecanísmo: ",mechanism
+   print*,"  Especies: ",megan_names
 
    !--- 
    print '("Preparo datos estáticos.. ")'
@@ -90,10 +83,8 @@ program meganv32
    allocate(   sunp(grid%nx,grid%ny,layers))!  ShSunPPFD
    allocate(   shap(grid%nx,grid%ny,layers))!ShShadePPFD
    
-   allocate(gamma_sm(grid%nx,grid%ny))       !GAMSM
-  
-   allocate(   emis_rate(grid%nx,grid%ny))        !for megvea  
-   allocate(non_dimgarma(grid%nx,grid%ny,nclass)) !for megvea
+   !allocate(   emis_rate(grid%nx,grid%ny))        !for megvea  
+   !allocate(non_dimgarma(grid%nx,grid%ny,nclass)) !for megvea
 
    allocate(out_buffer(grid%nx,grid%ny,n_spca_spc,24)) !main out array
 
@@ -101,15 +92,13 @@ program meganv32
    print '("Comienza loop.. ")'
    current_date_s = atoi( date(start_date, "%s"))
        end_date_s = atoi( date(  end_date, "%s"))
-   current_day="99" !inicializo con valor absurdo.
-   current_month="99"
    do while (current_date_s <= end_date_s)
       YYYY=date("@"//itoa(current_date_s), "%Y")  !año
       MM=date("@"//itoa(current_date_s), "%m")  !mes
       DD=date("@"//itoa(current_date_s), "%d")  !dia
       DDD=date("@"//itoa(current_date_s), "%j")  !dia juliano
       HH=date("@"//itoa(current_date_s), "%H")  !hora
-      print '("  Día: ",A4,"-",A2,"-",A2," (día: ",A3,"), hora: ",2A,".")',YYYY,MM,DD,DDD,HH
+      print '("  ",A4,"-",A2,"-",A2," (día: ",A3,"), ",2A,"hs.")',YYYY,MM,DD,DDD,HH
 
       t=atoi(HH) !time index
       
@@ -119,7 +108,6 @@ program meganv32
             call write_output_file(grid,YYYY,DDD,MECHANISM)
          endif
          current_day=DD
-         !call prep_dynamic_daily_data(grid,t,tmp,rad,u10,v10,pre,hum,smois,fert)
          call prep_dynamic_daily_data(grid,tmp,rad,u10,v10,pre,hum,smois,fert)
          if ( current_month /= MM ) then
             current_month=MM
@@ -133,36 +121,34 @@ print*,"==>MEGCAN<=="
              lat,lon,ctf(:,:,1,:)*0.01,lai,                          & !INPs: 
              tmp(:,:,t),rad(:,:,t),wind(:,:,t),pre(:,:,t),hum(:,:,t),& !INPs: 
              sunt,shat,sunfrac,sunp,shap                             ) !OUTs:  perfiles de temp y flujo fotonico para distintos niveles del canopeo
-print*,"==>MEGSEA<=="
-      call megsea(                                                   &!calculate soil (NO) activity
-             grid%nx,grid%ny,                                        & !dimensions
-             lsm,styp(:,:,t),smois(:,:,t),                           & !INPs: land surface model, soil type, soil moisture
-             gamma_sm                                                ) !OUTs: soil moisture activity for isoprene
-
+      
       !soil NO model:
       !call megnox(atoi(yyyy),atoi(ddd),atoi(hh), 
       !       gamma_no, bdsnp_no                                          ) !Outs: Final NO emission activity BDSNP NO emissions(nmol/s/m2)
       !ctf(:,:,1,:),lai,                               & !Soil type, CTF, LAIc
       !tmp(:,:,t),soilm1(:,:,t),soilm2(:,:,t),soilt(:,:,t),precadj(:,:,t),  &  !temp, soil moisture, soil temp, precip adjustment
       !cfno, cfnog, gamma_sm)                                      & !Outs: Emiss activity (EA) of Crop & EA Grass, Soil moisture for isoprene
+
 print*,"==>MEGVEA<=="
       call megvea(                                     &!calculate vegetation emission activity
              grid%nx,grid%ny,layers,                   &  !dimensions
-             lai, lai, ldf_in,                         &  !LAI (past), LAI (current), LDF
-             gamma_sm,                                 &  !GAMSM: EA response to soil moisture,
+             lai, lai, ef, ldf_in,                     &  !LAI (past), LAI (current), EF, LDF
+             lsm,styp(:,:,t),smois(:,:,t),             &  !mesea Inps: land surface model, soil type, soil moisture!
+             !gamma_sm,                                 &  !GAMSM: EA response to soil moisture,
              tmp_max,tmp_min,wind_max,tmp_avg,rad_avg, &  !max temp, min temp, max wind, daily temp and daily ppfd
              sunt,shat,sunfrac,sunp,shap,              &  !from "MEGCAN"
-             emis_rate,non_dimgarma                    )  !Outs
+             out_buffer(:,:,:,t)                       )
+
      !laip=laic
      !----
      !speciate/assign emissions to mechanism 
-print*,"==>MGN2MECH<=="
-     call convert2mech(grid%nx,grid%ny,  &
-                  ef,non_dimgarma,   &
-                  out_buffer(:,:,:,t))
+     !print*,"==>MGN2MECH<=="
+     !     call convert2mech(grid%nx,grid%ny,  &
+     !                  ef,non_dimgarma,   &
+     !                  out_buffer(:,:,:,t))
 
      !print '("  Escribiendo archivo diagnóstico.. ")'
-     call write_diagnostic_file(proj,grid)
+     !call write_diagnostic_file(proj,grid)
 
      current_date_s=current_date_s + 3600  !siguiente hora!
    enddo
@@ -238,7 +224,6 @@ subroutine prep_static_data(p,g,lat,lon,arid,non_arid,landtype,ctf,ef,ldf_in)
 end subroutine
 
 
-!subroutine prep_dynamic_daily_data(g,ini_h,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
 subroutine prep_dynamic_daily_data(g,tmp,rad,u10,v10,pre,hum,SMOIS,fert)
   implicit none
   type(grid_type) :: g
@@ -258,7 +243,7 @@ print*,"  Preparo inputs dinámicos diarios.."
  
   !3d arrays:
   !check how many hours is in meteo file
-  call check(nf90_open(trim(met_file), nf90_write, ncid     ))
+  call check(nf90_open(trim(met_files), nf90_write, ncid     ))
     call check (nf90_inq_dimid(ncid, "Time", time_dimid     ))
     call check (nf90_inquire_dimension(ncid,time_dimid,len=time_len))
     allocate(Times(time_len))
@@ -281,7 +266,7 @@ print*,"ini_h,end_h,time_len: ",ini_h,end_h,time_len
   if (.not. allocated(hum)  ) then; allocate(  hum(g%nx,g%ny,24));endif
   if (.not. allocated(SMOIS)) then; allocate(smois(g%nx,g%ny,24));endif
   if (.not. allocated(styp) ) then; allocate( styp(g%nx,g%ny,24));endif
-  call check(nf90_open(trim(met_file), nf90_write, ncid ))
+  call check(nf90_open(trim(met_files), nf90_write, ncid ))
      call check( nf90_inq_varid(ncid,'U10'   , var_id)); call check(nf90_get_var(ncid, var_id,  U10(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'V10'   , var_id)); call check(nf90_get_var(ncid, var_id,  V10(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'T2'    , var_id)); call check(nf90_get_var(ncid, var_id,  TMP(:,:,ini_h:end_h) ))
@@ -337,7 +322,7 @@ subroutine write_diagnostic_file(p,g) !write input and intermediate data so i ca
   integer           :: ncid,t_dim_id,x_dim_id,y_dim_id,z_dim_id,s_dim_id,var_dim_id
   integer           :: k!,i,j
   integer           :: ntimes
-  character(len=5),dimension(31) :: var_names, var_types, var_dimen
+  character(len=5),dimension(30) :: var_names, var_types, var_dimen
 
   ntimes=size(U10(1,1,:))
 
@@ -369,15 +354,14 @@ data var_names(20),var_types(20),var_dimen(20) / 'T_SUN', 'FLOAT', 'XYZ  '/
 data var_names(21),var_types(21),var_dimen(21) / 'SunFr', 'FLOAT', 'XYZ  '/
 data var_names(22),var_types(22),var_dimen(22) / 'R_SHA', 'FLOAT', 'XYZ  '/
 data var_names(23),var_types(23),var_dimen(23) / 'R_SUN', 'FLOAT', 'XYZ  '/
-data var_names(24),var_types(24),var_dimen(24) / 'GAMSM', 'FLOAT', 'XY   '/
-data var_names(25),var_types(25),var_dimen(25) / 'T_MIN', 'FLOAT', 'XY   '/
-data var_names(26),var_types(26),var_dimen(26) / 'T_MAX', 'FLOAT', 'XY   '/
-data var_names(27),var_types(27),var_dimen(27) / 'W_MAX', 'FLOAT', 'XY   '/
-data var_names(28),var_types(28),var_dimen(28) / 'T_AVG', 'FLOAT', 'XY   '/
-data var_names(29),var_types(29),var_dimen(29) / 'R_AVG', 'FLOAT', 'XY   '/
-data var_names(30),var_types(30),var_dimen(30) / 'ER   ', 'FLOAT', 'XY   '/
-data var_names(31),var_types(31),var_dimen(31) / 'NONDI', 'FLOAT', 'XYC  '/
-
+!data var_names(24),var_types(24),var_dimen(24) / 'GAMSM', 'FLOAT', 'XY   '/
+data var_names(24),var_types(24),var_dimen(24) / 'T_MIN', 'FLOAT', 'XY   '/
+data var_names(25),var_types(25),var_dimen(25) / 'T_MAX', 'FLOAT', 'XY   '/
+data var_names(26),var_types(26),var_dimen(26) / 'W_MAX', 'FLOAT', 'XY   '/
+data var_names(27),var_types(27),var_dimen(27) / 'T_AVG', 'FLOAT', 'XY   '/
+data var_names(28),var_types(28),var_dimen(28) / 'R_AVG', 'FLOAT', 'XY   '/
+data var_names(29),var_types(29),var_dimen(29) / 'ER   ', 'FLOAT', 'XY   '/
+data var_names(30),var_types(30),var_dimen(30) / 'NONDI', 'FLOAT', 'XYC  '/
 
   call check(nf90_create(trim(diag_file), NF90_CLOBBER, ncid))
     !Defino dimensiones
@@ -433,7 +417,7 @@ data var_names(31),var_types(31),var_dimen(31) / 'NONDI', 'FLOAT', 'XYC  '/
       call check(nf90_inq_varid(ncid,'SunFr',var_id )); call check(nf90_put_var(ncid, var_id, SunFrac    ))
       call check(nf90_inq_varid(ncid,'R_SHA',var_id )); call check(nf90_put_var(ncid, var_id, SHAP       ))
       call check(nf90_inq_varid(ncid,'R_SUN',var_id )); call check(nf90_put_var(ncid, var_id, SUNP       ))
-      call check(nf90_inq_varid(ncid,'GAMSM',var_id )); call check(nf90_put_var(ncid, var_id, GAMMA_SM   ))
+      !call check(nf90_inq_varid(ncid,'GAMSM',var_id )); call check(nf90_put_var(ncid, var_id, GAMMA_SM   ))
       call check(nf90_inq_varid(ncid,'T_MIN',var_id )); call check(nf90_put_var(ncid, var_id, tmp_min   ))
       call check(nf90_inq_varid(ncid,'T_MAX',var_id )); call check(nf90_put_var(ncid, var_id, tmp_max   ))
       call check(nf90_inq_varid(ncid,'T_AVG',var_id )); call check(nf90_put_var(ncid, var_id, tmp_avg   ))
@@ -471,7 +455,7 @@ subroutine write_output_file(g,YYYY,DDD,MECHANISM)
      call check(nf90_put_att(ncid, var_id, "var_desc"   , "date-time variable"      ))
 print*,"shape buffer: ",shape(out_buffer)
      !Creo variables:
-     do k=1,NMGNSPC
+     do k=1,NMGNSPC !n_scon_spc !
        print*,"Especie: ",k,n_scon_spc,trim(mech_spc(k))
         call check( nf90_def_var(ncid, trim(mech_spc(k)) , NF90_FLOAT, [x_dim_id,y_dim_id,t_dim_id], var_id)   )
      end do
@@ -479,13 +463,12 @@ print*,"shape buffer: ",shape(out_buffer)
 
    !Abro NetCDF y guardo variables de salida
    call check(nf90_open(trim(out_file), nf90_write, ncid       ))
-     do k=1,NMGNSPC
-       print*,"Especie:2",trim(mech_spc(k))
+     do k=1,NMGNSPC !n_scon_spc !,NMGNSPC
+       print*,"Especie:",trim(mech_spc(k))
        call check(nf90_inq_varid(ncid,trim(mech_spc(k)),var_id)); call check(nf90_put_var(ncid, var_id, out_buffer(:,:,k,:) ))
      enddo
    call check(nf90_close( ncid ))
 end subroutine write_output_file
-
 
 
 end program meganv32

@@ -23,9 +23,9 @@ use megan_ini
 
    !Light and temperature emission activity response coefficients for each emission class
    real LDF(NCLASS)  !LDF: light dependent fraction
-   real CT1(NCLASS)   !CT1: temperature coefficient (emission type 1: light dependent)
-   real Cleo(NCLASS)   !Cleo: temperature coefficient (emission type 1: light dependent)
-   real beta(NCLASS)   !beta: temperature coefficient (emission type 2: light independent)
+   real CT1(NCLASS)  !CT1: temperature coefficient (emission type 1: light dependent)
+   real Cleo(NCLASS) !Cleo: temperature coefficient (emission type 1: light dependent)
+   real beta(NCLASS) !beta: temperature coefficient (emission type 2: light independent)
       data    beta(1),LDF(1),CT1(1),Cleo(1)        / 0.13,1.0,95,2    /
       data    beta(2),LDF(2),CT1(2),Cleo(2)        / 0.13,1.0,95,2    /
       data    beta(3),LDF(3),CT1(3),Cleo(3)        / 0.10,0.6,80,1.83 /
@@ -149,21 +149,39 @@ use megan_ini
       DATA  DTAQ(18),DTHW(18),DTHT(18),DTLT(18)  / 30,8,8,8 /
       DATA  DTAQ(19),DTHW(19),DTHT(19),DTLT(19)  / 30,8,8,8 /
 
+     !MEGSEA.EXT data ----------------------------------------
+     INTEGER, PARAMETER :: NrTyp = 6          ! Number of canopy types
+      REAL,PARAMETER :: d1 = 0.04
+
+      !-- WWLT is wilting point (M^3/M^3) (JN90)
+      REAL WWLT_JN90(16)
+      DATA WWLT_JN90 /  0.068, 0.075, 0.114, 0.179, 0.155, 0.175, 0.218, 0.250, 0.219, 0.283, 0.286, 0.286, 0.286, 0.286, 0.286, 0.286 /
+
+     !-- WWLT is wilting point (M^3/M^3)
+     REAL  WWLT_NOAH(19)
+     DATA  WWLT_NOAH / 0.024, 0.057, 0.081, 0.123, 0.064, 0.128, 0.168, 0.212, 0.196, 0.239, 0.264, 0.285, 0.118, 0.066, 0.009, 0.049, 0.264, 0.009, 0.015 /
+    !------------------------------------------------------
+    !mgn2mech:
+     INTEGER :: i_NO = 8                     ! this was 20 for megan 3.1 (older version)
+     REAL, PARAMETER :: nmol2mol   = 1E-9    ! convert nanomoles to moles
+
+
 contains
 
 subroutine megvea(  ncols,nrows,layers,          &
-                    laip, laic,ldf_in,           &
-                    GAMSM_in,                    &
+                    laip, laic, efmaps, ldf_in,   &
+                    LSM,soil_type,soil_moisture, &!GAMSM_in,                    &
                     MaxT, MinT, MaxWS,           &
                     D_TEMP, D_PPFD,              &
                     SUNT, SHAT, SUNF, SUNP, SHAP,&
-                    ER, NON_DIMGARMA             )!AQI, 
+                    outer                       )
+                    !ER, NON_DIMGARMA             )!AQI, 
     implicit none
-    ! input variables
+    ! INPUT VARIABLES
     integer, intent(in)  ::  ncols,nrows,layers
     real, intent(in)     ::  laip(ncols,nrows),laic(ncols,nrows)
-    real, intent(in)     ::  ldf_in(ncols,nrows,4) !only 4 use maps
-    REAL, INTENT(IN)     ::  GAMSM_in(NCOLS,NROWS)
+    real, intent(in)     ::   efmaps(ncols,nrows,19) !only 19
+    real, intent(in)     ::  ldf_in(ncols,nrows,4 ) !only 4 use maps
     REAL, INTENT(IN)     ::  MaxT(NCOLS,NROWS),MinT(NCOLS,NROWS),MaxWS(NCOLS,NROWS)
     REAL, INTENT(IN)     ::  D_TEMP(NCOLS,NROWS)
     REAL, INTENT(IN)     ::  D_PPFD(NCOLS,NROWS)      ! comes in as rgrnd
@@ -172,13 +190,20 @@ subroutine megvea(  ncols,nrows,layers,          &
     real, intent(in)     ::  sunf(ncols,nrows,layers)
     real, intent(in)     ::  sunp(ncols,nrows,layers)
     real, intent(in)     ::  shap(ncols,nrows,layers)
+    !REAL, INTENT(IN)     ::  GAMSM_in(NCOLS,NROWS)
+    !inps from from megsea:
+    real,   intent(in)     ::  soil_moisture(ncols,nrows)
+    integer,intent(in)     ::  soil_type(ncols,nrows)
+    character(len=4),intent(in)   :: LSM          !land surface model 
     !REAL, INTENT(IN)     ::  AQI         ( NCOLS, NROWS )
 
-    ! output variables
-    real, intent(out)     :: ER(ncols,nrows)                    !emission rate
-    real, intent(out)     :: non_dimgarma (ncols,nrows,nclass)  !
+    ! OUTPUT VARIABLES
+    real   ,intent(inout) :: outer(ncols,nrows,n_spca_spc)
 
-    ! local variables
+    ! LOCAL VARIABLES
+    real                  :: ER(ncols,nrows)                    !emission rate
+    real                  :: non_dimgarma (ncols,nrows,nclass)  !
+
     LOGICAL, PARAMETER    :: GAMBD_YN  = .true. !.false.
     LOGICAL, PARAMETER    :: GAMAQ_YN  = .true. !.false.
     ! For the CMAQ implementation of MEGAN  we refer to soil moisture 
@@ -190,25 +215,31 @@ subroutine megvea(  ncols,nrows,layers,          &
     LOGICAL, PARAMETER    :: GAMHW_YN  = .true. !.false.
     LOGICAL, PARAMETER    :: GAMCO2_YN = .true. !.false.
 
-
-    REAL  :: CDEA(LAYERS)  ! Emission response to canopy depth
-    REAL  :: GAMLA      ! EA leaf age response
-    REAL  :: GAMAQ      ! EA response to air pollution
-    REAL  :: GAMBD      ! EA bidirectional exchange LAI response
-    REAL  :: GAMHT      ! EA response to high temperature
-    REAL  :: GAMLT      ! EA response to low temperature
-    REAL  :: GAMHW      ! EA response to high wind speed
-    REAL  :: GAMSM      ! EA response to soil moisture
-    REAL  :: GAMCO2     ! EA response to CO2
-    REAL  :: GAMTP      ! combines GAMLD, GAMLI, GAMP to get canopy average
-    REAL  :: LDFMAP     ! light depenedent fraction map
+    real  :: cdea(layers)  ! Emission response to canopy depth
+    real  :: gamla      ! EA leaf age response
+    real  :: gamaq      ! EA response to air pollution
+    real  :: gambd      ! EA bidirectional exchange LAI response
+    real  :: gamht      ! EA response to high temperature
+    real  :: gamlt      ! EA response to low temperature
+    real  :: gamhw      ! EA response to high wind speed
+    real  :: gamsm      ! EA response to soil moisture
+    real  :: gamco2     ! EA response to CO2
+    real  :: gamtp      ! combines GAMLD, GAMLI, GAMP to get canopy average
+    real  :: ldfmap     ! light depenedent fraction map
 
     REAL :: VPGWT(LAYERS)
     REAL ::  SUM1, SUM2,Ea1L,Ea2L
     ! loop indices
     !INTEGER :: IDATE, ITIME
     integer :: s, t, i, j, k 
-            
+     
+    !megsea variables:
+    real,allocatable :: wwlt(:)!, gamsm
+ 
+    !mgn2mech variables:
+    integer :: nmpmg,nmpsp,nmpmc
+    REAL    :: tmper(ncols, nrows, n_spca_spc)       ! Temp emission buffer
+ 
     ! EA response to canopy temperature/light
     IF ( Layers .EQ. 5 ) THEN
         VPGWT(1) = 0.1184635
@@ -222,27 +253,30 @@ subroutine megvea(  ncols,nrows,layers,          &
         end do
     ENDIF
 
+    select case (LSM)
+           case ('NOAH' )
+              allocate(wwlt(size(wwlt_noah))); wwlt=wwlt_noah;
+           case ('JN90' )
+              allocate(wwlt(size(wwlt_jn90))); wwlt=wwlt_jn90;
+           case DEFAULT
+              allocate(wwlt(size(wwlt_jn90))); wwlt=wwlt_jn90;
+    end select
 
    do j = 1, NROWS
       do i = 1, NCOLS! preserve stride 1 for output arrays
-                                                           
-       ! First process Factors independent of species emission classes S :
-       
-       cdea(:)=gamma_cd(layers,laic(i,j))  ! Emission response to canopy depth
+    
+       !from megsea:
+       gamsm=gamma_sm(soil_type(i,j),soil_moisture(i,j),wwlt(soil_type(i,j)) )  !EA response to Soil Moisture                                                          
+       !First process Factors independent of species emission classes S :
+       ! Emission response to canopy depth
+       cdea(:)=gamma_cd(layers,laic(i,j))  
 
-       IF ( GAMBD_YN ) THEN
-           GAMBD=GAMMA_LAIbidir(LAIc(i,j)) ! EA bidirectional exchange LAI response
-       ELSE
-           GAMBD = 1.0
-       ENDIF
+       ! EA bidirectional exchange LAI response
+       if ( gambd_yn )  then; gambd=gamma_laibidir(laic(i,j)); else;  gambd = 1.0; endif
+       ! ea co2 response
+       if ( gamco2_yn ) then; gamco2=gamma_co2(co2)          ; else; gamco2 = 1.0; endif
 
-       IF ( GAMCO2_YN ) THEN               ! EA CO2 response
-           GAMCO2=GAMMA_CO2(co2)
-       ELSE
-           GAMCO2 = 1.0
-       ENDIF
-
-       !  Now process all factors dependent on S:
+       !Now process all factors dependent on S:
        do s = 1,nemis  ! Loop over all the emission classes
 
            IF ( S .EQ. 3 .OR. S .EQ. 4 .OR. S .EQ. 5 .OR. S .EQ. 6 ) THEN
@@ -250,40 +284,17 @@ subroutine megvea(  ncols,nrows,layers,          &
            ELSE
                LDFMAP = LDF(S) !For these species,  Read LDF from previous MEGVEA.EXT 
            ENDIF
-
            ! leaf age activity factor:  dependent upon S
-           GAMLA=GAMMA_A(S, LAIp(i,j), LAIc(i,j), D_TEMP(i,j))
-
+           gamla = gamma_a(s, laip(i,j), laic(i,j), d_temp(i,j))
            ! EA response to air quality
-           IF ( GAMAQ_YN ) THEN
-              GAMAQ=GAMMA_AQ(S, AQI_default)
-           ELSE
-               GAMAQ = 1.0
-           ENDIF
-
-           IF ( GAMSM_YN ) THEN
-               GAMSM = GAMSM_in(i,j)
-           ELSE
-               GAMSM = 1.0
-           ENDIF
+           IF ( GAMAQ_YN ) THEN; GAMAQ=GAMMA_AQ(S, AQI_default); ELSE; GAMAQ = 1.0; ENDIF
            ! EA response to high temperature
-           IF ( GAMHT_YN ) THEN
-               GAMHT=GAMMA_HT(S, MaxT(i,j))
-           ELSE
-               GAMHT = 1.0
-           ENDIF
+           IF ( GAMHT_YN ) THEN; GAMHT=GAMMA_HT(S, MaxT(i,j))  ; ELSE; GAMHT = 1.0; ENDIF
            ! EA response to low temperature
-           IF ( GAMLT_YN ) THEN
-               GAMLT=GAMMA_LT(S, MinT(i,j))
-           ELSE
-               GAMLT = 1.0
-           ENDIF
+           IF ( GAMLT_YN ) THEN; GAMLT=GAMMA_LT(S, MinT(i,j))  ; ELSE; GAMLT = 1.0; ENDIF
            ! EA response to high wind speed
-           IF ( GAMHW_YN ) THEN
-             GAMHW=GAMMA_HW(S, MaxWS(i,j))
-           ELSE
-               GAMHW = 1.0
-           ENDIF
+           IF ( GAMHW_YN ) THEN; GAMHW=GAMMA_HW(S, MaxWS(i,j)) ; ELSE; GAMHW = 1.0; ENDIF
+
            SUM1 = 0.0
            SUM2 = 0.0
            do k = 1, layers
@@ -316,10 +327,55 @@ subroutine megvea(  ncols,nrows,layers,          &
         end do  ! End loop of species (S)
      end do   ! NCOLS
   end do ! NROWS
- 
+
+
+     !MGN2MECH oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+print*,"MGN2MECH.."
+     tmper = 0.
+     outer = 0.
+
+     do s = 1, n_smap_spc
+       nmpmg = mg20_map(s) !megan category
+       nmpsp = spca_map(s) !megan specie
+     ! print*,"nmpmg, nmpsp: ",nmpmg,nmpsp
+       IF ( nmpmg .NE. i_NO ) then !...  Not NO
+         !tmper(:,:,nmpsp) = inper(:,:,nmpmg) * efmaps(:,:,nmpmg)  * effs_all(s)
+          tmper(:,:,nmpsp) = non_dimgarma(:,:,nmpmg) * efmaps(:,:,nmpmg)  * effs_all(s)
+       ELSEIF ( nmpmg .EQ. i_NO ) then
+          tmper(:,:,nmpsp) = 0.0 ! not NO produced  by plants
+         !@!!-----------------NO Stuff-----------------------
+         !@IF ( .NOT. BDSNP_MEGAN ) THEN
+         !@!     GAMNO is emission activity factor
+         !@   tmper(:,:,nmpsp) = GAMNO(:,:) * efmaps(:,:,i_NO)        * effs_all(s)
+         !@ELSE
+         !@! directly use BDSNP soil NO
+         !@  tmper(nmpsp,:,:) = BDSNP_NO(:,:)
+         !@ENDIF
+         !@!-----------------end of NO----------------------
+       ENDIF     !IF ( nmpmg .NE. i_NO ) then
+     enddo ! end species loop
+     !-----------------------------------------------------------------------
+     !.....3) Conversion from speciated species to MECHANISM species
+     !-----------------------------------------------------------------------
+      !DO s = 1, n_spca_spc
+      !   tmper(:,:,s) = tmper(:,:,s) * nmol2mol
+      !ENDDO
+      tmper = tmper * nmol2mol
+
+      ! lumping to MECHANISM species
+      do s = 1, n_scon_spc
+        nmpsp = spmh_map(s)         ! Mapping value for SPCA
+        nmpmc = mech_map(s)         ! Mapping value for MECHANISM
+        if ( nmpmc .ne. 999 ) then
+           outer(:,:,nmpmc) = outer(:,:,nmpmc) +  (tmper(:,:,nmpsp) * conv_fac(s))
+        endif
+      ENDDO ! End species loop
+      !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+
   RETURN
     
-END SUBROUTINE MEGVEA
+end subroutine megvea
 
     function gamma_cd(Layers,LAI)  result(cdea)
       implicit none
@@ -367,9 +423,8 @@ END SUBROUTINE MEGVEA
     end function gamma_co2
 
     !----------------------------------------------------------------
-    !
     !   FUNCTION GAMTLD
-    !       EA Temperature response (light dependent emission)
+    !   EA Temperature response (light dependent emission)
     !----------------------------------------------------------------
     FUNCTION GAMTLD(T1,T24,S)
         IMPLICIT NONE
@@ -394,9 +449,8 @@ END SUBROUTINE MEGVEA
         ENDIF
     END FUNCTION GAMTLD
     !----------------------------------------------------------------
-    !
     !   FUNCTION GAMTLI
-    !       EA Temperature response (light independent emission)
+    !   EA Temperature response (light independent emission)
     !----------------------------------------------------------------
     function gamtli(temp,s)
         IMPLICIT NONE
@@ -409,9 +463,8 @@ END SUBROUTINE MEGVEA
 
     end function gamtli
     !----------------------------------------------------------------
-    !
     !   FUNCTION GAMP
-    !       EA Light response
+    !   EA Light response
     !----------------------------------------------------------------
     function gamp(ppfd1,ppfd24)
         implicit none
@@ -429,10 +482,8 @@ END SUBROUTINE MEGVEA
         ENDIF
     end function gamp
     !----------------------------------------------------------------
-    !
-    !   SUBROUTINE GAMMA_HT
+    !   FUNCTION GAMMA_HT
     !   EA response to high temperature
-    !
     !----------------------------------------------------------------
     function GAMMA_HT(S, MaxT)  result(gamht)
         implicit none
@@ -455,10 +506,8 @@ END SUBROUTINE MEGVEA
         RETURN
     end function GAMMA_HT
     !----------------------------------------------------------------
-    !
-    !   SUBROUTINE GAMMA_LT
+    !   FUNCTION GAMMA_LT
     !   EA response to low temperature
-    !
     !----------------------------------------------------------------
     function GAMMA_LT(S, MinT) result(gamlt)
         implicit none
@@ -483,10 +532,8 @@ END SUBROUTINE MEGVEA
         RETURN
     end function GAMMA_LT
     !----------------------------------------------------------------
-    !
-    !   SUBROUTINE GAMMA_HW
+    !   FUNCTION GAMMA_HW
     !   EA response to high wind speed
-    !
     !----------------------------------------------------------------
     function GAMMA_HW(S, MaxWS) result(gamhw)
         implicit none
@@ -508,12 +555,9 @@ END SUBROUTINE MEGVEA
             ENDIF
         RETURN
     end function gamma_hw
-
     !----------------------------------------------------------------
-    !
-    !   SUBROUTINE GAMMA_AQ
+    !   FUNCTION GAMMA_AQ
     !   EA response to air quality
-    !
     !----------------------------------------------------------------
     function gamma_aq(s, aqi) result(gamaq)
         implicit none
@@ -535,7 +579,10 @@ END SUBROUTINE MEGVEA
 
         RETURN
     end function gamma_aq
-
+    !----------------------------------------------------------------
+    !   FUNCTION GAMMA_A
+    !   EA response to leaf age
+    !----------------------------------------------------------------
     function gamma_a(s, laip, laic, tt) result(gamla)
 
         IMPLICIT NONE
@@ -603,4 +650,22 @@ END SUBROUTINE MEGVEA
         RETURN
     end function gamma_a
 
+    !part of megsea  ======================================================
+    function gamma_sm(sltyp, soilm, wilt)
+        implicit none
+        real :: t1,soilm,wilt,gamma_sm
+        integer :: sltyp  
+
+         !wilt = wwlt(sltyp)
+         t1 = wilt + d1
+         if ( soilm < wilt ) then
+             gamma_sm = 0
+         else if ( soilm >= wilt .and. soilm < t1 ) then
+             gamma_sm = (soilm - wilt)/d1
+         else
+             gamma_sm = 1
+         end if
+
+    end function gamma_sm
+    !======================================================================
 end module meg_vea

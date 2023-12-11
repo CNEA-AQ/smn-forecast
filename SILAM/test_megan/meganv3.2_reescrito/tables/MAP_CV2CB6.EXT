@@ -28,12 +28,9 @@
       REAL           CONV_FAC_CB6( N_CB6 )   ! conversion factor
 
  
-      DATA  SPMH_NAM_CB6( 1)     , SPMH_MAP_CB6( 1)      &
-         / 'isoprene     ', 1           /                 
-     DATA  MECH_NAM_CB6( 1)     , MECH_MAP_CB6( 1)       &
-         / 'ISOP      ', 1           /                    
-     DATA  CONV_FAC_CB6( 1)                              &
-         / 1       /                                      
+     DATA  SPMH_NAM_CB6( 1)     , SPMH_MAP_CB6( 1)      / 'isoprene     ', 1           /                 
+     DATA  MECH_NAM_CB6( 1)     , MECH_MAP_CB6( 1)      / 'ISOP      ', 1           /                    
+     DATA  CONV_FAC_CB6( 1)                             / 1       /                                      
                                                           
      DATA  SPMH_NAM_CB6( 2)     , SPMH_MAP_CB6( 2)       &
          / 'MBO_2m3e2ol     ', 2           /              

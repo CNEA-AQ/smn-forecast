@@ -105,7 +105,6 @@ module megan_ini
           allocate(mech_mwt(NMGNSPC )  , stat=ios)
   
           SELECT CASE ( TRIM(MECHANISM) )
-  
             CASE ('CB05')
               spmh_map(1:n_scon_spc) = spmh_map_cb05(1:n_scon_spc)
               mech_map(1:n_scon_spc) = mech_map_cb05(1:n_scon_spc)
@@ -156,7 +155,7 @@ module megan_ini
               mech_mwt(1:NMGNSPC)    = mech_mwt_cracmm(1:NMGNSPC)
               MEGAN_NAMES(1:NMGNSPC) =        mech_spc(1:NMGNSPC)
             CASE DEFAULT 
-              print*,"Mapping for Mechanism," // TRIM( MECHANISM)// ", is unspecified."
+              print*,"Mapping for Mechanism,"//TRIM(MECHANISM)//", is unspecified."
           ENDSELECT
    end subroutine megan_map
 end module megan_ini

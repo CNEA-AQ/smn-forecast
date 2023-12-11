@@ -177,15 +177,12 @@ subroutine megcan(yyyy, ddd, hh,                & !date-time: year,jday,hour
    
       enddo
    enddo
-end subroutine megcan
-
+contains
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION Calcbeta
 !   Calculates the solar zenith angle
 !   Code originally developed by Alex Guenther in 1990s
 !   Coded into FORTRAN by Xuemei Wang
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION Calcbeta(Day, Lat, Hour)
       IMPLICIT NONE
@@ -202,9 +199,7 @@ FUNCTION Calcbeta(Day, Lat, Hour)
       Calcbeta = ASIN(Sinbeta) * Rpi180 !57.29578
 END FUNCTION Calcbeta
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION CalcEccentricity
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION CalcEccentricity(Day)
       IMPLICIT NONE
@@ -215,9 +210,7 @@ FUNCTION CalcEccentricity(Day)
 END FUNCTION CalcEccentricity
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   SUBROUTINE GaussianDist
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 subroutine GaussianDist(Distgauss, Layers)
       IMPLICIT NONE
@@ -282,7 +275,6 @@ subroutine SolarFractions(Solar, Maxsolar, Qdiffv,Qbeamv,Qdiffn,Qbeamn)
 end subroutine SolarFractions
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo!
 !   Subroutine CanopyRad
-!
 !   Canopy light environment model
 !   Code originally developed by Alex Guenther in 1990s
 !   Coded into FORTRAN by Xuemei Wang
@@ -290,7 +282,6 @@ end subroutine SolarFractions
 !   Goudrian and van Laar (1994), Leuning (1997)
 !   Initial code 8-99, 
 !   modified 7-2000, 12-2001, 1-2017
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
                 Qbeamv, Qdiffv, Qbeamn, Qdiffn, Cantype,      &
@@ -381,12 +372,10 @@ SUBROUTINE CanopyRad(Distgauss, Layers, LAI, Sinbeta,             &
 END SUBROUTINE CanopyRad
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   Subroutine CalcExtCoeff
 !   Calculate light extinction coefficients
 !   Code originally developed by Alex Guenther in 1990s
 !   Coded into FORTRAN by Xuemei Wang
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 SUBROUTINE CalcExtCoeff(Qbeam,scat,kb,kd,reflb,kbp,kdp,QbeamAbsorb)
       IMPLICIT NONE
@@ -406,11 +395,9 @@ SUBROUTINE CalcExtCoeff(Qbeam,scat,kb,kd,reflb,kbp,kdp,QbeamAbsorb)
 END SUBROUTINE CalcExtCoeff
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   Subroutine CalcRadComponents
 !   Code originally developed by Alex Guenther in 1990s
 !   Coded into FORTRAN by Xuemei Wang
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 SUBROUTINE CalcRadComponents(Qdiff, Qbeam, kdp, kbp, kb, scat, refld, reflb, LAIdepth, QdAbs, QsAbs)
       IMPLICIT NONE
@@ -423,9 +410,7 @@ SUBROUTINE CalcRadComponents(Qdiff, Qbeam, kdp, kbp, kb, scat, refld, reflb, LAI
 END SUBROUTINE CalcRadComponents
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   Subroutine CanopyEB
-!
 !   Canopy energy balance model for estimating leaf temperature
 !   Coded into FORTRAN by Xuemei Wang
 !   Code developed by Alex Guenther in 1990s
@@ -528,13 +513,10 @@ SUBROUTINE CanopyEB(Trate, Layers, Distgauss, Canopychar,            &
 END SUBROUTINE CanopyEB
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   Subroutine LeafEB
-!
 !   Leaf energy balance
 !   Code originally developed by Alex Guenther in 1990s
 !   Coded into FORTRAN by Xuemei Wang
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 SUBROUTINE LeafEB(PPFD, Q, IRin, Eps, TranspireType,         &
          Lwidth, Llength, TairK, HumidairPa, Ws, Tleaf,      &
@@ -624,13 +606,10 @@ END SUBROUTINE LeafEB
 
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION WaterVapPres
-!
 !   Convert water mixing ratio (kg/kg) to water vapor pressure 
 !   (Pa or Kpa depending on units of input )
 !   Mixing ratio (kg/kg), temp (C), pressure (KPa)
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION WaterVapPres(Dens, Pres, WaterAirRatio)
       IMPLICIT NONE
@@ -639,9 +618,7 @@ FUNCTION WaterVapPres(Dens, Pres, WaterAirRatio)
 END FUNCTION WaterVapPres
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION Stability
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION Stability(Canopychar, Cantype, Solar, NrCha, NrTyp)
       IMPLICIT NONE
@@ -661,11 +638,8 @@ FUNCTION Stability(Canopychar, Cantype, Solar, NrCha, NrTyp)
       ENDIF
 END FUNCTION Stability
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION ConvertHumidityPa2kgm3
-!
 !   Saturation vapor density  (kg/m3)
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION ConvertHumidityPa2kgm3(Pa, Tk)
       implicit none
@@ -674,11 +648,8 @@ FUNCTION ConvertHumidityPa2kgm3(Pa, Tk)
 END FUNCTION ConvertHumidityPa2kgm3
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION ResSC
-!
 !   Leaf stomatal cond. resistance s m-1
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION ResSC(Par)
       IMPLICIT NONE
@@ -691,9 +662,7 @@ FUNCTION ResSC(Par)
       ENDIF
 END FUNCTION ResSC
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION LeafIR
-!
 !   Calculate IR transfer between leaf and air
 !   Added by Alex Guenther and Ling Huang to replace previous
 !   MEGAN2.1 IR balance functions
@@ -705,11 +674,8 @@ FUNCTION LeafIR(Tk, Eps)
 END FUNCTION LeafIR
 
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION LHV
-!
 !   Latent Heat of vaporization(J Kg-1) from Stull p641
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION LHV(Tk)
       IMPLICIT NONE
@@ -719,11 +685,8 @@ FUNCTION LHV(Tk)
       LHV = 2501000 - (2370 * (Tk - 273.15))
 END FUNCTION LHV
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION LeafLE
-!
 !   Latent energy term in Energy balance
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION LeafLE(Tleaf, Ambvap, LatHv, GH, StomRes, TranspireType)
       IMPLICIT NONE
@@ -740,11 +703,8 @@ FUNCTION LeafLE(Tleaf, Ambvap, LatHv, GH, StomRes, TranspireType)
       ENDIF
 END FUNCTION  LeafLE
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION LeafBLC
-!
 !   Boundary layer conductance
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION LeafBLC(GHforced, Tdelta, Llength)
       IMPLICIT NONE
@@ -762,12 +722,10 @@ FUNCTION LeafBLC(GHforced, Tdelta, Llength)
       LeafBLC = GHforced + GhFree
 END FUNCTION LeafBLC
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION LeafH
 !
 !   Convective energy term in Energy balance (W m-2 heat flux 
 !      from both sides of leaf)
-!
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 FUNCTION LeafH(Tdelta, GH)
       IMPLICIT NONE
@@ -775,7 +733,6 @@ FUNCTION LeafH(Tdelta, GH)
       LeafH = 2 * GH * Tdelta! 2 sides X conductance X Temperature gradient
 END FUNCTION LeafH
 !ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-!
 !   FUNCTION SvdTk
 !
 !   Saturation vapor density  (kg/m3)
@@ -788,5 +745,6 @@ function SvdTk(Tk)
       SvdTk = 0.2165 * Svp / Tk
 end function  SvdTk
 
+end subroutine megcan
 
 end module meg_can
