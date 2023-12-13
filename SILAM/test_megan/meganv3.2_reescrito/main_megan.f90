@@ -135,7 +135,8 @@ print*,"==>MEGVEA<=="
              lai, lai, ef, ldf_in,                     &  !LAI (past), LAI (current), EF, LDF
              lsm,styp(:,:,t),smois(:,:,t),             &  !mesea Inps: land surface model, soil type, soil moisture!
              !gamma_sm,                                 &  !GAMSM: EA response to soil moisture,
-             tmp_max,tmp_min,wind_max,tmp_avg,rad_avg, &  !max temp, min temp, max wind, daily temp and daily ppfd
+!            tmp_max,tmp_min,wind_max,tmp_avg,rad_avg, &  !max temp, min temp, max wind, daily temp and daily ppfd
+             tmp_max,tmp_min,wind_max,tmp(:,:,t),rad(:,:,t),         &  !max temp, min temp, max wind, daily temp and daily ppfd
              sunt,shat,sunfrac,sunp,shap,              &  !from "MEGCAN"
              out_buffer(:,:,:,t)                       )
 
@@ -147,8 +148,8 @@ print*,"==>MEGVEA<=="
      !                  ef,non_dimgarma,   &
      !                  out_buffer(:,:,:,t))
 
-     !print '("  Escribiendo archivo diagnóstico.. ")'
-     !call write_diagnostic_file(proj,grid)
+     print '("  Escribiendo archivo diagnóstico.. ")'
+     call write_diagnostic_file(proj,grid)
 
      current_date_s=current_date_s + 3600  !siguiente hora!
    enddo
@@ -266,6 +267,7 @@ print*,"ini_h,end_h,time_len: ",ini_h,end_h,time_len
   if (.not. allocated(hum)  ) then; allocate(  hum(g%nx,g%ny,24));endif
   if (.not. allocated(SMOIS)) then; allocate(smois(g%nx,g%ny,24));endif
   if (.not. allocated(styp) ) then; allocate( styp(g%nx,g%ny,24));endif
+  if (.not. allocated(lai) ) then; allocate( lai(g%nx,g%ny));endif
   call check(nf90_open(trim(met_files), nf90_write, ncid ))
      call check( nf90_inq_varid(ncid,'U10'   , var_id)); call check(nf90_get_var(ncid, var_id,  U10(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'V10'   , var_id)); call check(nf90_get_var(ncid, var_id,  V10(:,:,ini_h:end_h) ))
@@ -275,6 +277,7 @@ print*,"ini_h,end_h,time_len: ",ini_h,end_h,time_len
      call check( nf90_inq_varid(ncid,'Q2'    , var_id)); call check(nf90_get_var(ncid, var_id,  HUM(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'SMOIS' , var_id)); call check(nf90_get_var(ncid, var_id,SMOIS(:,:,ini_h:end_h) ))
      call check( nf90_inq_varid(ncid,'ISLTYP', var_id)); call check(nf90_get_var(ncid, var_id, STYP(:,:,ini_h:end_h) ))
+     call check( nf90_inq_varid(ncid,'LAI'   , var_id)); call check(nf90_get_var(ncid, var_id,  LAI                  ))
   call check(nf90_close(ncid))
 
   if (.not. allocated(wind)) then; allocate(wind(g%nx,g%ny,24) );endif 
@@ -303,11 +306,11 @@ subroutine prep_dynamic_monthly_data(g,MM,lai,ndep)
   real, allocatable,dimension(:,:), intent(inout) :: lai,ndep
 
 print*,"  Preparo inputs dinámicos mensuales.."
-  if (.not. allocated(lai) ) then; allocate( lai(g%nx,g%ny));endif
+  !if (.not. allocated(lai) ) then; allocate( lai(g%nx,g%ny));endif
   if (.not. allocated(ndep)) then; allocate(ndep(g%nx,g%ny));endif
-  call check(nf90_open( trim(lai_file), nf90_write, ncid ))
-     call check( nf90_inq_varid(ncid,'LAI'//MM    , var_id )); call check( nf90_get_var(ncid, var_id , LAI  ))
-  call check(nf90_close(ncid))
+  !call check(nf90_open( trim(lai_file), nf90_write, ncid ))
+  !   call check( nf90_inq_varid(ncid,'LAI'//MM    , var_id )); call check( nf90_get_var(ncid, var_id , LAI  ))
+  !call check(nf90_close(ncid))
   call check(nf90_open( trim(ndep_file), nf90_write, ncid ))
      call check( nf90_inq_varid(ncid,'NITROGEN'//MM, var_id )); call check( nf90_get_var(ncid, var_id , NDEP ))
   call check(nf90_close(ncid))
@@ -322,7 +325,7 @@ subroutine write_diagnostic_file(p,g) !write input and intermediate data so i ca
   integer           :: ncid,t_dim_id,x_dim_id,y_dim_id,z_dim_id,s_dim_id,var_dim_id
   integer           :: k!,i,j
   integer           :: ntimes
-  character(len=5),dimension(30) :: var_names, var_types, var_dimen
+  character(len=5),dimension(28) :: var_names, var_types, var_dimen
 
   ntimes=size(U10(1,1,:))
 
@@ -351,17 +354,17 @@ data var_names(17),var_types(17),var_dimen(17) / 'SMOIS', 'FLOAT', 'XYT  '/
 data var_names(18),var_types(18),var_dimen(18) / 'ISTYP', 'INT  ', 'XYT  '/
 data var_names(19),var_types(19),var_dimen(19) / 'T_SHA', 'FLOAT', 'XYZ  '/
 data var_names(20),var_types(20),var_dimen(20) / 'T_SUN', 'FLOAT', 'XYZ  '/
-data var_names(21),var_types(21),var_dimen(21) / 'SunFr', 'FLOAT', 'XYZ  '/
-data var_names(22),var_types(22),var_dimen(22) / 'R_SHA', 'FLOAT', 'XYZ  '/
-data var_names(23),var_types(23),var_dimen(23) / 'R_SUN', 'FLOAT', 'XYZ  '/
+data var_names(21),var_types(21),var_dimen(21) / 'R_SHA', 'FLOAT', 'XYZ  '/
+data var_names(22),var_types(22),var_dimen(22) / 'R_SUN', 'FLOAT', 'XYZ  '/
+data var_names(23),var_types(23),var_dimen(23) / 'SunFr', 'FLOAT', 'XYZ  '/
 !data var_names(24),var_types(24),var_dimen(24) / 'GAMSM', 'FLOAT', 'XY   '/
 data var_names(24),var_types(24),var_dimen(24) / 'T_MIN', 'FLOAT', 'XY   '/
 data var_names(25),var_types(25),var_dimen(25) / 'T_MAX', 'FLOAT', 'XY   '/
 data var_names(26),var_types(26),var_dimen(26) / 'W_MAX', 'FLOAT', 'XY   '/
 data var_names(27),var_types(27),var_dimen(27) / 'T_AVG', 'FLOAT', 'XY   '/
 data var_names(28),var_types(28),var_dimen(28) / 'R_AVG', 'FLOAT', 'XY   '/
-data var_names(29),var_types(29),var_dimen(29) / 'ER   ', 'FLOAT', 'XY   '/
-data var_names(30),var_types(30),var_dimen(30) / 'NONDI', 'FLOAT', 'XYC  '/
+!data var_names(29),var_types(29),var_dimen(29) / 'ER   ', 'FLOAT', 'XY   '/
+!data var_names(30),var_types(30),var_dimen(30) / 'NONDI', 'FLOAT', 'XYC  '/
 
   call check(nf90_create(trim(diag_file), NF90_CLOBBER, ncid))
     !Defino dimensiones
@@ -412,19 +415,20 @@ data var_names(30),var_types(30),var_dimen(30) / 'NONDI', 'FLOAT', 'XYC  '/
       call check(nf90_inq_varid(ncid,'HUM'  ,var_id )); call check(nf90_put_var(ncid, var_id, HUM(:,:,t) ))
       call check(nf90_inq_varid(ncid,'SMOIS',var_id )); call check(nf90_put_var(ncid, var_id, SMOIS(:,:,t) ))
       call check(nf90_inq_varid(ncid,'ISTYP',var_id )); call check(nf90_put_var(ncid, var_id,STYP(:,:,t) ))
+
       call check(nf90_inq_varid(ncid,'T_SHA',var_id )); call check(nf90_put_var(ncid, var_id, SHAT       ))
       call check(nf90_inq_varid(ncid,'T_SUN',var_id )); call check(nf90_put_var(ncid, var_id, SUNT       ))
-      call check(nf90_inq_varid(ncid,'SunFr',var_id )); call check(nf90_put_var(ncid, var_id, SunFrac    ))
       call check(nf90_inq_varid(ncid,'R_SHA',var_id )); call check(nf90_put_var(ncid, var_id, SHAP       ))
       call check(nf90_inq_varid(ncid,'R_SUN',var_id )); call check(nf90_put_var(ncid, var_id, SUNP       ))
+      call check(nf90_inq_varid(ncid,'SunFr',var_id )); call check(nf90_put_var(ncid, var_id, SunFrac    ))
       !call check(nf90_inq_varid(ncid,'GAMSM',var_id )); call check(nf90_put_var(ncid, var_id, GAMMA_SM   ))
       call check(nf90_inq_varid(ncid,'T_MIN',var_id )); call check(nf90_put_var(ncid, var_id, tmp_min   ))
       call check(nf90_inq_varid(ncid,'T_MAX',var_id )); call check(nf90_put_var(ncid, var_id, tmp_max   ))
       call check(nf90_inq_varid(ncid,'T_AVG',var_id )); call check(nf90_put_var(ncid, var_id, tmp_avg   ))
       call check(nf90_inq_varid(ncid,'W_MAX',var_id )); call check(nf90_put_var(ncid, var_id,wind_max   ))
       call check(nf90_inq_varid(ncid,'R_AVG',var_id )); call check(nf90_put_var(ncid, var_id, rad_avg   ))
-      call check(nf90_inq_varid(ncid,'ER'   ,var_id )); call check(nf90_put_var(ncid, var_id,emis_rate  ))
-      call check(nf90_inq_varid(ncid,'NONDI',var_id )); call check(nf90_put_var(ncid, var_id,non_dimgarma ))
+      !call check(nf90_inq_varid(ncid,'ER'   ,var_id )); call check(nf90_put_var(ncid, var_id,emis_rate  ))
+      !call check(nf90_inq_varid(ncid,'NONDI',var_id )); call check(nf90_put_var(ncid, var_id,non_dimgarma ))
   call check(nf90_close( ncid ))
 end subroutine
 

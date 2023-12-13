@@ -1,7 +1,7 @@
 module meg_can
    implicit none
      real , parameter :: convertwm2toumolm2s = 4.5, solarconstant = 1367., waterairratio = 18.016/28.97
-     real,parameter :: Sb = 5.6704E-8 ! 0.0000000567 ! Stefan-boltzman constant  W m-2 K-4
+     real,parameter :: Sb = 0.0000000567 !5.6704E-8 !  Stefan-boltzman constant  W m-2 K-4
      ! Canopy characteristics for MEGCAN canopy types
      INTEGER , PARAMETER :: NRTYP = 6          ! Number of canopy types
      INTEGER , PARAMETER :: NRCHA = 17         ! Number of canopy characteristics
@@ -39,7 +39,7 @@ subroutine megcan(yyyy, ddd, hh,                & !date-time: year,jday,hour
                  ncols,nrows,layers,            & !dimensions (x,y,levels)
                  lat, long, ctf, laic,          & !inp vars (static) : lat [degrees],lon [degrees],ctf[1],LAIc[1]
                  temp, ppfd, wind, pres, qv,    & !inp vars (dynamic): temp[ºK], ppfd[W/m2],wind[m/s],pres[Pa],Qv[1]
-                 ShadeleafTK, SunleafTK, SunFrac, SunPPFD, ShadePPFD ) !out vars
+                  SunleafTK, ShadeleafTK, SunFrac, SunPPFD, ShadePPFD ) !out vars
        !*****************************************************************
        ! OUTPUTs
        ! For each time step and location. Each variable is an array with a value for each canopy layer (vertical profile)
@@ -92,8 +92,8 @@ subroutine megcan(yyyy, ddd, hh,                & !date-time: year,jday,hour
       SunPPFD(i,j,:)     = ppfd(i,j)
       ShadePPFD(i,j,:)   = ppfd(i,j)
       SunFrac(i,j,:)     = 1.0
-      TotalCT=sum(CTF(i,j,:)) !*0.01
-      if (totalCT .gt. 0 .AND. LAIc(i,j) .gt. 0) then
+      TotalCT=sum(ctf(i,j,:)) !*0.01
+      if (totalCT .gt. 0.0 .AND. LAIc(i,j) .gt. 0.0 ) then
 
          ! Convert to "solar hour": 
          Hour  = real(HH) + long(i,j) / 15.0                                                            

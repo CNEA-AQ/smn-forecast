@@ -4,7 +4,7 @@
  
    griddesc_file="GRIDDESC",
    gridname="Argentina",
-   met_file='wrfout_d01_2022-10-19_18:00:00',!'wrfout_test', !
+   met_files='wrfout_d01_2022-10-19_18:00:00',!'wrfout_test', !
    LSM='NOAH',                               ! Land Surface Model (LSM) used in meteo
 
    ctf_file= 'CT3.nc',   
@@ -15,7 +15,6 @@
    fert_file='FERT.nc',  
    land_file='LAND.nc',  
 
-   mechanism='CB6' !'CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
+   mechanism='CB6', !'CB05'      !'CBM06' 'CB6A7', 'RACM2','CRACM', 'SAPRC' 'NOCON'
                          !'CB05','CB6',CB6_ae7','RACM2','SAPRC07T','CRACMM'
 /
-

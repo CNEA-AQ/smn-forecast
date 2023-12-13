@@ -204,16 +204,16 @@ subroutine megvea(  ncols,nrows,layers,          &
     real                  :: ER(ncols,nrows)                    !emission rate
     real                  :: non_dimgarma (ncols,nrows,nclass)  !
 
-    LOGICAL, PARAMETER    :: GAMBD_YN  = .true. !.false.
-    LOGICAL, PARAMETER    :: GAMAQ_YN  = .true. !.false.
+    LOGICAL, PARAMETER    :: GAMBD_YN  = .false. ! .true. !
+    LOGICAL, PARAMETER    :: GAMAQ_YN  = .false. ! .true. !
     ! For the CMAQ implementation of MEGAN  we refer to soil moisture 
     ! at layer 2, which is 1 meter for PX and 0.5 m for NOAH.
     ! Keep this in mind when enabling the GAMSM stress.
-    LOGICAL, PARAMETER    :: GAMSM_YN  = .true. !.false. 
-    LOGICAL, PARAMETER    :: GAMHT_YN  = .true. !.false.
-    LOGICAL, PARAMETER    :: GAMLT_YN  = .true. !.false.
-    LOGICAL, PARAMETER    :: GAMHW_YN  = .true. !.false.
-    LOGICAL, PARAMETER    :: GAMCO2_YN = .true. !.false.
+    LOGICAL, PARAMETER    :: GAMSM_YN  = .false. !.true. !
+    LOGICAL, PARAMETER    :: GAMHT_YN  = .false. !.true. !
+    LOGICAL, PARAMETER    :: GAMLT_YN  = .false. !.true. !
+    LOGICAL, PARAMETER    :: GAMHW_YN  = .false. !.true. !
+    LOGICAL, PARAMETER    :: GAMCO2_YN = .false. !.true. !
 
     real  :: cdea(layers)  ! Emission response to canopy depth
     real  :: gamla      ! EA leaf age response
@@ -302,8 +302,8 @@ subroutine megvea(  ncols,nrows,layers,          &
               ! SWDNB*.45 = PAR (Wm-2)
               ! PAR*4.5 = PPFD (umol/m2/s)
              Ea1L = CDEA(K) *                                              &
-                   GAMTLD(SunT(i,j,k),D_TEMP(i,j),S) *  GAMP(SunP(i,j,k),D_PPFD(i,j)*2.025) *        SunF(i,j,k)  + &
-                   GAMTLD(ShaT(i,j,k),D_TEMP(i,j),S) *  GAMP(ShaP(i,j,k),D_PPFD(i,j)*2.025) * (1.0 - SunF(i,j,k) )
+                   GAMTLD(SunT(i,j,k),D_TEMP(i,j),S) *  GAMP(SunP(i,j,k),D_PPFD(i,j)) *        SunF(i,j,k)  + &! *2.025
+                   GAMTLD(ShaT(i,j,k),D_TEMP(i,j),S) *  GAMP(ShaP(i,j,k),D_PPFD(i,j)) * (1.0 - SunF(i,j,k) )   ! *2.025
              SUM1 = SUM1 + Ea1L*VPGWT(K)
 
              Ea2L = GAMTLI(SunT(i,j,k),S) *      SunF(i,j,k)     + &
