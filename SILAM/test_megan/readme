@@ -28,6 +28,13 @@ La estructura general de estos archivos es:
 - report_<src_type>_src             :   
 
 
+Necesito agreguar a "ini/netcdf_name_table.silam":
+- WRF_OUTPUT: agregar variables:  'XLAT', 'XLONG', 'Times', 'MAPFAC_M', 'ISLTYP', 'U10', 'V10', 'T2', 'SWDOWN', 'PSFC', 'Q2', 'RAINNC', 'LAI', 'SMOIS', 'TSLB'
+- Nuevos archivos:
+	+ MEGAN_EFS: emission factors           : 'lat','lon', 'EF_XXXX',...,
+	+ MEGAN_LDF: light dependence fraction  : 'lat','lon', 'LDF_XX',...,
+	+ MEGAN_CTF: canopy type fractions      : 'lat','lon', 'CTS'
+
 
 2. Entender como funciona Megan (CMAQ/MEGAN):
 
@@ -48,7 +55,7 @@ La estructura general de estos archivos es:
             ├── megan_gspro.F:    Especiación de megan en mecanísmos.
             ├── megan_hrno_mod.F: MEGAN_HRNO: calcula precip, temp y rad de las ultimas 24 horas.
             ├── BDSNP_MOD.F:      Modulo para calculo de NO
-	    └── megan_fx_mod.f90 : acá estan definidas las subrutinas: MEGVSA, MEGVEA, convert2mech (parece medio hardcoded del Megan original)
+	    └── megan_fx_mod.f90: acá estan definidas las subrutinas: MEGVSA, MEGVEA, convert2mech (parece medio hardcoded del Megan original)
 
    
    
