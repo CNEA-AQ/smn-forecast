@@ -1,7 +1,7 @@
 # Implementar nuevo esquema de emisiones para vocs biogenicos
 
 
-1. Entender como funcionan las emis en Silam:
+[ ] 1. Entender como funcionan las emis en Silam:
 
 Los archivos base de emisiones son:
        source_terms_general.silja.mod.f90
@@ -15,29 +15,39 @@ Los archivos base de emisiones son:
 donde source_ters_general es el archivo madre. y cada "tipo" de emision tiene su propio modulo.
 
 La estructura general de estos archivos es:
-- fill_<src_type>_from_namelist     : lee parametros en namelist.
-- reserve_<src_type>_source         : inicializa la fuente: le da una posicion en la lista de emisiones.
-- add_input_needs_<src_type>_src    : selecciona datos a usar de la meteo (static y dinamic) (usado como subrutina en init_emission_<srctype>).
-- init_emission_<src_type>          : llama a add_input_needs, arma lista de campos a usar (add_shopping_variable), fill_minimarket_from_namelist (trae los campos), chequea que las variables necesarias estén en el "stack".
-- add_source_species_<src_type>_src : agrega las especies que serán emitidas por la fuente.  call addSpecies(species_list, nSpecies, wb_dust_src%species, wb_dust_src%nSpecies)
-- link_<src_type>_src_to_species    : linkeo entre fuente y cocktail. call create_adaptor(wb_dust_src%species, species_list, wb_dust_src%adaptor)  
-- create_src_cont_grd_<src_type>_src: crea grilla de emisiones (en la mayoria de los modulos no hace nada).
-- project_<src_type>_src_second_grd : crea "layers" donde poner las emisiones (eventualmente puede crear un perfil de emisión vertical)
-- compute_emission_for_<src_type>   : calcula las emisiones
-- typical_species_cnc_<scr_type>    :   
-- report_<src_type>_src             :   
+[x] fill_<src_type>_from_namelist     : lee parametros en namelist.
+[x] reserve_<src_type>_source         : inicializa la fuente: le da una posicion en la lista de emisiones.
+[x] add_input_needs_<src_type>_src    : selecciona datos a usar de la meteo (static y dinamic) (usado como subrutina en init_emission_<srctype>).
+[-] init_emission_<src_type>          : llama a add_input_needs, arma lista de campos a usar (add_shopping_variable), fill_minimarket_from_namelist (trae los campos), chequea que las variables necesarias estén en el "stack".
+[-] add_source_species_<src_type>_src : agrega las especies que serán emitidas por la fuente.  call addSpecies(species_list, nSpecies, wb_dust_src%species, wb_dust_src%nSpecies)
+[-] link_<src_type>_src_to_species    : linkeo entre fuente y cocktail. call create_adaptor(wb_dust_src%species, species_list, wb_dust_src%adaptor)  
+[-] create_src_cont_grd_<src_type>_src: crea grilla de emisiones (en la mayoria de los modulos no hace nada).
+[-] project_<src_type>_src_second_grd : crea "layers" donde poner las emisiones (eventualmente puede crear un perfil de emisión vertical)
+[-] compute_emission_for_<src_type>   : calcula las emisiones
+[-] typical_species_cnc_<scr_type>    :
+[-] report_<src_type>_src             :
 
 
-Necesito agreguar a "ini/netcdf_name_table.silam":
-- WRF_OUTPUT: agregar variables:  'XLAT', 'XLONG', 'Times', 'MAPFAC_M', 'ISLTYP', 'U10', 'V10', 'T2', 'SWDOWN', 'PSFC', 'Q2', 'RAINNC', 'LAI', 'SMOIS', 'TSLB'
-- Nuevos archivos:
-	+ MEGAN_EFS: emission factors           : 'lat','lon', 'EF_XXXX',...,
-	+ MEGAN_LDF: light dependence fraction  : 'lat','lon', 'LDF_XX',...,
-	+ MEGAN_CTF: canopy type fractions      : 'lat','lon', 'CTS'
+TO DO LIST:
+
+[ ] Modificar "ini/netcdf_name_table.silam":
+    - WRF_OUTPUT: agregar variables:  'ISLTYP', 'SWDOWN', 'TSLB'
+       Otras variables ya incorporadas: 'XLAT', 'XLONG', 'Times', 'MAPFAC_M', 'U10', 'V10', 'T2', 'PSFC', 'Q2', 'RAINNC', 'LAI', 'SMOIS'
+       (!) Parece haber un error en ini/netcdf_name_table.silam seccion de WRF_OUTPUT:  cambiar ` GLW` por `SWDOWN`
+    - Nuevos archivos globales: (crear con prepmegan4cmaq e incorporar a ini/netcdf_name_table.silam)
+       + MEGAN_CTF: canopy type fractions    : 'lat','lon', 'CTS'
+       + MEGAN_EFS: emission factors         : 'lat','lon', 'EF_XXXX',...,
+       + MEGAN_LDF: light dependence fraction: 'lat','lon', 'LDF_XX' ,...,
+[ ] Modificar "source/source_terms_bio_voc.silam.mod.f90"
+[ ] Modificar "source/names_of_quantities.silja.mod.f90" de ser necesario para incorporar las nuevas variables (ctf,efs,ldf)
+[ ] Crear/Modificar "ini/src_bio_voc.ini" header de emisiones biogenicas
 
 
-2. Entender como funciona Megan (CMAQ/MEGAN):
 
+
+
+
+[x] !HECHO! 2. Entender como funciona Megan (CMAQ/MEGAN):                 
 
    (a) MEGAN v3.2
        Tiene esta estructura de directorios:  

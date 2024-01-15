@@ -89,40 +89,45 @@ MODULE source_terms_bio_voc
   !
   TYPE silam_bio_voc_source
     PRIVATE
-    CHARACTER(len=clen) :: src_nm, sector_nm        ! Name of the area source and sector
-    integer ::  src_nbr, id_nbr          ! A source and id numbers in a WHOLE source list
-    integer :: emisMethod, swSource ! Method, source of sw radiation:sw_down or cc
-    character(len=fnlen) :: chSrcMaskFile           ! To limit source area
-    logical :: ifMasked
+    CHARACTER(len=clen)                :: src_nm, sector_nm       ! Name of the area source and sector
+    integer                            :: src_nbr, id_nbr         ! A source and id numbers in a WHOLE source list
+    integer                            :: emisMethod, swSource    ! Method, source of sw radiation:sw_down or cc
+    character(len=fnlen)               :: chSrcMaskFile           ! To limit source area
+    logical                            :: ifMasked
     character(len=fnlen), dimension(:), allocatable :: chLandUseMetaDataFNms  ! for land use
-    real, dimension(:,:,:,:), allocatable :: arEmisFactor ! (nSpeciesTypes,nx_disp,ny_disp,month)
-    integer :: ind_emis_isoprene, ind_emis_monoterpene
-    real :: factor_emis_isoprene, factor_emis_monoterpene
-    integer :: nLevsDispVert, nSpecies
-    type(silam_vertical) :: vertLevsDispVert
-    real, dimension(:), allocatable :: levFractDispVert, fzDisp
-    type(silam_species), dimension(2) :: species ! Two species for now
-    type(chemical_adaptor) :: adaptor
-    type(silja_logical) :: defined
+    real, dimension(:,:,:,:), allocatable :: arEmisFactor         ! (nSpeciesTypes,nx_disp,ny_disp,month)
+    integer                            :: ind_emis_isoprene, ind_emis_monoterpene
+    real                               :: factor_emis_isoprene, factor_emis_monoterpene
+    integer                            :: nLevsDispVert, nSpecies
+    type(silam_vertical)               :: vertLevsDispVert
+    real, dimension(:), allocatable    :: levFractDispVert, fzDisp
+    !type(silam_species), dimension(2)  :: species                ! Two species for now
+    type(silam_species), dimension(29) :: species_megan                                !megan v32 (CB05)
+    character(len=fnlen)               :: megan_efs_file,megan_ldf_file,megan_cts_file !megan input files
+    real, dimension(:,:,:), allocatable  :: cts !megan (nx_disp,ny_disp, 6) !megan 'NEEDL','TROPI','BROAD','SHRUB','GRASS','CROP'
+    real, dimension(:,:,:), allocatable  :: efs !megan (nx_disp,ny_disp,19) !megan EF_ISOP EF_MBO EF_MT_PINE EF_MT_ACYC EF_MT_CAMP EF_MT_SABI EF_MT_AROM EF_NO EF_SQT_HR EF_SQT_LR EF_MEOH EF_ACTO EF_ETOH EF_ACID EF_LVOC EF_OXPROD EF_STRESS EF_OTHER EF_CO 
+    real, dimension(:,:,:), allocatable  :: ldf !megan (nx_disp,ny_disp, 4) !megan LDF03 LDF04 LDF05 LDF06
+    type(chemical_adaptor)             :: adaptor
+    type(silja_logical)                :: defined
   END TYPE silam_bio_voc_source
 
   type bvoc_src_ptr
-    type(silam_bio_voc_source) :: bvoc_src
+    type(silam_bio_voc_source)         :: bvoc_src
   end type bvoc_src_ptr
+
   public bvoc_src_ptr
   
   !
   ! Parameters for biogenic emission
   !
-  integer, public, parameter :: emisGuenther_updated_v1 = 601
-  integer, public, parameter :: emis_megan_v32 = 602            !megan v32
-  
-  integer, private, parameter :: totBiomass  = 1             ! indices in the arEmisFactor
+  integer, public, parameter  :: emisGuenther_updated_v1 = 601
+  integer, private, parameter :: totBiomass  = 1              !indices in the arEmisFactor
   integer, private, parameter :: emsIsoprene = 2
   integer, private, parameter :: emsMonoterpTempr      = 3
   integer, private, parameter :: emsMonoterpTemprLight = 4
   integer, private, parameter :: emsOtherVOC           = 5
   
+  integer, public, parameter  :: emis_megan_v32 = 602         !megan v32
 
 CONTAINS
 
@@ -308,35 +313,11 @@ CONTAINS
         !bvoc_src%ind_emis_isoprene = bvoc_src%nspecies
         !bvoc_src%factor_emis_isoprene = fu_content_real(nlsetup, 'isoprene_emission_factor')
 
+        !Store megan input files names
         !
-        ! Store the land-use metadata file names
-        !
-        nullify(pItems)
-        call get_items(nlSetup, 'land_use_meta_data_file', pItems, nFiles)
-        if(error) return
-        if(nFiles < 1) then call set_error('No supplementary files are given','fill_bio_voc_src_from_namelist')
-        allocate(bvoc_src%chLandUseMetaDataFNms(nFiles), stat=iFile)
-        if( iFile /= 0) call set_error('Failed to allocate land use meta data file names','fill_bio_voc_src_from_namelist')
-        do iFile = 1, nFiles
-          bvoc_src%chLandUseMetaDataFNms(iFile) = fu_process_filepath(fu_content(pItems(iFile)), &
-                                                      & must_exist = .false., superdir = src_data_dir)
-        end do
-        !
-        ! We can have source mask, which would limit the source area
-        !
-        bvoc_src%chSrcMaskFile = fu_process_filepath(fu_content(nlSetup,'source_mask_file'), &
-                                                   & must_exist = .false., superdir = src_data_dir)
-        bvoc_src%ifMasked = len_trim(bvoc_src%chSrcMaskFile) > 0
-        !
-        ! Final checking and cleaning
-        !
-        if(srcOK)then
-          bvoc_src%defined = silja_true
-        else
-          call set_error('Failed to set the bvoc rules','fill_bio_voc_src_from_namelist')
-        endif
-
-
+        bvoc_src%megan_cts_file=fu_process_filepath(fu_content(nlSetup,'megan_cts_file'),must_exist = .false., superdir = src_data_dir)
+        bvoc_src%megan_efs_file=fu_process_filepath(fu_content(nlSetup,'megan_efs_file'),must_exist = .false., superdir = src_data_dir)
+        bvoc_src%megan_ldf_file=fu_process_filepath(fu_content(nlSetup,'megan_ldf_file'),must_exist = .false., superdir = src_data_dir)
 
       case default
         call set_error('Unknown emission method:' + fu_content(nlSetup,'bvoc_emission_method'), &
@@ -410,6 +391,49 @@ CONTAINS
         iTmp = fu_merge_integer_to_array(temperature_2m_flag, q_met_dynamic)
         iTmp = fu_merge_integer_to_array(bvoc_src%swSource, q_met_dynamic)
 
+      case ( emis_megan_v32 )
+
+        iTmp = fu_merge_integer_to_array(temperature_2m_flag            , q_met_dynamic) !megan t2
+        iTmp = fu_merge_integer_to_array(surf_sw_down_radiation_flag    , q_met_dynamic) !megan swdown
+        iTmp = fu_merge_integer_to_array(ground_pressure_flag           , q_met_dynamic) !megan psfc 
+        iTmp = fu_merge_integer_to_array(relative_humidity_flag         , q_met_dynamic) !megan q2
+        iTmp = fu_merge_integer_to_array(wind_10m_flag                  , q_met_dynamic) !megan wind (u10,v10)
+        iTmp = fu_merge_integer_to_array(soiltype_flag                  , q_met_dynamic) !megan isltyp
+        iTmp = fu_merge_integer_to_array(large_scale_accum_rain_flag    , q_met_dynamic) !megan rainnc
+        iTmp = fu_merge_integer_to_array(leaf_area_index_flag           , q_met_dynamic) !megan lai
+        iTmp = fu_merge_integer_to_array(soil_moisture_vol_frac_nwp_flag, q_met_dynamic) !megan smois
+        iTmp = fu_merge_integer_to_array(underground_temperature_flag   , q_met_dynamic) !megan tslb
+
+        iTmp = fu_merge_integer_to_array(megan_ctf_needl_flag  , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_ctf_broad_flag  , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_ctf_tropi_flag  , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_ctf_grass_flag  , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_ctf_shrub_flag  , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_ctf_crop_flag   , q_disp_st) !megan cts
+        iTmp = fu_merge_integer_to_array(megan_efs_isop_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mbo_flag    , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_pine_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_acyc_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_camp_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_sabi_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_arom_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_no_flag_flag, q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_sqt_hr_flag , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_sqt_lr_flag , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_meoh_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_acto_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_etoh_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_acid_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_lvoc_flag   , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_oxprod_flag , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_stress_flag , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_other_flag  , q_disp_st) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_co_flag     , q_disp_st) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf03_flag      , q_disp_st) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf04_flag      , q_disp_st) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf05_flag      , q_disp_st) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf06_flag      , q_disp_st) !megan ldf
+
       case default
         call msg('Unknown emission method', bvoc_src%emisMethod)
         call set_error('Unknown emission type','add_input_needs_bio_voc_src')
@@ -451,6 +475,11 @@ CONTAINS
           & sinLat, cosLat, cosLon, sinLon
 
     integer, parameter :: city_class_USGS = 13
+
+
+
+select case(bvoc_src%emisMethod)
+  case (emisGuenther_updated_v1)
 
     fWork => fu_work_array(5*500*12)
     if(error)return
@@ -794,6 +823,44 @@ CONTAINS
 !      uCity = uCity + 1
 !    end do
 !    close(uLU)
+
+
+  case (emisGuenther_updated_v1)
+
+    !fWork => fu_work_array(5*500*12); if(error)return              !creo array de trabajo
+    !
+    !fWork(1:5*500*12) = 0.0                                        !inicializo a 0.0
+    !fBiomass(1:500,1:12)                  => fWork(1:6000)         !pedazo de Biomass
+    !fIsopreneFactor(1:500,1:12)           => fWork(6001:12000)     !pedazo de EF para IsopreneFactor
+    !fMonoterpTemprFactor(1:500,1:12)      => fWork(12001:18000)    !pedazo de EF para Monoterpeno (temp)
+    !fMonoterpTemprLightFactor(1:500,1:12) => fWork(18001:24000)    !pedazo de EF para Monoterpeno (light)
+    !fOtherVOCFactor(1:500,1:12)           => fWork(24001:30000)    !pedazo de EF para otros VOCs
+
+    allocate(bvoc_src%cts(nx_dispersion,ny_dispersion, 6), stat=io_status)
+    allocate(bvoc_src%efs(nx_dispersion,ny_dispersion,19), stat=io_status)
+    allocate(bvoc_src%ldf(nx_dispersion,ny_dispersion, 4), stat=io_status)
+
+    bvoc_src%cts=
+    bvoc_src%efs=
+    bvoc_src%ldf=
+    !megan_voc (yyyy,ddd,hh,                                    & !year,julian day,hour
+    !             ncols,nrows,lat,long,                         & !dimensions, latitude, longitude coordinates
+    !             temp,rad,wind,pres,qv,                        & !air temperature [ºK], 
+    !             laip, laic,                                   &
+    !             ctf, efmaps, ldf_in,                          & !lai,emis factors, light emis factors
+    !             lsm,soil_type,soil_moisture,                  & !land surface model, soil type, soil_moisture
+    !             tmp_max, tmp_min, wind_max, tmp_avg, rad_avg, & !meteo daily
+    !             non_dimgarma                                  ) !emis  
+
+
+
+  case default
+    call msg('Unknown emission method', bvoc_src%emisMethod)
+    call set_error('Unknown emission type','add_input_needs_bio_voc_src')
+    return
+
+end select
+ 
 
   end subroutine init_emission_bio_voc
 
