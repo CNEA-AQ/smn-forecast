@@ -11,7 +11,7 @@ MODULE source_terms_bio_voc
   ! Language: ANSI FORTRAN-90 (or close to it)
   !
   use cocktail_basic
-  use voc_mod           !megan voc module
+  !use voc_mod           !megan voc module
 
   implicit none
   private
@@ -89,30 +89,30 @@ MODULE source_terms_bio_voc
   !
   TYPE silam_bio_voc_source
     PRIVATE
-    CHARACTER(len=clen)                :: src_nm, sector_nm       ! Name of the area source and sector
-    integer                            :: src_nbr, id_nbr         ! A source and id numbers in a WHOLE source list
-    integer                            :: emisMethod, swSource    ! Method, source of sw radiation:sw_down or cc
-    character(len=fnlen)               :: chSrcMaskFile           ! To limit source area
-    logical                            :: ifMasked
+    CHARACTER(len=clen)                   :: src_nm, sector_nm       ! Name of the area source and sector
+    integer                               :: src_nbr, id_nbr         ! A source and id numbers in a WHOLE source list
+    integer                               :: emisMethod, swSource    ! Method, source of sw radiation:sw_down or cc
+    character(len=fnlen)                  :: chSrcMaskFile           ! To limit source area
+    logical                               :: ifMasked
     character(len=fnlen), dimension(:), allocatable :: chLandUseMetaDataFNms  ! for land use
     real, dimension(:,:,:,:), allocatable :: arEmisFactor         ! (nSpeciesTypes,nx_disp,ny_disp,month)
-    integer                            :: ind_emis_isoprene, ind_emis_monoterpene
-    real                               :: factor_emis_isoprene, factor_emis_monoterpene
-    integer                            :: nLevsDispVert, nSpecies
-    type(silam_vertical)               :: vertLevsDispVert
-    real, dimension(:), allocatable    :: levFractDispVert, fzDisp
-    !type(silam_species), dimension(2)  :: species                ! Two species for now
-    type(silam_species), dimension(29) :: species_megan                                !megan v32 (CB05)
-    character(len=fnlen)               :: megan_efs_file,megan_ldf_file,megan_cts_file !megan input files
-    real, dimension(:,:,:), allocatable  :: cts !megan (nx_disp,ny_disp, 6) !megan 'NEEDL','TROPI','BROAD','SHRUB','GRASS','CROP'
-    real, dimension(:,:,:), allocatable  :: efs !megan (nx_disp,ny_disp,19) !megan EF_ISOP EF_MBO EF_MT_PINE EF_MT_ACYC EF_MT_CAMP EF_MT_SABI EF_MT_AROM EF_NO EF_SQT_HR EF_SQT_LR EF_MEOH EF_ACTO EF_ETOH EF_ACID EF_LVOC EF_OXPROD EF_STRESS EF_OTHER EF_CO 
-    real, dimension(:,:,:), allocatable  :: ldf !megan (nx_disp,ny_disp, 4) !megan LDF03 LDF04 LDF05 LDF06
-    type(chemical_adaptor)             :: adaptor
-    type(silja_logical)                :: defined
+    integer                               :: ind_emis_isoprene, ind_emis_monoterpene
+    real                                  :: factor_emis_isoprene, factor_emis_monoterpene
+    integer                               :: nLevsDispVert, nSpecies
+    type(silam_vertical)                  :: vertLevsDispVert
+    real, dimension(:), allocatable       :: levFractDispVert, fzDisp
+    !type(silam_species), dimension(2)     :: species                ! Two species for now
+    type(silam_species), dimension(29)    :: species                                      !megan v32 (CB05)
+    character(len=fnlen)                  :: megan_efs_file,megan_ldf_file,megan_ctf_file !megan input files
+    real, dimension(:,:,:), allocatable   :: ctf !megan (nx_disp,ny_disp, 6) !megan 'NEEDL','TROPI','BROAD','SHRUB','GRASS','CROP'
+    real, dimension(:,:,:), allocatable   :: efs !megan (nx_disp,ny_disp,19) !megan EF_ISOP EF_MBO EF_MT_PINE EF_MT_ACYC EF_MT_CAMP EF_MT_SABI EF_MT_AROM EF_NO EF_SQT_HR EF_SQT_LR EF_MEOH EF_ACTO EF_ETOH EF_ACID EF_LVOC EF_OXPROD EF_STRESS EF_OTHER EF_CO 
+    real, dimension(:,:,:), allocatable   :: ldf !megan (nx_disp,ny_disp, 4) !megan LDF03 LDF04 LDF05 LDF06
+    type(chemical_adaptor)                :: adaptor
+    type(silja_logical)                   :: defined
   END TYPE silam_bio_voc_source
 
   type bvoc_src_ptr
-    type(silam_bio_voc_source)         :: bvoc_src
+    type(silam_bio_voc_source)            :: bvoc_src
   end type bvoc_src_ptr
 
   public bvoc_src_ptr
@@ -285,37 +285,37 @@ CONTAINS
         call set_species(speciesTmp, fu_get_material_ptr('PAR5   '), in_gas_phase); bvoc_src%species( 3) = speciesTmp !megan PAR   3  
         call set_species(speciesTmp, fu_get_material_ptr('XYL    '), in_gas_phase); bvoc_src%species( 4) = speciesTmp !megan XYL   4  
         call set_species(speciesTmp, fu_get_material_ptr('OLE5   '), in_gas_phase); bvoc_src%species( 5) = speciesTmp !megan OLE   5  
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 6) = speciesTmp !megan NR    6  
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 6) = speciesTmp !megan NR    6  
         call set_species(speciesTmp, fu_get_material_ptr('MEOH   '), in_gas_phase); bvoc_src%species( 7) = speciesTmp !megan MEOH  7  
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 8) = speciesTmp !megan CH4   8  
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 9) = speciesTmp !megan NH3   9  
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 8) = speciesTmp !megan CH4   8  
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species( 9) = speciesTmp !megan NH3   9  
         call set_species(speciesTmp, fu_get_material_ptr('NO     '), in_gas_phase); bvoc_src%species(10) = speciesTmp !megan NO    10 
         call set_species(speciesTmp, fu_get_material_ptr('ALD2   '), in_gas_phase); bvoc_src%species(11) = speciesTmp !megan ALD2  11 
         call set_species(speciesTmp, fu_get_material_ptr('ETOH   '), in_gas_phase); bvoc_src%species(12) = speciesTmp !megan ETOH  12 
         call set_species(speciesTmp, fu_get_material_ptr('FORM   '), in_gas_phase); bvoc_src%species(13) = speciesTmp !megan FORM  13 
         call set_species(speciesTmp, fu_get_material_ptr('ALDX   '), in_gas_phase); bvoc_src%species(14) = speciesTmp !megan ALDX  14 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(15) = speciesTmp !megan TOL   15 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(15) = speciesTmp !megan TOL   15 
         call set_species(speciesTmp, fu_get_material_ptr('IOLE   '), in_gas_phase); bvoc_src%species(16) = speciesTmp !megan IOLE  16 
         call set_species(speciesTmp, fu_get_material_ptr('CO     '), in_gas_phase); bvoc_src%species(17) = speciesTmp !megan CO    17 
         call set_species(speciesTmp, fu_get_material_ptr('ETHA   '), in_gas_phase); bvoc_src%species(18) = speciesTmp !megan ETHA  18 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(19) = speciesTmp !megan ETH   19 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(19) = speciesTmp !megan ETH   19 
         call set_species(speciesTmp, fu_get_material_ptr('AACD   '), in_gas_phase); bvoc_src%species(20) = speciesTmp !megan AACD  20 
         call set_species(speciesTmp, fu_get_material_ptr('FACD   '), in_gas_phase); bvoc_src%species(21) = speciesTmp !megan FACD  21 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(22) = speciesTmp !megan HCN   22 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(22) = speciesTmp !megan HCN   22 
         call set_species(speciesTmp, fu_get_material_ptr('ISPD   '), in_gas_phase); bvoc_src%species(23) = speciesTmp !megan ISPD  23 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(24) = speciesTmp !megan N2O   24 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(24) = speciesTmp !megan N2O   24 
         call set_species(speciesTmp, fu_get_material_ptr('SESQ   '), in_gas_phase); bvoc_src%species(25) = speciesTmp !megan SESQ  25 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(26) = speciesTmp !megan TRS   26 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(27) = speciesTmp !megan CH3BR 27 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(28) = speciesTmp !megan CH3CL 28 
-        call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(29) = speciesTmp !megan CH3I  29 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(26) = speciesTmp !megan TRS   26 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(27) = speciesTmp !megan CH3BR 27 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(28) = speciesTmp !megan CH3CL 28 
+       !call set_species(speciesTmp, fu_get_material_ptr('???????'), in_gas_phase); bvoc_src%species(29) = speciesTmp !megan CH3I  29 
         !bvoc_src%species(bvoc_src%nspecies) = speciesTmp
         !bvoc_src%ind_emis_isoprene = bvoc_src%nspecies
         !bvoc_src%factor_emis_isoprene = fu_content_real(nlsetup, 'isoprene_emission_factor')
 
         !Store megan input files names
         !
-        bvoc_src%megan_cts_file=fu_process_filepath(fu_content(nlSetup,'megan_cts_file'),must_exist = .false., superdir = src_data_dir)
+        bvoc_src%megan_ctf_file=fu_process_filepath(fu_content(nlSetup,'megan_ctf_file'),must_exist = .false., superdir = src_data_dir)
         bvoc_src%megan_efs_file=fu_process_filepath(fu_content(nlSetup,'megan_efs_file'),must_exist = .false., superdir = src_data_dir)
         bvoc_src%megan_ldf_file=fu_process_filepath(fu_content(nlSetup,'megan_ldf_file'),must_exist = .false., superdir = src_data_dir)
 
@@ -404,35 +404,35 @@ CONTAINS
         iTmp = fu_merge_integer_to_array(soil_moisture_vol_frac_nwp_flag, q_met_dynamic) !megan smois
         iTmp = fu_merge_integer_to_array(underground_temperature_flag   , q_met_dynamic) !megan tslb
 
-        iTmp = fu_merge_integer_to_array(megan_ctf_needl_flag  , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_ctf_broad_flag  , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_ctf_tropi_flag  , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_ctf_grass_flag  , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_ctf_shrub_flag  , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_ctf_crop_flag   , q_disp_st) !megan cts
-        iTmp = fu_merge_integer_to_array(megan_efs_isop_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mbo_flag    , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mt_pine_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mt_acyc_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mt_camp_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mt_sabi_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_mt_arom_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_no_flag_flag, q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_sqt_hr_flag , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_sqt_lr_flag , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_meoh_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_acto_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_etoh_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_acid_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_lvoc_flag   , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_oxprod_flag , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_stress_flag , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_other_flag  , q_disp_st) !megan efs
-        iTmp = fu_merge_integer_to_array(megan_efs_co_flag     , q_disp_st) !megan ldf
-        iTmp = fu_merge_integer_to_array(megan_ldf03_flag      , q_disp_st) !megan ldf
-        iTmp = fu_merge_integer_to_array(megan_ldf04_flag      , q_disp_st) !megan ldf
-        iTmp = fu_merge_integer_to_array(megan_ldf05_flag      , q_disp_st) !megan ldf
-        iTmp = fu_merge_integer_to_array(megan_ldf06_flag      , q_disp_st) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ctf_needl_flag  , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_ctf_broad_flag  , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_ctf_tropi_flag  , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_ctf_grass_flag  , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_ctf_shrub_flag  , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_ctf_crop_flag   , q_disp_static) !megan ctf
+        iTmp = fu_merge_integer_to_array(megan_efs_isop_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mbo_flag    , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_pine_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_acyc_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_camp_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_sabi_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_mt_arom_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_no_flag_flag, q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_sqt_hr_flag , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_sqt_lr_flag , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_meoh_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_acto_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_etoh_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_acid_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_lvoc_flag   , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_oxprod_flag , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_stress_flag , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_other_flag  , q_disp_static) !megan efs
+        iTmp = fu_merge_integer_to_array(megan_efs_co_flag     , q_disp_static) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf03_flag      , q_disp_static) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf04_flag      , q_disp_static) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf05_flag      , q_disp_static) !megan ldf
+        iTmp = fu_merge_integer_to_array(megan_ldf06_flag      , q_disp_static) !megan ldf
 
       case default
         call msg('Unknown emission method', bvoc_src%emisMethod)
@@ -467,6 +467,13 @@ CONTAINS
     real, dimension(:), pointer :: fWork
     real, dimension(:,:), pointer :: fBiomass, fIsopreneFactor, fMonoterpTemprFactor, &
                                    & fMonoterpTemprLightFactor, fOtherVOCFactor
+
+
+
+
+
+
+
     real, dimension(2,4) :: fCrdTmp
     real :: xDisp, yDisp, fEarthRadTmp, refLon, refLat, dd, xStartShift, yStartShift, &
           & fCosRefLat, fSinRefLat, fDistX, fDistY, sq1, as1, cosAs1_2, sinAs1_2, fTmp, fTmp2, &
@@ -475,6 +482,12 @@ CONTAINS
           & sinLat, cosLat, cosLon, sinLon
 
     integer, parameter :: city_class_USGS = 13
+
+    !para megan
+    type(silja_field), pointer :: fieldPtr
+    type(silja_field_id) :: id, idTmp
+
+
 
 
 
@@ -825,7 +838,7 @@ select case(bvoc_src%emisMethod)
 !    close(uLU)
 
 
-  case (emisGuenther_updated_v1)
+  case (emis_megan_v32 )              
 
     !fWork => fu_work_array(5*500*12); if(error)return              !creo array de trabajo
     !
@@ -836,23 +849,45 @@ select case(bvoc_src%emisMethod)
     !fMonoterpTemprLightFactor(1:500,1:12) => fWork(18001:24000)    !pedazo de EF para Monoterpeno (light)
     !fOtherVOCFactor(1:500,1:12)           => fWork(24001:30000)    !pedazo de EF para otros VOCs
 
-    allocate(bvoc_src%cts(nx_dispersion,ny_dispersion, 6), stat=io_status)
-    allocate(bvoc_src%efs(nx_dispersion,ny_dispersion,19), stat=io_status)
-    allocate(bvoc_src%ldf(nx_dispersion,ny_dispersion, 4), stat=io_status)
+    
+    
+    
 
-    bvoc_src%cts=
-    bvoc_src%efs=
-    bvoc_src%ldf=
-    !megan_voc (yyyy,ddd,hh,                                    & !year,julian day,hour
-    !             ncols,nrows,lat,long,                         & !dimensions, latitude, longitude coordinates
-    !             temp,rad,wind,pres,qv,                        & !air temperature [ºK], 
-    !             laip, laic,                                   &
-    !             ctf, efmaps, ldf_in,                          & !lai,emis factors, light emis factors
-    !             lsm,soil_type,soil_moisture,                  & !land surface model, soil type, soil_moisture
-    !             tmp_max, tmp_min, wind_max, tmp_avg, rad_avg, & !meteo daily
-    !             non_dimgarma                                  ) !emis  
+    
+    
+    
 
-
+    !id = fu_set_field_id_simple(met_src_missing, dust_emis_0_flag, time_missing, level_missing);fieldPtr => fu_get_field_from_mm_general(dispersionMarketPtr, id, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_needl_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_broad_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_tropi_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_grass_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_shrub_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ctf_crop_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_isop_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mbo_flag     , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mt_pine_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mt_acyc_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mt_camp_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mt_sabi_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_mt_arom_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_no_flag_flag , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_sqt_hr_flag  , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_sqt_lr_flag  , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_meoh_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_acto_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_etoh_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_acid_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_lvoc_flag    , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_oxprod_flag  , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_stress_flag  , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_other_flag   , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_efs_co_flag      , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ldf03_flag       , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ldf04_flag       , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ldf05_flag       , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+    id = fu_set_field_id_simple(met_src_missing, megan_ldf06_flag       , time_missing, level_missing);call get_field_from_mm_general(dispersionMarketPtr, id, fieldPtr, .false.)
+ ! fieldPtr => fu_get_field_from_mm_general(dispersionMarketPtr, id, .false.)
 
   case default
     call msg('Unknown emission method', bvoc_src%emisMethod)
@@ -1030,7 +1065,7 @@ end select
     !
     implicit none
     ! Arguments
-    type(silam_bio_voc_source), intent(in) :: bvoc_src
+    type(silam_bio_voc_source), intent(inout) :: bvoc_src
     type(Tfield_buffer), pointer :: met_buf, disp_buf
     type(silja_time), intent(in) :: now
     type(silja_interval), intent(in) :: timestep
@@ -1062,6 +1097,13 @@ end select
     real, parameter :: C_T_1 = 95000   ! [J/mol]
     real, parameter :: C_T_2 = 230000  ! [J/mol]
 
+    !megan
+    real, dimension (:), pointer :: pCTFneedl,pCTFbroad,pCTFtropi,pCTFgrass,pCTFshrub,pCTFcrop, &
+                      & pEFS01,pEFS02,pEFS03,pEFS04,pEFS05,pEFS06,pEFS07,pEFS08,pEFS09,pEFS10, &
+                      & pEFS11,pEFS12,pEFS13,pEFS14,pEFS15,pEFS16,pEFS17,pEFS18,pEFS19, &
+                      & pLDF03,pLDF04,pLDF05,pLDF06
+!netcdf debug file:
+integer :: ncid,var_id,t_dim_id,x_dim_id,y_dim_id,ctf_dim_id,efs_dim_id,ldf_dim_id  
     !
     ! First, set the output pointer to the locally stored cocktail_map of emission
     ! intensity
@@ -1294,6 +1336,185 @@ end select
 
         end do  ! ix
       end do  ! iy
+
+      case(emis_megan_v32)
+
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_needl_flag   , pCTFneedl ) /= int_missing, 'Failed megan_ctf_needl_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_broad_flag   , pCTFbroad ) /= int_missing, 'Failed megan_ctf_broad_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_tropi_flag   , pCTFtropi ) /= int_missing, 'Failed megan_ctf_tropi_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_grass_flag   , pCTFgrass ) /= int_missing, 'Failed megan_ctf_grass_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_shrub_flag   , pCTFshrub ) /= int_missing, 'Failed megan_ctf_shrub_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ctf_crop_flag    , pCTFcrop  ) /= int_missing, 'Failed megan_ctf_crop_flag    ','compute_emission_for_bvocs_megan') )return
+
+          if(fu_fails(fu_index(disp_buf,  megan_efs_isop_flag    , pEFS01    ) /= int_missing, 'Failed megan_efs_isop_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mbo_flag     , pEFS02    ) /= int_missing, 'Failed megan_efs_mbo_flag     ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mt_pine_flag , pEFS03    ) /= int_missing, 'Failed megan_efs_mt_pine_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mt_acyc_flag , pEFS04    ) /= int_missing, 'Failed megan_efs_mt_acyc_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mt_camp_flag , pEFS05    ) /= int_missing, 'Failed megan_efs_mt_camp_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mt_sabi_flag , pEFS06    ) /= int_missing, 'Failed megan_efs_mt_sabi_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_mt_arom_flag , pEFS07    ) /= int_missing, 'Failed megan_efs_mt_arom_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_no_flag_flag , pEFS08    ) /= int_missing, 'Failed megan_efs_no_flag_flag ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_sqt_hr_flag  , pEFS09    ) /= int_missing, 'Failed megan_efs_sqt_hr_flag  ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_sqt_lr_flag  , pEFS10    ) /= int_missing, 'Failed megan_efs_sqt_lr_flag  ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_meoh_flag    , pEFS11    ) /= int_missing, 'Failed megan_efs_meoh_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_acto_flag    , pEFS12    ) /= int_missing, 'Failed megan_efs_acto_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_etoh_flag    , pEFS13    ) /= int_missing, 'Failed megan_efs_etoh_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_acid_flag    , pEFS14    ) /= int_missing, 'Failed megan_efs_acid_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_lvoc_flag    , pEFS15    ) /= int_missing, 'Failed megan_efs_lvoc_flag    ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_oxprod_flag  , pEFS16    ) /= int_missing, 'Failed megan_efs_oxprod_flag  ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_stress_flag  , pEFS17    ) /= int_missing, 'Failed megan_efs_stress_flag  ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_other_flag   , pEFS18    ) /= int_missing, 'Failed megan_efs_other_flag   ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_efs_co_flag      , pEFS19    ) /= int_missing, 'Failed megan_efs_co_flag      ','compute_emission_for_bvocs_megan') )return
+
+          if(fu_fails(fu_index(disp_buf,  megan_ldf03_flag       , pLDF03    ) /= int_missing, 'Failed megan_ldf03_flag       ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ldf04_flag       , pLDF04    ) /= int_missing, 'Failed megan_ldf04_flag       ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ldf05_flag       , pLDF05    ) /= int_missing, 'Failed megan_ldf05_flag       ','compute_emission_for_bvocs_megan') )return
+          if(fu_fails(fu_index(disp_buf,  megan_ldf06_flag       , pLDF06    ) /= int_missing, 'Failed megan_ldf06_flag       ','compute_emission_for_bvocs_megan') )return
+          !if(fu_fails(fu_index(disp_buf, dust_emis_0_flag, pDustEmis0) /= int_missing, 'Failed dust_emis_0_flag','compute_emission_for_wb_dust') )return
+
+
+          if (.not. allocated(bvoc_src%ctf) ) then
+              allocate(bvoc_src%ctf(nx_dispersion,ny_dispersion, 6)) !, stat=io_status)
+              allocate(bvoc_src%efs(nx_dispersion,ny_dispersion,19)) !, stat=io_status)
+              allocate(bvoc_src%ldf(nx_dispersion,ny_dispersion, 4)) !, stat=io_status)
+
+              do iy = 1, ny_dispersion
+              do ix = 1, nx_dispersion
+                     iDisp=ix + (iy-1) * nx_dispersion
+                     !CTF
+                      bvoc_src%ctf(ix,iy,1) = pCTFneedl(iDisp)
+                      bvoc_src%ctf(ix,iy,2) = pCTFbroad(iDisp)
+                      bvoc_src%ctf(ix,iy,3) = pCTFtropi(iDisp)
+                      bvoc_src%ctf(ix,iy,4) = pCTFgrass(iDisp)
+                      bvoc_src%ctf(ix,iy,5) = pCTFshrub(iDisp)
+                      bvoc_src%ctf(ix,iy,6) = pCTFcrop(iDisp)
+                      !EFS
+                      bvoc_src%ctf(ix,iy, 1)  = pEFS01(iDisp) 
+                      bvoc_src%ctf(ix,iy, 2)  = pEFS02(iDisp)
+                      bvoc_src%ctf(ix,iy, 3)  = pEFS03(iDisp)
+                      bvoc_src%ctf(ix,iy, 4)  = pEFS04(iDisp)
+                      bvoc_src%ctf(ix,iy, 5)  = pEFS05(iDisp)
+                      bvoc_src%ctf(ix,iy, 6)  = pEFS06(iDisp)
+                      bvoc_src%ctf(ix,iy, 7)  = pEFS07(iDisp)
+                      bvoc_src%ctf(ix,iy, 8)  = pEFS08(iDisp)
+                      bvoc_src%ctf(ix,iy, 9)  = pEFS09(iDisp)
+                      bvoc_src%ctf(ix,iy,10)  = pEFS10(iDisp)
+                      bvoc_src%ctf(ix,iy,11)  = pEFS11(iDisp)
+                      bvoc_src%ctf(ix,iy,12)  = pEFS12(iDisp)
+                      bvoc_src%ctf(ix,iy,13)  = pEFS13(iDisp)
+                      bvoc_src%ctf(ix,iy,14)  = pEFS14(iDisp)
+                      bvoc_src%ctf(ix,iy,15)  = pEFS15(iDisp)
+                      bvoc_src%ctf(ix,iy,16)  = pEFS16(iDisp)
+                      bvoc_src%ctf(ix,iy,17)  = pEFS17(iDisp)
+                      bvoc_src%ctf(ix,iy,18)  = pEFS18(iDisp)
+                      bvoc_src%ctf(ix,iy,19)  = pEFS19(iDisp)
+                      !LDF
+                      bvoc_src%ldf(ix,iy,1)= pLDF03(iDisp)
+                      bvoc_src%ldf(ix,iy,2)= pLDF04(iDisp)
+                      bvoc_src%ldf(ix,iy,3)= pLDF05(iDisp)
+                      bvoc_src%ldf(ix,iy,4)= pLDF06(iDisp)
+              enddo
+              enddo
+          endif
+          print*,"ESCRIBO VARIABLES ESTATICAS DE MEGAN.."
+          !   call check(nf90_create('debug_megan', NF90_CLOBBER, ncid))
+          !     !Defino dimensiones
+          !     call check(nf90_def_dim(ncid, "Time"  , 1      , t_dim_id       ))
+          !     call check(nf90_def_dim(ncid, "x"     , g%nx   , x_dim_id       ))
+          !     call check(nf90_def_dim(ncid, "y"     , g%ny   , y_dim_id       ))
+          !     call check(nf90_def_dim(ncid, "ctf"   , 6      , ctf_dim_id       ))
+          !     call check(nf90_def_dim(ncid, "efs"   , 19     , efs_dim_id       ))
+          !     call check(nf90_def_dim(ncid, "ldf"   , 4      , ldf_dim_id       ))
+          !     !Defino variables
+          !        call check( nf90_def_var(ncid, 'CTF' , NF90_FLOAT, [x_dim_id,y_dim_id,ctf_dim_id], var_id) )
+          !        call check( nf90_def_var(ncid, 'EFS' , NF90_FLOAT, [x_dim_id,y_dim_id,efs_dim_id], var_id) )
+          !        call check( nf90_def_var(ncid, 'LDF' , NF90_FLOAT, [x_dim_id,y_dim_id,ldf_dim_id], var_id) )
+          !   call check(nf90_enddef(ncid))   !End NetCDF define mode
+          !   
+          !   call check(nf90_open(trim(diag_file), nf90_write, ncid ))
+          !       call check(nf90_inq_varid(ncid,'EF'   ,var_id )); call check(nf90_put_var(ncid, var_id, bvoc_src%efs     ))   !print*, " EF'     ";
+          !       call check(nf90_inq_varid(ncid,'LDF'  ,var_id )); call check(nf90_put_var(ncid, var_id, bvoc_src%ldf     ))   !print*, " LDF'    ";
+          !       call check(nf90_inq_varid(ncid,'CTS'  ,var_id )); call check(nf90_put_var(ncid, var_id, bvoc_src%ctf     ))   !print*, " CTS'    ";
+          !   call check(nf90_close( ncid ))
+          stop 'esto se termina acá'
+
+          !megan_voc (yyyy,ddd,hh,                                    & !year,julian day,hour
+          !             ncols,nrows,lat,long,                         & !dimensions, latitude, longitude coordinates
+          !             temp,rad,wind,pres,qv,                        & !air temperature [ºK], 
+          !             laip, laic,                                   &
+          !             ctf, efmaps, ldf_in,                          & !lai,emis factors, light emis factors
+          !             lsm,soil_type,soil_moisture,                  & !land surface model, soil type, soil_moisture
+          !             tmp_max, tmp_min, wind_max, tmp_avg, rad_avg, & !meteo daily
+          !             non_dimgarma                                  ) !emis  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     case default
         call msg('Unknown method for biogenic VOC emission:', bvoc_src%emisMethod)

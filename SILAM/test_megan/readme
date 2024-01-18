@@ -43,8 +43,23 @@ TO DO LIST:
 [ ] Crear/Modificar "ini/src_bio_voc.ini" header de emisiones biogenicas
 
 
+#---- entender como llamar variables en silam:
+ 
+itmp=fu_merge_int_to_array( mi_variable_flag,  q_disp_static)
+ 
+id = fu_set_field_id_simple(met_src_missing, dust_emis_0_flag, time_missing, level_missing)
+fieldPtr => fu_get_field_from_mm_general(dispersionMarketPtr, id, .false.)  
 
+status = fu_index(disp_buf, dust_emis_0_flag, pDustEmis0)
+do iy = 1, ny_dispersion
+do ix = 1, nx_dispersion
+        iDisp = ix + (iy-1) * nx_dispersion
+        dust(ix,iy)= pDustEmis0(iDisp)
+enddo
+enddo
 
+                                         
+#-fin entender como llamar variables en silam:
 
 
 [x] !HECHO! 2. Entender como funciona Megan (CMAQ/MEGAN):                 

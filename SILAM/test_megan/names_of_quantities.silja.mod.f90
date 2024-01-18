@@ -239,6 +239,38 @@ MODULE names_of_quantities
   integer, parameter, public :: c4_frac_flag = 250062
   integer, parameter, public :: irrigated_area_flag = 250063
   integer, parameter, public :: soil_NO_emis_0_flag = 250064
+
+  !MEGAN VARIABLES:
+  integer, parameter, public :: megan_ctf_needl_flag   = 350066
+  integer, parameter, public :: megan_ctf_broad_flag   = 350067
+  integer, parameter, public :: megan_ctf_tropi_flag   = 350068
+  integer, parameter, public :: megan_ctf_grass_flag   = 350069
+  integer, parameter, public :: megan_ctf_shrub_flag   = 350070
+  integer, parameter, public :: megan_ctf_crop_flag    = 350071
+  integer, parameter, public :: megan_efs_isop_flag    = 350072
+  integer, parameter, public :: megan_efs_mbo_flag     = 350073
+  integer, parameter, public :: megan_efs_mt_pine_flag = 350074
+  integer, parameter, public :: megan_efs_mt_acyc_flag = 350075
+  integer, parameter, public :: megan_efs_mt_camp_flag = 350076
+  integer, parameter, public :: megan_efs_mt_sabi_flag = 350077
+  integer, parameter, public :: megan_efs_mt_arom_flag = 350078
+  integer, parameter, public :: megan_efs_no_flag_flag = 350079
+  integer, parameter, public :: megan_efs_sqt_hr_flag  = 350080
+  integer, parameter, public :: megan_efs_sqt_lr_flag  = 350081
+  integer, parameter, public :: megan_efs_meoh_flag    = 350082
+  integer, parameter, public :: megan_efs_acto_flag    = 350083
+  integer, parameter, public :: megan_efs_etoh_flag    = 350084
+  integer, parameter, public :: megan_efs_acid_flag    = 350085
+  integer, parameter, public :: megan_efs_lvoc_flag    = 350086
+  integer, parameter, public :: megan_efs_oxprod_flag  = 350087
+  integer, parameter, public :: megan_efs_stress_flag  = 350088
+  integer, parameter, public :: megan_efs_other_flag   = 350089
+  integer, parameter, public :: megan_efs_co_flag      = 350090
+  integer, parameter, public :: megan_ldf03_flag       = 350091
+  integer, parameter, public :: megan_ldf04_flag       = 350092
+  integer, parameter, public :: megan_ldf05_flag       = 350093
+  integer, parameter, public :: megan_ldf06_flag       = 350094
+
   !
   ! Precipitation and evaporation
   !
