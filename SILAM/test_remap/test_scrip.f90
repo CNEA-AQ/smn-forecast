@@ -4,13 +4,19 @@ program test
    use SCRIP
 
    implicit none
-
    type(regular_grid_type ) :: g1,g2
    character(len=256) :: iFile, oFile
    character(len=256) :: method
    real, allocatable :: var1(:,:),var2(:,:)
    ifile='in.nc'
-   
+ 
+call system('echo "                                          "');  
+call system('echo "(!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)"');  
+call system('echo "(!) SYSTEM CALL (!)                       "');  
+call system('echo "(!) BORRO TODOS LOS NETCDF EN DIRECTORIO! "');  
+call system('echo "(!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)"');  
+call system('echo "                                          "');  
+call system('rm *.nc');  
    !***************************
    !src grids specs:
    g1%gridName='testgrid'
@@ -40,27 +46,32 @@ program test
    method='bilinear'
    ofile='ou_'//trim(method)//'.nc'
    call applyRemap(var1,var2,g1,g2,method)
+   print*, "Bilinear Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
    !!test Near Neighbor
    method='distwgt'
    ofile='ou_'//trim(method)//'.nc'
    call applyRemap(var1,var2,g1,g2,method)
+   print*, "Bilinear Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
-   !!!test Bicubic
+   !!!!test Bicubic
    method='bicubic'
    ofile='ou_'//trim(method)//'.nc'
    call applyRemap(var1,var2,g1,g2,method)
+   print*, "Bicubic Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
    !!!test Conservative
-   !method='conservative'
-   !ofile='ou_'//trim(method)//'.nc'
-   !call applyRemap(var1,var2,g1,g2,method)
-   !call saveArrayOnNetCDF(oFile,g2,var2)
+   method='conservative'
+   ofile='ou_'//trim(method)//'.nc'
+   call applyRemap(var1,var2,g1,g2,method)
+   print*, "Conserv Remaping succesfull!"
+   call saveArrayOnNetCDF(oFile,g2,var2)
 
-   contains
+   print*, "End."
+contains
 
    subroutine makeFieldTest(g,var)
        implicit none
@@ -122,14 +133,11 @@ program test
       !Abro NetCDF outFile
       stat=nf90_open(ncFile, nf90_write, ncid)
          !var
-         stat=nf90_inq_varid(ncid, 'var'     , var_id)  !Obtengo id de variable
-         stat=nf90_put_var(ncid, var_id, var(:,:))      !Escribo valores en NetCDF
+         stat=nf90_inq_varid(ncid, 'var', var_id); stat=nf90_put_var(ncid, var_id, var(:,:))      !Escribo valores en NetCDF
          !lat
-         stat=nf90_inq_varid(ncid, "lat"     , var_id)
-         stat=nf90_put_var(ncid, var_id, lat(:)      )
+         stat=nf90_inq_varid(ncid, "lat", var_id); stat=nf90_put_var(ncid, var_id, lat(:)  )
          !lon
-         stat=nf90_inq_varid(ncid, "lon"     , var_id)
-         stat=nf90_put_var(ncid, var_id, lon(:)      )
+         stat=nf90_inq_varid(ncid, "lon", var_id); stat=nf90_put_var(ncid, var_id, lon(:)  )
       stat=nf90_close(ncid)
       !Cierro NetCDF outFile
    end subroutine

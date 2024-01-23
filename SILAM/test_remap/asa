@@ -1,0 +1,69 @@
+confilctos entre grid_init (grid.f) y read_remap (remap_read.f):
+              !vars grid.f (grid_init)  ! vars : read_remap:    
+                                                                  
+             [ ] grid1_dims             [x] grid1_dims         
+             [ ] grid1_center_lat       [x] grid1_center_lat   
+             [ ] grid1_center_lon       [x] grid1_center_lon   
+             [ ] grid1_area             [x] grid1_area         
+             [ ] grid1_area_in          [ ] 
+             [ ] grid1_frac             [x] grid1_frac         
+             [ ] grid1_mask             [x] grid1_mask         
+             [ ]                        [ ] grid1_mask_int     
+             [ ]  grid1_corner_lat      [x] grid1_corner_lat                     
+             [ ]  grid1_corner_lon      [x] grid1_corner_lon                                                  
+             [ ]  grid1_bound_box       [ ]
+             [ ]  grid1_centroid_lat    [ ]
+             [ ]  grid1_centroid_lon    [ ]
+             [ ]                        [ ] grid1_add_map1    
+
+             [ ] grid2_dims             [x] grid2_dims        
+             [ ] grid2_center_lat       [x] grid2_center_lat  
+             [ ] grid2_center_lon       [x] grid2_center_lon  
+             [ ] grid2_area             [x] grid2_area        
+             [ ] grid2_area_in          
+             [ ] grid2_frac             [x] grid2_frac        
+             [ ] grid2_mask             [x] grid2_mask        
+             [ ]                        [ ] grid2_mask_int    
+             [ ] grid2_corner_lat       [x] grid2_corner_lat  
+             [ ] grid2_corner_lon       [x] grid2_corner_lon  
+             [ ] grid2_bound_box        [ ]                   
+             [ ] grid2_centroid_lat
+             [ ] grid2_centroid_lon
+             [ ]                        
+             [ ]                        [ ] grid2_add_map1    
+             [ ]                        [ ] wts_map1          
+             [ ] imask
+             [ ] special_polar_cell1
+             [ ] special_polar_cell2
+
+if ( allocated(grid2_center_lat )) deallocate(grid2_center_lat ) 
+if ( allocated(grid2_center_lon )) deallocate(grid2_center_lon ) 
+if ( allocated(grid2_area       )) deallocate(grid2_area       ) 
+if ( allocated(grid2_frac       )) deallocate(grid2_frac       ) 
+if ( allocated(grid2_mask       )) deallocate(grid2_mask       ) 
+if ( allocated(grid2_corner_lat )) deallocate(grid2_corner_lat ) 
+if ( allocated(grid2_corner_lon )) deallocate(grid2_corner_lon ) 
+
+
+#### Conflictos read_remap (remap_read.f) y init_remap_vars (remap_vars.f)
+
+              !init_remap_vars           !read_remap               
+              [x] grid1_add_map1         [ ] grid1_add_map1        
+              [ ] grid1_add_map2         [ ]                       
+              [x] grid2_add_map1         [ ] grid1_add_map2        
+              [ ] grid2_add_map2         [ ]                       
+              [ ] wts_map1               [ ]
+              [ ] wts_map2               [ ]
+
+
+
+
+
+
+
+
+
+
+
+
+
