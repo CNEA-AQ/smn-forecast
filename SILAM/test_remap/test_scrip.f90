@@ -17,6 +17,7 @@ call system('echo "(!) BORRO TODOS LOS NETCDF EN DIRECTORIO! "');
 call system('echo "(!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)"');  
 call system('echo "                                          "');  
 call system('rm *.nc');  
+
    !***************************
    !src grids specs:
    g1%gridName='testgrid'
@@ -45,47 +46,49 @@ call system('rm *.nc');
    !!test Bilinear   
    method='bilinear'
    ofile='ou_'//trim(method)//'.nc'
-   call applyRemap(var1,var2,g1,g2,method)
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
    print*, "Bilinear Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
    !!test Near Neighbor
    method='distwgt'
    ofile='ou_'//trim(method)//'.nc'
-   call applyRemap(var1,var2,g1,g2,method)
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
    print*, "Bilinear Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
    !!!!test Bicubic
    method='bicubic'
    ofile='ou_'//trim(method)//'.nc'
-   call applyRemap(var1,var2,g1,g2,method)
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
    print*, "Bicubic Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
    !!!test Conservative
    method='conservative'
    ofile='ou_'//trim(method)//'.nc'
-   call applyRemap(var1,var2,g1,g2,method)
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
    print*, "Conserv Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
 
-!!!!test Bicubic
-method='bicubic'
-ofile='ou_'//trim(method)//'.nc'
-call applyRemap(var1,var2,g1,g2,method)
-print*, "Bicubic Remaping succesfull!"
-call saveArrayOnNetCDF(oFile,g2,var2)
-                                        
-!!!test Conservative
-method='conservative'
-ofile='ou_'//trim(method)//'.nc'
-call applyRemap(var1,var2,g1,g2,method)
-print*, "Conserv Remaping succesfull!"
-call saveArrayOnNetCDF(oFile,g2,var2)
+
+   !(Again to see if is faster once it has the remaping files)
+   !!!!test Bicubic
+   method='bicubic'
+   ofile='ou_'//trim(method)//'.nc'
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
+   print*, "Bicubic Remaping succesfull!"
+   call saveArrayOnNetCDF(oFile,g2,var2)
+                                           
+   !!!test Conservative
+   method='conservative'
+   ofile='ou_'//trim(method)//'.nc'
+   call SCRIP_remap_field(var1,var2,g1,g2,method)
+   print*, "Conserv Remaping succesfull!"
+   call saveArrayOnNetCDF(oFile,g2,var2)
 
 
-   print*, "End."
+   print*, "Fin de la prueba."
 contains
 
    subroutine makeFieldTest(g,var)
