@@ -1,3 +1,28 @@
+# Entendimiento SCRIPT:
+
+# grid.f : 
+grid_init()
+ - Define:
+
+
+
+
+ - 
+ - 
+ - 
+
+SCRIP_GridComputeArea()
+ - 
+ - 
+ - 
+
+
+
+
+
+
+
+
 confilctos entre grid_init (grid.f) y read_remap (remap_read.f):
               !vars grid.f (grid_init)  ! vars : read_remap:    
                                                                   
@@ -36,15 +61,6 @@ confilctos entre grid_init (grid.f) y read_remap (remap_read.f):
              [ ] special_polar_cell1
              [ ] special_polar_cell2
 
-if ( allocated(grid2_center_lat )) deallocate(grid2_center_lat ) 
-if ( allocated(grid2_center_lon )) deallocate(grid2_center_lon ) 
-if ( allocated(grid2_area       )) deallocate(grid2_area       ) 
-if ( allocated(grid2_frac       )) deallocate(grid2_frac       ) 
-if ( allocated(grid2_mask       )) deallocate(grid2_mask       ) 
-if ( allocated(grid2_corner_lat )) deallocate(grid2_corner_lat ) 
-if ( allocated(grid2_corner_lon )) deallocate(grid2_corner_lon ) 
-
-
 #### Conflictos read_remap (remap_read.f) y init_remap_vars (remap_vars.f)
 
               !init_remap_vars           !read_remap               
@@ -57,13 +73,24 @@ if ( allocated(grid2_corner_lon )) deallocate(grid2_corner_lon )
 
 
 
-
-
-
-
-
-
-
-
+!init_remap_vars
+         ! integer (SCRIP_i4), save ::
+         !&      max_links_map1  ! current size of link arrays
+         !&,     num_links_map1  ! actual number of links for remapping
+         !&,     max_links_map2  ! current size of link arrays
+         !&,     num_links_map2  ! actual number of links for remapping
+         !&,     num_maps        ! num of remappings for this grid pair
+         !&,     num_wts         ! num of weights used in remapping
+         !&,     map_type        ! identifier for remapping method
+         !&,     norm_opt        ! option for normalization (conserv only)
+         !&,     resize_increment ! default amount to increase array size
+         ! integer (SCRIP_i4), dimension(:), allocatable, save ::
+         !&      grid1_add_map1, ! grid1 address for each link in mapping 1
+         !&      grid2_add_map1, ! grid2 address for each link in mapping 1
+         !&      grid1_add_map2, ! grid1 address for each link in mapping 2
+         !&      grid2_add_map2  ! grid2 address for each link in mapping 2
+         ! real (SCRIP_r8), dimension(:,:), allocatable, save ::
+         !&      wts_map1, ! map weights for each link (num_wts,max_links)
+         !&      wts_map2  ! map weights for each link (num_wts,max_links)
 
 

@@ -21,12 +21,12 @@ call system('rm *.nc');
    !src grids specs:
    g1%gridName='testgrid'
    g1%proj4="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" !'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-   g1%nx=36
-   g1%ny=18
-   g1%dx=10.0
-   g1%dy=10.0
-   g1%ymin=-90
-   g1%xmin=-180
+   g1%nx=360     !g1%nx=36
+   g1%ny=180     !g1%ny=18
+   g1%dx= 1.0    !g1%dx=10.0
+   g1%dy= 1.0    !g1%dy=10.0
+   g1%ymin=-90   !g1%ymin=-90
+   g1%xmin=-180  !g1%xmin=-180
    allocate(var1(g1%nx,g1%ny))
    call makeFieldTest(g1,var1)            !dummy test field
    call saveArrayOnNetCDF(iFile,g1,var1)
@@ -69,6 +69,21 @@ call system('rm *.nc');
    call applyRemap(var1,var2,g1,g2,method)
    print*, "Conserv Remaping succesfull!"
    call saveArrayOnNetCDF(oFile,g2,var2)
+
+!!!!test Bicubic
+method='bicubic'
+ofile='ou_'//trim(method)//'.nc'
+call applyRemap(var1,var2,g1,g2,method)
+print*, "Bicubic Remaping succesfull!"
+call saveArrayOnNetCDF(oFile,g2,var2)
+                                        
+!!!test Conservative
+method='conservative'
+ofile='ou_'//trim(method)//'.nc'
+call applyRemap(var1,var2,g1,g2,method)
+print*, "Conserv Remaping succesfull!"
+call saveArrayOnNetCDF(oFile,g2,var2)
+
 
    print*, "End."
 contains
