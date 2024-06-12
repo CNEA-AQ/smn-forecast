@@ -19,12 +19,12 @@ tar -xzv stage/chimere_v2020r3.tar.gz
 cd chimere_v2020r3
 #------------------------------------------------
 #(1) Setiar variables en script mychimere/mychimere.sh
-cp mychimere/mychimere-ciclad.ifort mychimere/mychimere.sh  #agarré el m�s parecido a lo que necesito
-#lo edité: para neurus lo llame mychimer-neurusS.sh (deberia haber una copia en la misma carpeta de este script)
+cp mychimere/mychimere-ciclad.ifort mychimere/mychimere.sh  #agarrÃ© el mÃs parecido a lo que necesito
+#lo editÃ©: para neurus lo llame mychimer-neurusS.sh (deberia haber una copia en la misma carpeta de este script)
 
 ./build-chimere.sh --avail            #ver compilaciones disponibles
 ./build-chimere.sh --mychimere neurus #compilar
-
+./build-wrf.sh --mychimere neurus
 #------------------------------------------------
 #(2) RUN
 
