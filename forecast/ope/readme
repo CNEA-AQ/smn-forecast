@@ -1,0 +1,15 @@
+
+Workflow:
+---------
+.
+├──[x] dwnl-gfs.sh
+│      └─[x] run-wrf.sh  
+│            └─( ) prep_emis.sh 
+│                  ├──[ ] run-xxxx.sh  ──> [ ] pos-xxxx.sh  
+│                  ├──[ ] run-cmaq.sh  ──> [ ] pos-cmaq.sh  
+│                  └──[~] run-silam.sh ──> [ ] pos-silam.sh 
+├──[ ] dnwl_bcon.sh
+├──[ ] dnwl_finn.sh  # (fires)
+├──( ) readme
+└──( ) ...
+
