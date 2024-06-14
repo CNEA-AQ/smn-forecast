@@ -12,8 +12,7 @@ set ForecastHours = (000 003 006 009 012 015 018 021 024)
 set outDir = 'GFS/'
 
 #wget options:
-set opts = "-N -P "$outDir
-#              (!) Do NOT use the -b (--background) option - simultaneous file downloads can cause your data access to be blocked
+set opts = "-N -P "$outDir #(!) Do NOT use the -b (--background) option - simultaneous file downloads can cause your data access to be blocked
 
 # Check wget version.  Set the --no-check-certificate option 
 # if wget version is 1.10 or higher
@@ -35,4 +34,3 @@ foreach FFF ($ForecastHours)
   endif
 end
    
-

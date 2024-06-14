@@ -80,3 +80,19 @@ EOF
 #	echo "ncap2 -4 -L5 -O -v -S scriptfile.tmp $f $outfile"
 #
 #done | xargs -I{} -t -P8 sh -c '{}' | srun  --input=0 -J wrfmet --ntasks=1 --account=project_2004363 --cpus-per-task=128 --time 30:00 xargs -IXXX -t -P128 sh -c "XXX"
+
+
+
+
+
+
+
+
+
+
+
+# PLOT:
+
+#19-56 S
+#80-50 W
+

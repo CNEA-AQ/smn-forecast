@@ -2,6 +2,7 @@
 #=========================================================#
 #   Prepara directorio para corrida de WRF                #
 #* * * * * * * * * * * * ** * * * * * * * * * * * * * * * #
+day=`date +'%Y-%m-%d'`
 basedir=${HOME}/forecast
 
 #src:
@@ -9,14 +10,14 @@ WPSSRC=${HOME}/m/WPS   #Ruta al source del WPS
 WRFSRC=${HOME}/m/WRF   #Ruta al source del WRF
 
 #data & config files:
-wrf_dir=${basedir}/dev/wrf                #ruta a namelists y tablas
-met_path=${basedir}/ope/GFS               #ruta a archivos meteorologicos
-geo_path=${basedir}/dev/wrf/WPS_GEOG      #ruta a archivos de estáticos
+wrf_dir=${basedir}/dev/wrf              #ruta a namelists y tablas
+met_path=${basedir}/ope/GFS             #ruta a archivos meteorologicos
+geo_path=${HOME}/data/wrf/WPS_GEOG      #ruta a archivos de estáticos
 
 #-----------------------------------------------------------
 #day=`date +'%Y%m%d'`
 exp_name=wrf #$day
-cdate=`date +'%Y-%m-%d 00:00:00'` #current date #"2024-06-07 00:00:00" #
+cdate=$day"00:00:00" #`date +'%Y-%m-%d 00:00:00'` #current date #"2024-06-07 00:00:00" #
 clat=-35.0 # domain center point (lat)   #-36.0
 clon=-65.0 # domain center point (lon)   #-67.0
 DX=2800    # domain -width  [km]
@@ -143,32 +144,27 @@ ln -s ${WRFSRC}/main/real.exe real.exe
 ln -s ${WRFSRC}/main/wrf.exe wrf.exe
 
 
-
-
-
-
-
-# RUNING PROGRAMS:
-echo -e "\e[36m -------------------------------------------------\e[0m"
-echo -e "\e[36m  Ejecutando WPS                                  \e[0m"    
-
-echo -e "\e[36m  GEOGRID ...                                     \e[0m"    
-./geogrid.exe
-
-echo -e "\e[36m  UNGRIB ...                                      \e[0m"    
-./ungrib.exe
-
-echo -e "\e[36m  METGRID ...                                     \e[0m"    
-./metgrid.exe
-
-echo -e "\e[36m -------------------------------------------------\e[0m"
-echo -e "\e[36m  Ejecutando WRF                                  \e[0m"    
-
-echo -e "\e[36m  REAL.EXE                                        \e[0m"    
-mpirun real.exe
-
-echo -e "\e[36m  WRF.EXE                                         \e[0m"    
-mpirun wrf.exe
+## RUNING PROGRAMS:
+#echo -e "\e[36m -------------------------------------------------\e[0m"
+#echo -e "\e[36m  Ejecutando WPS                                  \e[0m"    
+#
+#echo -e "\e[36m  GEOGRID ...                                     \e[0m"    
+#./geogrid.exe
+#
+#echo -e "\e[36m  UNGRIB ...                                      \e[0m"    
+#./ungrib.exe
+#
+#echo -e "\e[36m  METGRID ...                                     \e[0m"    
+#./metgrid.exe
+#
+#echo -e "\e[36m -------------------------------------------------\e[0m"
+#echo -e "\e[36m  Ejecutando WRF                                  \e[0m"    
+#
+#echo -e "\e[36m  REAL.EXE                                        \e[0m"    
+#mpirun real.exe
+#
+#echo -e "\e[36m  WRF.EXE                                         \e[0m"    
+#mpirun wrf.exe
 
 
 

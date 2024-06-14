@@ -11,7 +11,7 @@ SILAM_EXE=${HOME}/m/silam-model/bin/silam_v5_8pub.gnu
 #data needed:
 silam_dir=${dir}/dev/silam      #ruta a dir con namelists y tablas (ini/)
 wrf_dir=${dir}/ope/wrf          #ruta a dir con wrfouts
-
+emis_dir=emis/silam
 #-------------------
 day=`date +'%Y%m%d'`
 exp_name=slm
@@ -20,7 +20,7 @@ echo -e " * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo -e "  %Inicio prep silam                              "
 echo -e ""
 
-mkdir $exp_name
+if [ ! -d slm ]; then mkdir ${exp_name}; fi
 cd $exp_name
 
 # data
