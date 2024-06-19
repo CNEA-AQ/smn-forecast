@@ -53,8 +53,11 @@ echo -e "Processing \e[31m Fires (w/FINN v2.5)\e[0m "
  #ejecuto:
  ./finn2silam.exe < fires_namelist
 
- newStart=`date +'seconds since %Y-%m-%d 00:00:00 UTC'`
- ncatted -h -O -a units,time,m,c,"${newStart}" emis_fires*
+ #newStart=`date +'seconds since %Y-%m-%d 00:00:00 UTC'`
+ newStart=`date +'%Y-%m-%d'`
+ ncatted -h -O -a units,time,m,c,"seconds since ${newStart} 00:00:00 UTC" emis_fires*
+ ncatted -h -O -a _CoordinateModelRunDate,global,m,c,"${newStart} 00:00:00Z" emis_fires_*
+ mv emis_fires_* emis_fires_${newStart}.nc
 
 cd ..
 #============================================================

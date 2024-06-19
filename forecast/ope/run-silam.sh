@@ -3,32 +3,32 @@
 #* * * * * * * * * * * * ** * * * * * * * * * * * * * * * #
 #   Prepara directorio para corrida de Silam              #
 #* * * * * * * * * * * * ** * * * * * * * * * * * * * * * #
+today="2024-06-11" #`date +'%Y-%m-%d'`
+yesterday=`date -d "${today} - 1 day" +'%Y-%m-%d'`
+tomorrow=`date -d "${today}  + 1 day" +'%Y-%m-%d'`
+
 #INPUTS:
-dir=${HOME}/forecast            #forecast base-directory
+basedir=${HOME}/forecast            #forecast base-directory
+basedir=${HOME}/github/CNEA-AQ/smn-forecast/forecast            #forecast base-directory
 
 SILAM_EXE=${HOME}/m/silam-model/bin/silam_v5_8pub.gnu
 
 #data needed:
-silam_dir=${dir}/dev/silam      #ruta a dir con namelists y tablas (ini/)
-wrf_dir=${dir}/ope/wrf          #ruta a dir con wrfouts
-emis_dir=emis/silam
+silam_dir=${basedir}/dev/silam         #ruta a dir con namelists y tablas (ini/)
+wrf_dir=${basedir}/ope/wrf             #ruta a dir con wrfouts
 #-------------------
-day=`date +'%Y%m%d'`
 exp_name=slm
-
 echo -e " * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo -e "  %Inicio prep silam                              "
-echo -e ""
 
 if [ ! -d slm ]; then mkdir ${exp_name}; fi
 cd $exp_name
 
 # data
-ln -s $wrf_dir/wrfout* .
+ln -s ${wrf_dir}/wrfout_d01_* .
 
-ln -s $silam_dir/ini .
-ln -s $silam_dir/emis .
-ln -s $silam_dir/static .
+ln -s ${silam_dir}/ini .
+ln -s ${silam_dir}/static .
 
 # namelists
 cp $silam_dir/config_bcon_cb5.ini .
@@ -41,7 +41,7 @@ ln -s ${SILAM_EXE} silam.exe
 #
 #######################
 #Date-time
-start_time=`date "+%Y %m %d 0 0 0.0"`
+start_time=`date -d "${today}" "+%Y %m %d 0 0 0.0"`
 sed -i "s/start_time =.*/start_time=${start_time}/g" silam.ini
 
 cd ..

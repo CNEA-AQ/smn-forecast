@@ -2,8 +2,11 @@
 #=========================================================#
 #   Prepara directorio para corrida de WRF                #
 #* * * * * * * * * * * * ** * * * * * * * * * * * * * * * #
-day=`date +'%Y-%m-%d'`
-basedir=${HOME}/forecast
+today="2024-06-11" #`date +'%Y-%m-%d'`
+yesterday=`date -d "${today} - 1 day" +'%Y-%m-%d'`
+tomorrow=`date -d "${today}  + 1 day" +'%Y-%m-%d'`
+
+basedir=${HOME}/github/CNEA-AQ/smn-forecast/forecast
 
 #src:
 WPSSRC=${HOME}/m/WPS   #Ruta al source del WPS
@@ -17,7 +20,7 @@ geo_path=${HOME}/data/wrf/WPS_GEOG      #ruta a archivos de estáticos
 #-----------------------------------------------------------
 #day=`date +'%Y%m%d'`
 exp_name=wrf #$day
-cdate=$day"00:00:00" #`date +'%Y-%m-%d 00:00:00'` #current date #"2024-06-07 00:00:00" #
+cdate=$today"00:00:00" #`date +'%Y-%m-%d 00:00:00'` #current date #"2024-06-07 00:00:00" #
 clat=-35.0 # domain center point (lat)   #-36.0
 clon=-65.0 # domain center point (lon)   #-67.0
 DX=2800    # domain -width  [km]
@@ -30,8 +33,8 @@ dy=16000 #20000  #20000 # 18000 #  #cell size-Y [m]
 nx=$(bc -l <<< "scale=5;o=$DX*1000/$dx;scale=0;o/1.0") # == nx
 ny=$(bc -l <<< "scale=5;o=$DY*1000/$dy;scale=0;o/1.0") # == ny
 #
-start_date=$(TZ=0 date -d "${cdate}+0 - 0 hours" '+%Y-%m-%d_%H:%M:%S')  #ojo, chequiar dispo de meteo-data
-  end_date=$(TZ=0 date -d "${cdate}+0 + 1 days " '+%Y-%m-%d_%H:%M:%S')
+start_date="${today}_00:00:00"    #$(TZ=0 date -d "${cdate}+0 - 0 hours" '+%Y-%m-%d_%H:%M:%S')  #ojo, chequiar dispo de meteo-data
+  end_date="${tomorrow}_00:00:00" #$(TZ=0 date -d "${cdate}+0 + 1 days " '+%Y-%m-%d_%H:%M:%S')
 
 add2namelist="
 e_we = $nx,
