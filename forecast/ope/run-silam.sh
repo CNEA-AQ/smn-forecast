@@ -27,8 +27,9 @@ cd $exp_name
 # data
 ln -s ${wrf_dir}/wrfout_d01_* .
 
-ln -s ${silam_dir}/ini .
 ln -s ${silam_dir}/static .
+cp ${silam_dir}/ini .
+cp ${silam_dir}/emis .
 
 # namelists
 cp $silam_dir/config_bcon_cb5.ini .
