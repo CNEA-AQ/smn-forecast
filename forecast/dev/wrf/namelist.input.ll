@@ -1,18 +1,18 @@
 &time_control
-	run_days=1,
-	start_year=2024,
+ run_days=1,
+	start_year =2024,
 	start_month=06,
-	start_day=12,
-	start_hour=00,
- start_minute       = 00,
- start_second       = 00,
-	end_year=2024,
-	end_month=06,
-	end_day=13,
-	end_hour=00,
- end_minute         = 00,
- end_second         = 00,
-	interval_seconds=21600,
+	start_day  =14,
+	start_hour =00,
+ start_minute      = 00,
+ start_second      = 00,
+	end_year   =2024,
+	end_month  =06,
+	end_day    =15,
+	end_hour   =00,
+ end_minute        =00,
+ end_second        =00,
+ interval_seconds=21600,
  input_from_file    = .true.,
  history_interval   = 60,
  frames_per_outfile = 72,
@@ -24,35 +24,41 @@
  io_form_boundary   = 2,
  debug_level        = 1,
  auxinput1_inname   = "met_em.d<domain>.<date>",
+
+ iofields_filename = 'io_fields.txt',
+ ignore_iofields_warning = .true.,
 /
 
 &domains
-	time_step=90,
+	time_step=60,
  time_step_fract_num = 0,
  time_step_fract_den = 1,
- max_dom              = 1           ! max_dom= 1,
- e_we                 = 240         ! e_we=175,
- e_sn                 = 320         ! e_sn=300,
- dx                   = 13341.297   ! dx=16000,
- dy                   = 13341.297   ! dy=16000,
- 
+ max_dom             = 1
+
+
+ e_we   = 240, 
+ e_sn   = 320,
  e_vert = 45,
+
+ dx     = 13341.297
+ dy     = 13341.297
+ 
  p_top_requested         = 1000, !5000,
  num_metgrid_soil_levels = 4,
-	num_metgrid_levels=34,
+ num_metgrid_levels      =34,
  use_levels_below_ground = .true.,
  use_surface             = .true.,
- grid_id                 = 1,
- parent_id               = 0,
- i_parent_start          = 1,
- j_parent_start          = 1,
- parent_grid_ratio       = 1,
+ !grid_id                = 1,
+ !parent_id              = 0,
+ !i_parent_start         = 1,
+ !j_parent_start         = 1,
+ !parent_grid_ratio      = 1,
  parent_time_step_ratio  = 1,
  feedback                = 0,
  smooth_option           = 0,
- !interp_type             = 1,
- !lagrange_order          = 9, 
- !t_extrap_type           = 2,
+ !interp_type            = 1,
+ !lagrange_order         = 9, 
+ !t_extrap_type          = 2,
  force_sfc_in_vinterp    = 0,
  zap_close_levels        = 50,
 /
@@ -93,15 +99,12 @@
  v_sca_adv_order                     = 3,
 /
 
-
 &physics
  mp_physics                          = 6,
  bl_pbl_physics                      = 2,
- sf_sfclay_physics                   = 2,
  ra_lw_physics                       = 4,
  ra_sw_physics                       = 4,
  radt                                = 10,
- sf_surface_physics                  = 4,
  bldt                                = 0,
  cu_physics                          = 0,
  cudt                                = 5,
@@ -110,57 +113,8 @@
  icloud                              = 1,
  surface_input_source                = 1,
  num_soil_layers                     = 4,
+ sf_surface_physics                  = 4,
  sf_urban_physics                    = 0,
+ sf_sfclay_physics                   = 2,
  prec_acc_dt                         = 60,
 /
-
-
-!&chem
-!	chem_opt=401,
-! chemdt                              = 10,
-! 
-!	chem_in_opt=0,
-! 
-! io_style_emissions                  = 0,
-! 
-!	emiss_opt=0,
-!	emiss_inpt_opt=0,
-!	kemit=1,
-! 
-! bio_emiss_opt                       = 0,
-! bioemdt                             = 0,
-! ne_area                             = 0,
-!
-! biomass_burn_opt                    = 0,
-! plumerisefire_frq                   = 30,
-! 
-! emiss_opt_vol                       = 0,
-! emiss_ash_hgt                       = 20000.,
-!
-!	dust_opt=1,
-!	!dust_schme=0,
-!
-! seas_opt                            = 0,
-! dmsemis_opt                         = 0,
-!
-! gas_bc_opt                          = 0,
-! gas_ic_opt                          = 0,
-! aer_bc_opt                          = 1,
-! aer_ic_opt                          = 1,
-!
-! gaschem_onoff                       = 0,
-!	aerchem_onoff=1,
-! wetscav_onoff                       = 0,
-! cldchem_onoff                       = 0,
-! vertmix_onoff                       = 1,
-! 
-! gas_drydep_opt                      = 0,
-!	aer_drydep_opt=1,
-! depo_fact                           = 0.25,
-!
-! phot_opt                            = 0,
-! photdt                              = 0,
-! aer_ra_feedback                     = 0,
-!	aer_op_opt=1,
-!	opt_pars_out=0,
-!/
