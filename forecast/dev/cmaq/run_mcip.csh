@@ -1,112 +1,5 @@
 #!/bin/csh -f 
 
-#------------------------------------------------------------------------------#
-#  The Community Multiscale Air Quality (CMAQ) system software is in           #
-#  continuous development by various groups and is based on information        #
-#  from these groups: Federal Government employees, contractors working        #
-#  within a United States Government contract, and non-Federal sources         #
-#  including research institutions.  These groups give the Government          #
-#  permission to use, prepare derivative works of, and distribute copies       #
-#  of their work in the CMAQ system to the public and to permit others         #
-#  to do so.  The United States Environmental Protection Agency                #
-#  therefore grants similar permission to use the CMAQ system software,        #
-#  but users are requested to provide copies of derivative works or            #
-#  products designed to operate in the CMAQ system to the United States        #
-#  Government without restrictions as to use by others.  Software              #
-#  that is used with the CMAQ system but distributed under the GNU             #
-#  General Public License or the GNU Lesser General Public License is          #
-#  subject to their copyright restrictions.                                    #
-#------------------------------------------------------------------------------#
-
-#=======================================================================
-#
-#  Script:  run.mcip
-#  Purpose: Runs Models-3/CMAQ Meteorology-Chemistry Interface
-#           Processor.  Part of the US EPA's Models-3/CMAQ system.
-#  Method:  In UNIX/Linux:  run.mcip >&! mcip.log
-#  Revised: 20 Sep 2001  Original version.  (T. Otte)
-#           18 Oct 2001  Added CoordName to user definitions.  Deleted
-#                        script variable DomIdMM5.  Added Fortran link
-#                        for GRIDDESC file.  Moved namelist output to
-#                        WorkDir, and mmheader output to OutDir.  Added
-#                        user variables I0, J0, NCOLS, and NROWS for
-#                        MCIP windowing.  (T. Otte)
-#           29 Jan 2002  Added new namelist for file names.  Generalized
-#                        the end-of-namelist delimiter.  (T. Otte)
-#           27 Feb 2002  Removed minimum size for windows.  (T. Otte)
-#           19 Mar 2002  Changed default grid cell for printing.
-#                        (T. Otte)
-#           11 Jun 2003  Clarified instructions on use of BTRIM and
-#                        setting I0 and J0 for windowing option.
-#                        Removed GRIDBDY2D, GRIDBDY3D, and METBDY2D
-#                        from output.  (T. Otte)
-#           01 Jul 2004  Restored GRIDBDY2D to output.  (T. Otte)
-#           29 Nov 2004  Added TERRAIN option for input to get
-#                        fractional land use from MM5 preprocessor.
-#                        (T. Otte)
-#           26 May 2005  Changed I0 and J0 to Y0 and X0 to make code
-#                        more general.  Removed "_G1" from environment
-#                        variables for output files.  Created two new
-#                        user options for calculating dry deposition
-#                        velocities.  Added capability to process more
-#                        than five input meteorology files in a single
-#                        MCIP run.  (T. Otte)
-#           27 Feb 2006  Updated automated namelist generator for
-#                        Linux on Mac (assumed to be) using the XLF
-#                        compiler.  (T. Otte)
-#           24 Jul 2007  Added option to bypass dry deposition velocity
-#                        calculations in MCIP so that they can be done
-#                        inline in the CCTM.  Eliminated options to
-#                        use RADM (Wesely) dry deposition, eliminated
-#                        multiple versions of M3Dry (Pleim) dry
-#                        deposition, and eliminated options and to
-#                        recalculate PBL and radiation fields in MCIP.
-#                        (T. Otte)
-#           27 May 2008  Added optional namelist variable to override
-#                        earth radius default from MM5 and WRF.  
-#                        (T. Otte)
-#                        Added variables to support GOES satellite
-#                        cloud processing (InSatDir, InSatFile, LSAT).
-#                        Requires additional data and preprocessing
-#                        package available from University of Alabama
-#                        at Huntsville.  Contributed by University of
-#                        Alabama at Huntsville.  (A. Biazar and T. Otte)
-#           23 Dec 2008  Added optional namelist variable to override
-#                        default setting for reference latitude for
-#                        WRF Lambert conformal projection.  (T. Otte)
-#           19 Mar 2010  Added namelist variable option to compute
-#                        and output potential vorticity.  Added namelist
-#                        variable option to output vertical velocity
-#                        predicted by meteorological model.  Allow
-#                        output from WRF Preprocessing System (WPS)
-#                        routine, GEOGRID, to provide fractional land
-#                        use output if it is unavailable in WRF output.
-#                        Add user option to output u- and v-component
-#                        winds on C-staggered grid.  (T. Otte)
-#           09 Sep 2010  Removed option to generate dry deposition
-#                        velocities in MCIP.  (T. Otte)
-#           07 Sep 2011  Corrected minor typos in error-checking (as
-#                        identified by Debra Baker, Univ. of Maryland).
-#                        Updated disclaimer.  (T. Otte)
-#           31 May 2012  Changed comment about MAX_MM to be consistent
-#                        with the change to the code.  (T. Otte)
-#           16 Mar 2018  Added new optional output files for land use,
-#                        soil, and mosaic output.  Now delete rather
-#                        than overwrite existing MCIP output files.
-#                        (T. Spero)
-#           18 Dec 2018  Removed support for MM5v3 input.  Added runtime
-#                        option to choose output format.  Removed option
-#                        to turn off static output.  (T. Spero)
-#           20 Jun 2019  Removed layer collapsing.  Changed LUVCOUT to
-#                        to LUVBOUT to make the default output for
-#                        u- and v-component winds on the Arakawa-C
-#                        staggering.  The Arakawa-B staggering is now
-#                        optional (additional fields), and the Arakawa-C
-#                        staggering is the default.  (T. Spero)
-#           17 Nov 2019  Corrected variable setting for file_geo in
-#                        namelist generation code.  (T. Spero)
-#=======================================================================
-
 #-----------------------------------------------------------------------
 # Set identification for input and output files.
 #
@@ -121,20 +14,21 @@
 #   ProgDir    = Directory that contains the MCIP executable
 #   WorkDir    = Working Directory for Fortran links and namelist
 #-----------------------------------------------------------------------
-set CMAQ_HOME = /home/usuario/m/CMAQ
 
-source $CMAQ_HOME/config_cmaq.csh
+#Path a donde estácompilado CMAQ.
+setenv CMAQ_HOME /home/ramiroespada/shared_divqa_data/m/CMAQ
 
-set APPL       = Papila
-set CoordName  = PAPILA        #16-character maximum
-set GridName   = PAPILAGRID    #16-character maximum
 
-set DataPath   = /home/usuario/runs/papila2019 		  #Argen20oct2022
-set InMetDir   = $DataPath/wrfout_d01_01-0102_modifTitle  #$DataPath/wrf
-set InGeoDir   = /home/usuario/runs/papila2019            #Argen20oct2022 	  #$DataPath/wrf
-set OutDir     = $DataPath/cmaq/mcip 			  #$DataPath/mcip/$GridName
+set APPL       = prueba
+set CoordName  = LCC_TAN_ARG # como quieran nombrar a la proyeccion. 16-character maximum
+set GridName   = ARG_GRD     # como quieran nombrar a la grilla    . 16-character maximum
+
+set DataPath   = /home/ramiroespada/shared_divqa_data/tests          
+set InMetDir   = $DataPath/met
+set InGeoDir   = $DataPath/met
+set OutDir     = $DataPath/cmaq/mcip
 set ProgDir    = $CMAQ_HOME/PREP/mcip/src
-set WorkDir    = $OutDir/mcip
+set WorkDir    = $OutDir
 
 #-----------------------------------------------------------------------
 # Set name(s) of input meteorology file(s)
@@ -154,11 +48,7 @@ set WorkDir    = $OutDir/mcip
 #                        $InMetDir/wrfout_d01_date2 )
 #
 #-----------------------------------------------------------------------
-
-#set InMetFiles = ( $InMetDir/wrfout_d01_2022-10-19_18:00:00 )
-#set InMetFiles = ( $InMetDir/wrfout_test_modif )
-
-set InMetFiles = ($InMetDir/wrfout_d01_2019-01-01_00:00:00 $InMetDir/wrfout_d01_2019-01-01_01:00:00 $InMetDir/wrfout_d01_2019-01-01_02:00:00 $InMetDir/wrfout_d01_2019-01-01_03:00:00 $InMetDir/wrfout_d01_2019-01-01_04:00:00 $InMetDir/wrfout_d01_2019-01-01_05:00:00 $InMetDir/wrfout_d01_2019-01-01_06:00:00 $InMetDir/wrfout_d01_2019-01-01_07:00:00 $InMetDir/wrfout_d01_2019-01-01_08:00:00 $InMetDir/wrfout_d01_2019-01-01_09:00:00 $InMetDir/wrfout_d01_2019-01-01_10:00:00 $InMetDir/wrfout_d01_2019-01-01_11:00:00 $InMetDir/wrfout_d01_2019-01-01_12:00:00 $InMetDir/wrfout_d01_2019-01-01_13:00:00 $InMetDir/wrfout_d01_2019-01-01_14:00:00 $InMetDir/wrfout_d01_2019-01-01_15:00:00 $InMetDir/wrfout_d01_2019-01-01_16:00:00 $InMetDir/wrfout_d01_2019-01-01_17:00:00 $InMetDir/wrfout_d01_2019-01-01_18:00:00)#$InMetDir/wrfout_d01_2019-01-01_19:00:00 $InMetDir/wrfout_d01_2019-01-01_20:00:00 $InMetDir/wrfout_d01_2019-01-01_21:00:00 $InMetDir/wrfout_d01_2019-01-01_22:00:00 $InMetDir/wrfout_d01_2019-01-01_23:00:00 )
+set InMetFiles = ( $InMetDir/wrfout_d01_2022-10-19_18:00:00 )
 
 set IfGeo      = "T"
 set InGeoFile  = $InGeoDir/geo_em.d01.nc
@@ -188,8 +78,8 @@ set LUVBOUT = 1
 #   INTVL:       Frequency of output [minutes]
 #-----------------------------------------------------------------------
 
-set MCIP_START = 2019-01-01-01:00:00.0000  # [UTC]
-set MCIP_END   = 2019-01-01-18:00:00.0000  # [UTC]
+set MCIP_START = 2022-10-19-19:00:00.0000  # [UTC]
+set MCIP_END   = 2022-10-20-18:00:00.0000  # [UTC]
 
 set INTVL      = 60 # [min]
 
@@ -233,10 +123,10 @@ set BTRIM = 0
 #           lateral boundaries).
 #-----------------------------------------------------------------------
 
-set X0    = 999
-set Y0    = 999
-set NCOLS = 999
-set NROWS = 999
+set X0    =  13
+set Y0    =  94
+set NCOLS =  89
+set NROWS = 104
 
 #-----------------------------------------------------------------------
 # Set coordinates for cell for diagnostic prints on output domain.
@@ -255,7 +145,7 @@ set LPRT_ROW = 0
 # from the setting of the namelist (toward the end of the script).
 #-----------------------------------------------------------------------
 
-set WRF_LC_REF_LAT = "-35.0"
+ set WRF_LC_REF_LAT = "-999.0"
 
 #=======================================================================
 #=======================================================================
