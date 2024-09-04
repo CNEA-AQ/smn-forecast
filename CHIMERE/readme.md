@@ -211,14 +211,17 @@ por
 ```
 time srun --verbose -A ${accountneurus} -p ${partitionneurus} ${mpiparams} -n ${nproc_rea} ${real_exe} || exit 1      
 ```
-y
+y cambios en real
 
 ```
 time ${my_mpirun} -n ${nproc_rea} ${real_exe} || exit 1
 ```
 por
 ```
-time srun --verbose -A ${accountneurus} -p ${<code>
+time srun --verbose -A ${accountneurus} -p ${partitionneurus} ${mpiparams} -n ${nproc_rea} ${real_exe} || exit 1
+```
+**Mismos cambios en ndown:**
+```
 time ${my_mpirun} -n ${nproc_rea} ${ndown_exe} || exit 1
 ```
 por
